@@ -62,8 +62,6 @@ const News = () => {
                     className="w-full h-40 object-cover"
                   />
                 )}
-                  </div>
-                )}
                 <div className="p-4">
                   <h3 className="font-display text-xl tracking-wider text-foreground group-hover:text-primary transition-colors">
                     {post.title}
