@@ -97,15 +97,14 @@ function parseEventsFromCalendarApi(html: string): ParsedEvent[] {
     const imageUrl = get('image') || null;
     const link = get('url') || null;
 
-    // Extract description but clean it
+    // Keep raw HTML for rich rendering, decode HTML entities
     let desc = get('description') || '';
     desc = desc
-      .replace(/<[^>]+>/g, ' ')
-      .replace(/&lt;[^&]*?&gt;/g, '')
       .replace(/&amp;/g, '&')
       .replace(/&quot;/g, '"')
-      .replace(/&#\d+;/g, '')
-      .replace(/\s+/g, ' ')
+      .replace(/&#8217;/g, "'")
+      .replace(/&#8220;/g, '\u201c')
+      .replace(/&#8221;/g, '\u201d')
       .trim();
 
     events.push({

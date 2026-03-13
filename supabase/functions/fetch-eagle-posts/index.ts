@@ -96,7 +96,7 @@ Deno.serve(async (req) => {
       id: post.id,
       title: stripHtml(post.title.rendered),
       excerpt: stripHtml(post.excerpt.rendered),
-      content: stripHtml(post.content.rendered),
+      content: post.content.rendered,
       date: post.date,
       link: post.link,
       imageUrl: mediaUrls[i],

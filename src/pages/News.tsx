@@ -73,12 +73,12 @@ const News = () => {
                     </span>
                   </div>
                   {isExpanded ? (
-                    <p className="text-muted-foreground text-sm mt-2 whitespace-pre-line">
-                      {post.content}
-                    </p>
+                    <div className="blog-content text-sm mt-2">
+                      {parse(post.content)}
+                    </div>
                   ) : (
                     <p className="text-muted-foreground text-sm mt-2 line-clamp-2">
-                      {post.excerpt}
+                      {post.excerpt.length > 150 ? post.excerpt.slice(0, 150) + '…' : post.excerpt}
                     </p>
                   )}
                 </div>
