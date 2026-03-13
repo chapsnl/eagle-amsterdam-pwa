@@ -36,7 +36,7 @@ interface TicketItem {
 }
 
 const tickets: TicketItem[] = [
-  { name: "Bear Bash", type: "popup", popupMessage: "This is a free event", icon: Bear },
+  { name: "Bear Bash", type: "popup", popupMessage: "This is a free event", icon: Grip },
   { name: "Horsemen & Knights", type: "popup", popupMessage: "Tickets only at the door for 8 Euro", icon: Swords },
   { name: "NcAdam", type: "popup", popupMessage: "Tickets only at the door for 8 Euro", icon: Crown },
   { name: "Cum Hunks", type: "popup", popupMessage: "Tickets only at the door for 8 Euro", icon: Flame },
