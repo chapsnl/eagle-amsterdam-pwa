@@ -23,15 +23,12 @@ const AgeVerification = ({ onVerified }: AgeVerificationProps) => {
   };
 
   return (
-    <div
-      className={`fixed inset-0 z-50 flex flex-col items-center justify-end bg-background transition-opacity duration-400 ${exiting ? "opacity-0" : "opacity-100"}`}
-    >
-      <img
-        src={heroImage}
-        alt="Eagle Amsterdam"
-        className="absolute inset-0 w-full h-full object-cover"
-      />
-      <div className="absolute inset-0" style={{ background: "linear-gradient(to top, hsl(var(--background)) 15%, hsl(var(--background) / 0.85) 40%, transparent 70%)" }} />
+    <>
+      {/* Preload hero image in background (hidden) */}
+      <link rel="preload" as="image" href={heroImage} />
+      <div
+        className={`fixed inset-0 z-50 flex flex-col items-center justify-end bg-background transition-opacity duration-400 ${exiting ? "opacity-0" : "opacity-100"}`}
+      >
       <div className="relative flex flex-col items-center gap-6 px-6 pb-12 text-center max-w-sm">
         <img
           src={eagleLogo}
