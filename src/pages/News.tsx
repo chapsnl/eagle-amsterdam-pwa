@@ -74,7 +74,7 @@ const News = () => {
                     </span>
                   </div>
                   {isExpanded ? (
-                    <EagleHtmlContent html={post.content} className="text-sm mt-2" />
+                    <EagleHtmlContent html={post.content} className="text-sm mt-2 blog-content-fix" />
                   ) : (
                     <p className="text-muted-foreground text-sm mt-2 line-clamp-2">
                       {post.excerpt.length > 150 ? post.excerpt.slice(0, 150) + '…' : post.excerpt}
