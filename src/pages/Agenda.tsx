@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Calendar, Clock } from "lucide-react";
 import { useEagleEvents } from "@/hooks/useEagleEvents";
+import EagleHtmlContent from "@/components/EagleHtmlContent";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
 

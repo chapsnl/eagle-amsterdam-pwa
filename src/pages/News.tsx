@@ -3,6 +3,7 @@ import { useEaglePosts } from "@/hooks/useEaglePosts";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
 import { useState } from "react";
+import EagleHtmlContent from "@/components/EagleHtmlContent";
 
 
 const News = () => {
