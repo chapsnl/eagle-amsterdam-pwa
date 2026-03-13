@@ -2,7 +2,7 @@ import { useState } from "react";
 import {
   Ticket,
   ExternalLink,
-  Bear,
+  Grip,
   Swords,
   Crown,
   Flame,
