@@ -99,9 +99,9 @@ const Agenda = () => {
                     </span>
                   </div>
                   {event.description && (
-                    <p className="text-muted-foreground text-sm mt-2 line-clamp-2">
-                      {event.description}
-                    </p>
+                    <div className="prose prose-invert max-w-none blog-content text-sm mt-2 line-clamp-2">
+                      {parse(event.description)}
+                    </div>
                   )}
                 </div>
               </a>
