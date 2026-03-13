@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { MapPin, ExternalLink, Send, Loader2 } from "lucide-react";
+import { MapPin, ExternalLink, Send, Loader2, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -20,6 +20,8 @@ const Contact = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [form, setForm] = useState({ name: "", email: "", subject: "", question: "" });
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [newsletterEmail, setNewsletterEmail] = useState("");
+  const [isSubscribing, setIsSubscribing] = useState(false);
 
   const handleChange = (field: string, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -87,6 +89,53 @@ const Contact = () => {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Newsletter Signup */}
+      <div className="border border-border rounded-lg p-6 bg-card neon-border mb-4">
+        <h2 className="font-display text-2xl tracking-wider text-foreground mb-2 flex items-center gap-2">
+          <Mail className="w-5 h-5 text-primary" />
+          MAILING LIST
+        </h2>
+        <p className="text-muted-foreground text-sm mb-4">
+          Subscribe to our mailing list to stay updated on events and parties.
+        </p>
+        <form
+          onSubmit={async (e) => {
+            e.preventDefault();
+            const parsed = z.string().trim().email().safeParse(newsletterEmail);
+            if (!parsed.success) {
+              toast({ title: "Invalid email", description: "Please enter a valid email address.", variant: "destructive" });
+              return;
+            }
+            setIsSubscribing(true);
+            try {
+              const { data, error } = await supabase.functions.invoke("subscribe-newsletter", {
+                body: { email: parsed.data },
+              });
+              if (error || !data?.success) throw new Error(data?.error || error?.message || "Failed to subscribe");
+              toast({ title: "Subscribed!", description: "You've been added to our mailing list." });
+              setNewsletterEmail("");
+            } catch (err) {
+              toast({ title: "Error", description: (err as Error).message || "Something went wrong.", variant: "destructive" });
+            } finally {
+              setIsSubscribing(false);
+            }
+          }}
+          className="flex gap-2"
+        >
+          <Input
+            type="email"
+            value={newsletterEmail}
+            onChange={(e) => setNewsletterEmail(e.target.value)}
+            placeholder="your@email.com"
+            className="bg-secondary border-border text-foreground placeholder:text-muted-foreground flex-1"
+            maxLength={255}
+          />
+          <Button type="submit" variant="eagle" disabled={isSubscribing} className="shrink-0">
+            {isSubscribing ? <Loader2 className="w-4 h-4 animate-spin" /> : "JOIN"}
+          </Button>
+        </form>
       </div>
 
       {/* Contact Form */}
