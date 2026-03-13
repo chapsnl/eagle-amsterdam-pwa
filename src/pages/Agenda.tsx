@@ -99,9 +99,10 @@ const Agenda = () => {
                     </span>
                   </div>
                   {event.description && (
-                    <div className="prose prose-invert max-w-none blog-content text-sm mt-2 line-clamp-2">
-                      {parse(event.description)}
-                    </div>
+                    <div
+                      className="prose prose-invert prose-red max-w-none text-foreground blog-content text-sm mt-2 line-clamp-2"
+                      dangerouslySetInnerHTML={{ __html: event.description }}
+                    />
                   )}
                 </div>
               </a>

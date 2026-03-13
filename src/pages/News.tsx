@@ -73,9 +73,10 @@ const News = () => {
                     </span>
                   </div>
                   {isExpanded ? (
-                    <div className="prose prose-invert max-w-none blog-content text-sm mt-2">
-                      {parse(post.content)}
-                    </div>
+                    <div
+                      className="prose prose-invert prose-red max-w-none text-foreground blog-content text-sm mt-2"
+                      dangerouslySetInnerHTML={{ __html: post.content }}
+                    />
                   ) : (
                     <p className="text-muted-foreground text-sm mt-2 line-clamp-2">
                       {post.excerpt.length > 150 ? post.excerpt.slice(0, 150) + '…' : post.excerpt}
