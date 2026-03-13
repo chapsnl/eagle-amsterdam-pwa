@@ -162,6 +162,15 @@ Deno.serve(async (req) => {
 
       const data = await response.json();
       const html = data.html || '';
+      // Debug: log a sample of the HTML to understand structure
+      if (month === months[0].month) {
+        const imgIdx = html.indexOf('"image"');
+        if (imgIdx !== -1) {
+          console.log('DEBUG image context:', html.substring(imgIdx, imgIdx + 200));
+        } else {
+          console.log('DEBUG: no "image" field found in HTML. First 500 chars:', html.substring(0, 500));
+        }
+      }
       const monthEvents = parseEventsFromCalendarApi(html);
       console.log(`Month ${month}/${year}: found ${monthEvents.length} events, ${monthEvents.filter(e => e.imageUrl).length} with images`);
       allEvents.push(...monthEvents);
