@@ -9,6 +9,7 @@ interface WPPost {
   link: string;
   title: { rendered: string };
   excerpt: { rendered: string };
+  content: { rendered: string };
   featured_media: number;
 }
 
@@ -71,7 +72,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const url = 'https://www.eagleamsterdam.com/wp-json/wp/v2/posts?per_page=10&_fields=id,title,excerpt,date,link,featured_media';
+    const url = 'https://www.eagleamsterdam.com/wp-json/wp/v2/posts?per_page=10&_fields=id,title,excerpt,content,date,link,featured_media';
 
     const response = await fetch(url, {
       headers: {
@@ -95,6 +96,7 @@ Deno.serve(async (req) => {
       id: post.id,
       title: stripHtml(post.title.rendered),
       excerpt: stripHtml(post.excerpt.rendered),
+      content: stripHtml(post.content.rendered),
       date: post.date,
       link: post.link,
       imageUrl: mediaUrls[i],

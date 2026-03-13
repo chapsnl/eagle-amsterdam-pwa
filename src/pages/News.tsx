@@ -71,7 +71,7 @@ const News = () => {
                   </span>
                   {isExpanded ? (
                     <p className="text-muted-foreground text-sm mt-2 whitespace-pre-line">
-                      {post.excerpt}
+                      {post.content}
                     </p>
                   ) : (
                     <p className="text-muted-foreground text-sm mt-2 line-clamp-2">
