@@ -6,6 +6,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import AgeVerification from "@/components/AgeVerification";
 import BottomNav from "@/components/BottomNav";
+import DevModeIndicator from "@/components/DevModeIndicator";
 
 // Lazy-loaded pages
 const Index = lazy(() => import("./pages/Index"));
@@ -44,6 +45,7 @@ const App = () => {
       <TooltipProvider>
         <Toaster />
         <Sonner />
+        <DevModeIndicator />
         <BrowserRouter>
           <Suspense fallback={<PageLoader />}>
             <Routes>
