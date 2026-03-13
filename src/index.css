@@ -108,9 +108,7 @@
 
   .prose br,
   .eagle-content-wrapper br {
-    content: "";
-    display: block;
-    margin-bottom: 0.5rem;
+    display: none !important;
   }
 
   .prose br + br,
