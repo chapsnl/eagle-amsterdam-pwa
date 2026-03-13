@@ -76,7 +76,7 @@ const Agenda = () => {
                     src={event.imageUrl}
                     alt={event.title}
                     loading="lazy"
-                    className="w-full h-40 object-cover"
+                    className="w-full h-40 object-cover object-top"
                   />
                 ) : (
                   <div className="w-full h-40 bg-secondary flex items-center justify-center">
