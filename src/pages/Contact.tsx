@@ -1,5 +1,7 @@
-import { MapPin, ExternalLink, Phone, Mail } from "lucide-react";
+import { MapPin, ExternalLink, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
+
+const JOTFORM_URL = "https://form.jotform.com/250826498498071";
 
 const Contact = () => (
   <div className="flex flex-col min-h-screen pb-20 pt-6 px-4 max-w-lg mx-auto">
@@ -20,12 +22,6 @@ const Contact = () => (
             <p>1012 JH Amsterdam</p>
             <p>The Netherlands</p>
           </div>
-        </div>
-        <div className="flex items-center gap-3">
-          <Phone className="w-4 h-4 text-primary shrink-0" />
-          <a href="tel:+31206266060" className="hover:text-foreground transition-colors">
-            +31 (0)20 626 60 60
-          </a>
         </div>
         <div className="flex items-center gap-3">
           <Mail className="w-4 h-4 text-primary shrink-0" />
@@ -62,6 +58,24 @@ const Contact = () => (
         loading="lazy"
         referrerPolicy="no-referrer-when-downgrade"
       />
+    </div>
+
+    {/* Jotform Contact Form */}
+    <div className="mt-6 mb-4">
+      <h2 className="font-display text-2xl tracking-wider text-foreground mb-4">
+        SEND US A MESSAGE
+      </h2>
+      <div className="rounded-lg overflow-hidden border border-border bg-card">
+        <iframe
+          title="Contact Form"
+          src={JOTFORM_URL}
+          width="100%"
+          height="500"
+          style={{ border: 0, background: "transparent" }}
+          allowFullScreen
+          loading="lazy"
+        />
+      </div>
     </div>
   </div>
 );
