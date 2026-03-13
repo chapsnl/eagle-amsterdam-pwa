@@ -119,6 +119,24 @@
   .eagle-content-wrapper { white-space: normal; }
   .eagle-content-wrapper p, .eagle-content-wrapper div { white-space: normal; }
 
+  /* Blog-specific spacing fix */
+  .blog-content-fix p + p {
+    margin-top: -0.5rem !important;
+  }
+  .blog-content-fix br {
+    display: block;
+    content: "";
+    margin-top: 0;
+    margin-bottom: 0;
+    line-height: 1;
+  }
+  .blog-content-fix br + br {
+    display: none !important;
+  }
+  .blog-content-fix p {
+    line-height: 1.5 !important;
+  }
+
   .prose h1, .prose h2, .prose h3, .prose h4,
   .eagle-content-wrapper h1, .eagle-content-wrapper h2, .eagle-content-wrapper h3, .eagle-content-wrapper h4 {
     color: white !important;
