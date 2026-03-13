@@ -13,7 +13,7 @@ const AgeVerification = ({ onVerified }: AgeVerificationProps) => {
   const handleEnter = () => {
     setExiting(true);
     setTimeout(() => {
-      sessionStorage.setItem("eagle-age-verified", "true");
+      localStorage.setItem("eagle-age-verified", "true");
       onVerified();
     }, 400);
   };

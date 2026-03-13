@@ -35,7 +35,7 @@ const PageLoader = () => (
 
 const App = () => {
   const [verified, setVerified] = useState(() =>
-    sessionStorage.getItem("eagle-age-verified") === "true"
+    localStorage.getItem("eagle-age-verified") === "true"
   );
 
   if (!verified) {
