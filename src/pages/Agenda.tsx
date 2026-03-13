@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Calendar, Clock } from "lucide-react";
 import { useEagleEvents } from "@/hooks/useEagleEvents";
+import EagleHtmlContent from "@/components/EagleHtmlContent";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
 
@@ -95,19 +96,13 @@ const Agenda = () => {
                   </div>
                   {isExpanded ? (
                     event.description ? (
-                      <div
-                        className="prose prose-invert prose-red max-w-none text-foreground blog-content text-sm mt-2"
-                        dangerouslySetInnerHTML={{ __html: event.description }}
-                      />
+                      <EagleHtmlContent html={event.description} className="text-sm mt-2" />
                     ) : (
                       <p className="text-muted-foreground text-sm mt-2">No additional details available.</p>
                     )
                   ) : (
                     event.description && (
-                      <div
-                        className="prose prose-invert prose-red max-w-none text-foreground blog-content text-sm mt-2 line-clamp-2"
-                        dangerouslySetInnerHTML={{ __html: event.description }}
-                      />
+                      <EagleHtmlContent html={event.description} className="text-sm mt-2 line-clamp-2" />
                     )
                   )}
                 </div>

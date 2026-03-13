@@ -3,6 +3,7 @@ import { useEaglePosts } from "@/hooks/useEaglePosts";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
 import { useState } from "react";
+import EagleHtmlContent from "@/components/EagleHtmlContent";
 
 
 const News = () => {
@@ -73,10 +74,7 @@ const News = () => {
                     </span>
                   </div>
                   {isExpanded ? (
-                    <div
-                      className="prose prose-invert prose-red max-w-none text-foreground blog-content text-sm mt-2"
-                      dangerouslySetInnerHTML={{ __html: post.content }}
-                    />
+                    <EagleHtmlContent html={post.content} className="text-sm mt-2" />
                   ) : (
                     <p className="text-muted-foreground text-sm mt-2 line-clamp-2">
                       {post.excerpt.length > 150 ? post.excerpt.slice(0, 150) + '…' : post.excerpt}
