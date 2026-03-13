@@ -8,18 +8,25 @@ declare global {
   }
 }
 
+const STORAGE_KEY = "eagle-push-subscribed";
+
 const NotificationBell = () => {
   const [requesting, setRequesting] = useState(false);
-  const [subscribed, setSubscribed] = useState<boolean | null>(null);
+  const [subscribed, setSubscribed] = useState<boolean | null>(() => {
+    // Persist: if previously subscribed, stay hidden immediately
+    return localStorage.getItem(STORAGE_KEY) === "true" ? true : null;
+  });
 
   useEffect(() => {
     window.OneSignalDeferred = window.OneSignalDeferred || [];
     window.OneSignalDeferred.push(async (OneSignal: any) => {
       const permission = await OneSignal.Notifications.permission;
       setSubscribed(permission);
+      localStorage.setItem(STORAGE_KEY, String(permission));
 
       OneSignal.Notifications.addEventListener("permissionChange", (granted: boolean) => {
         setSubscribed(granted);
+        localStorage.setItem(STORAGE_KEY, String(granted));
         if (granted) {
           toast.success("Thanks! You'll now receive updates from Eagle Amsterdam. 🦅");
         }
@@ -43,7 +50,7 @@ const NotificationBell = () => {
     });
   }, [requesting]);
 
-  // Hide if already subscribed or still checking
+  // Hide if already subscribed, still checking, or previously subscribed
   if (subscribed !== false) return null;
 
   return (
