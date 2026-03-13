@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { Calendar, MapPin } from "lucide-react";
 import heroImage from "@/assets/hero-header.webp";
-import eagleLogo from "@/assets/eagle-logo.png";
+import eagleLogo from "@/assets/eagle-logo-red.png";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -24,7 +24,7 @@ const Index = () => {
           <img
             src={eagleLogo}
             alt="Eagle Amsterdam logo"
-            className="w-16 h-16 object-contain"
+            className="w-48 object-contain"
           />
           <h1 className="text-5xl font-display tracking-widest text-foreground text-glow-red">
             EAGLE AMSTERDAM

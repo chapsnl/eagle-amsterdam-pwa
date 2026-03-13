@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import eagleLogo from "@/assets/eagle-logo.png";
+import eagleLogo from "@/assets/eagle-logo-red.png";
 import heroImage from "@/assets/hero-header.webp";
 
 interface AgeVerificationProps {
@@ -36,7 +36,7 @@ const AgeVerification = ({ onVerified }: AgeVerificationProps) => {
         <img
           src={eagleLogo}
           alt="Eagle Amsterdam"
-          className="w-20 h-20 object-contain"
+          className="w-48 object-contain"
         />
         <h1 className="text-4xl font-display tracking-wider text-foreground">
           EAGLE AMSTERDAM
