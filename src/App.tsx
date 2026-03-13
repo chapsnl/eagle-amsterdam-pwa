@@ -7,6 +7,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import AgeVerification from "@/components/AgeVerification";
 import BottomNav from "@/components/BottomNav";
 import DevModeIndicator from "@/components/DevModeIndicator";
+import SmartInstallBanner from "@/components/SmartInstallBanner";
 
 // Lazy-loaded pages
 const Index = lazy(() => import("./pages/Index"));
@@ -57,6 +58,7 @@ const App = () => {
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>
+          <SmartInstallBanner />
           <BottomNav />
         </BrowserRouter>
       </TooltipProvider>
