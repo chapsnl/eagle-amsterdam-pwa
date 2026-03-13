@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { isDevMode } from "@/lib/devMode";
 
 const TWENTY_FOUR_HOURS = 86_400_000;
 const CACHE_KEY = "eagle-events-cache";
@@ -39,9 +40,13 @@ function setCachedData(data: EagleEvent[]) {
 }
 
 async function fetchEvents(): Promise<EagleEvent[]> {
-  const cached = getCachedData();
-  if (cached && Date.now() - cached.timestamp < TWENTY_FOUR_HOURS) {
-    return cached.data;
+  const dev = isDevMode();
+
+  if (!dev) {
+    const cached = getCachedData();
+    if (cached && Date.now() - cached.timestamp < TWENTY_FOUR_HOURS) {
+      return cached.data;
+    }
   }
 
   const { data, error } = await supabase.functions.invoke<FetchResponse>(
@@ -51,16 +56,17 @@ async function fetchEvents(): Promise<EagleEvent[]> {
   if (error) throw new Error(error.message);
   if (!data?.success) throw new Error(data?.error || "Failed to fetch events");
 
-  setCachedData(data.events);
+  if (!dev) setCachedData(data.events);
   return data.events;
 }
 
 export function useEagleEvents() {
+  const dev = isDevMode();
   return useQuery({
     queryKey: ["eagle-events"],
     queryFn: fetchEvents,
-    staleTime: TWENTY_FOUR_HOURS,
-    gcTime: TWENTY_FOUR_HOURS,
+    staleTime: dev ? 0 : TWENTY_FOUR_HOURS,
+    gcTime: dev ? 0 : TWENTY_FOUR_HOURS,
     retry: 2,
   });
 }

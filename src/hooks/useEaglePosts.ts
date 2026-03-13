@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { isDevMode } from "@/lib/devMode";
 
 const TWENTY_FOUR_HOURS = 86_400_000;
 const CACHE_KEY = "eagle-posts-cache";
@@ -37,9 +38,13 @@ function setCachedData(data: EaglePost[]) {
 }
 
 async function fetchPosts(): Promise<EaglePost[]> {
-  const cached = getCachedData();
-  if (cached && Date.now() - cached.timestamp < TWENTY_FOUR_HOURS) {
-    return cached.data;
+  const dev = isDevMode();
+
+  if (!dev) {
+    const cached = getCachedData();
+    if (cached && Date.now() - cached.timestamp < TWENTY_FOUR_HOURS) {
+      return cached.data;
+    }
   }
 
   const { data, error } = await supabase.functions.invoke<FetchResponse>(
@@ -49,16 +54,17 @@ async function fetchPosts(): Promise<EaglePost[]> {
   if (error) throw new Error(error.message);
   if (!data?.success) throw new Error(data?.error || "Failed to fetch posts");
 
-  setCachedData(data.posts);
+  if (!dev) setCachedData(data.posts);
   return data.posts;
 }
 
 export function useEaglePosts() {
+  const dev = isDevMode();
   return useQuery({
     queryKey: ["eagle-posts"],
     queryFn: fetchPosts,
-    staleTime: TWENTY_FOUR_HOURS,
-    gcTime: TWENTY_FOUR_HOURS,
+    staleTime: dev ? 0 : TWENTY_FOUR_HOURS,
+    gcTime: dev ? 0 : TWENTY_FOUR_HOURS,
     retry: 2,
   });
 }
