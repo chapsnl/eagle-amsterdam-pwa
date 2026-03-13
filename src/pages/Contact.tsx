@@ -75,6 +75,38 @@ const Contact = () => {
         CONTACT
       </h1>
 
+      {/* Address */}
+      <div className="border border-border rounded-lg p-6 bg-card neon-border mb-4">
+        <h2 className="font-display text-2xl tracking-wider text-foreground mb-4">
+          EAGLE AMSTERDAM
+        </h2>
+        <div className="flex flex-col gap-3 text-sm text-muted-foreground">
+          <div className="flex items-start gap-3">
+            <MapPin className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+            <div>
+              <p>Warmoesstraat 90</p>
+              <p>1012 JH Amsterdam</p>
+              <p>The Netherlands</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <Button
+        variant="eagle"
+        size="lg"
+        className="w-full mb-4"
+        onClick={() =>
+          window.open(
+            "https://www.google.com/maps/search/?api=1&query=Eagle+Amsterdam+Warmoesstraat+90",
+            "_blank"
+          )
+        }
+      >
+        <ExternalLink className="w-5 h-5 mr-2" />
+        OPEN IN GOOGLE MAPS
+      </Button>
+
       {/* Newsletter Signup */}
       <div className="border border-border rounded-lg p-6 bg-card neon-border mb-4">
         <h2 className="font-display text-2xl tracking-wider text-foreground mb-2 flex items-center gap-2">
@@ -120,23 +152,6 @@ const Contact = () => {
             {isSubscribing ? <Loader2 className="w-4 h-4 animate-spin" /> : "JOIN"}
           </Button>
         </form>
-      </div>
-
-      {/* Address */}
-      <div className="border border-border rounded-lg p-6 bg-card neon-border mb-4">
-        <h2 className="font-display text-2xl tracking-wider text-foreground mb-4">
-          EAGLE AMSTERDAM
-        </h2>
-        <div className="flex flex-col gap-3 text-sm text-muted-foreground">
-          <div className="flex items-start gap-3">
-            <MapPin className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-            <div>
-              <p>Warmoesstraat 90</p>
-              <p>1012 JH Amsterdam</p>
-              <p>The Netherlands</p>
-            </div>
-          </div>
-        </div>
       </div>
 
       {/* Contact Form */}
@@ -222,21 +237,6 @@ const Contact = () => {
           </Button>
         </form>
       </div>
-
-      <Button
-        variant="eagle"
-        size="lg"
-        className="w-full mt-4 mb-4"
-        onClick={() =>
-          window.open(
-            "https://www.google.com/maps/search/?api=1&query=Eagle+Amsterdam+Warmoesstraat+90",
-            "_blank"
-          )
-        }
-      >
-        <ExternalLink className="w-5 h-5 mr-2" />
-        OPEN IN GOOGLE MAPS
-      </Button>
     </div>
   );
 };
