@@ -58,6 +58,7 @@ const App = () => {
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>
+          <SmartInstallBanner />
           <BottomNav />
         </BrowserRouter>
       </TooltipProvider>
