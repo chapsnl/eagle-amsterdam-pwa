@@ -15,52 +15,113 @@ interface ParsedEvent {
   link: string | null;
 }
 
+/**
+ * Extract event data using regex from JSON-LD blocks.
+ * The JSON-LD from EventON contains malformed HTML inside description values,
+ * making JSON.parse unreliable. We extract fields individually via regex.
+ */
 function parseEventsFromCalendarApi(html: string): ParsedEvent[] {
   const events: ParsedEvent[] = [];
 
-  // Parse JSON-LD schema blocks embedded in the HTML
-  // Pattern: {"@context": "http://schema.org","@type": "Event", ...}
-  const jsonLdRegex = /\{"@context":\s*"http:\/\/schema\.org","@type":\s*"Event",[^}]+\}/g;
-  
-  let match;
-  while ((match = jsonLdRegex.exec(html)) !== null) {
-    try {
-      // Clean up the JSON string - fix escaped HTML entities
-      let jsonStr = match[0]
-        .replace(/\\n/g, ' ')
-        .replace(/\\t/g, ' ')
-        .replace(/\\r/g, ' ');
+  // Find all JSON-LD blocks by looking for @context markers
+  const marker = '"@context"';
+  let searchFrom = 0;
 
-      const schema = JSON.parse(jsonStr);
+  while (true) {
+    const idx = html.indexOf(marker, searchFrom);
+    if (idx === -1) break;
 
-      const startDate = schema.startDate || '';
-      const endDate = schema.endDate || '';
-      const startTime = startDate ? Math.floor(new Date(startDate).getTime() / 1000) : 0;
-      const endTime = endDate ? Math.floor(new Date(endDate).getTime() / 1000) : 0;
-
-      // Clean description - strip HTML tags
-      let desc = schema.description || '';
-      desc = desc.replace(/<[^>]+>/g, ' ').replace(/&lt;[^&]*&gt;/g, '').replace(/\s+/g, ' ').trim();
-
-      const eventId = schema['@id'] || `event_${startTime}`;
-
-      events.push({
-        id: eventId,
-        title: schema.name || 'Untitled Event',
-        description: desc,
-        startTime,
-        endTime,
-        startDate,
-        endDate,
-        imageUrl: schema.image || null,
-        link: schema.url || null,
-      });
-    } catch (e) {
-      console.error('Failed to parse event JSON-LD:', e);
+    // Find the enclosing block - go back to find opening {
+    let blockStart = idx;
+    for (let i = idx - 1; i >= 0; i--) {
+      if (html[i] === '{') { blockStart = i; break; }
     }
+
+    // Find balanced closing }
+    let depth = 0;
+    let blockEnd = -1;
+    for (let i = blockStart; i < html.length; i++) {
+      if (html[i] === '{') depth++;
+      else if (html[i] === '}') {
+        depth--;
+        if (depth === 0) { blockEnd = i; break; }
+      }
+    }
+
+    if (blockEnd === -1) {
+      searchFrom = idx + marker.length;
+      continue;
+    }
+
+    const block = html.substring(blockStart, blockEnd + 1);
+    searchFrom = blockEnd + 1;
+
+    // Only process Event types
+    if (!block.includes('"Event"')) continue;
+
+
+
+
+    // Extract fields via simple regex - no complex escaping needed since
+    // the HTML is already JSON-decoded (no escaped quotes in URLs/names)
+    const get = (field: string): string | null => {
+      const re = new RegExp(`"${field}"\\s*:\\s*"([^"]*)"`)
+      const m = block.match(re);
+      return m ? m[1] : null;
+    };
+
+    const name = get('name');
+    const startDateRaw = get('startDate');
+    const endDateRaw = get('endDate');
+
+    if (!name || !startDateRaw || !endDateRaw) continue;
+
+    // Fix non-standard date format: "2026-3-12T22:00+0:00" → proper ISO
+    const fixDate = (d: string): number => {
+      // Normalize: pad month/day, fix timezone offset format
+      const fixed = d
+        .replace(/(\d{4})-(\d{1,2})-(\d{1,2})/, (_m, y, mo, da) =>
+          `${y}-${mo.padStart(2, '0')}-${da.padStart(2, '0')}`)
+        .replace(/\+(\d):(\d{2})$/, '+0$1:$2')
+        .replace(/\+(\d{2}):(\d{2})$/, '+$1:$2');
+      const ts = new Date(fixed).getTime();
+      return isNaN(ts) ? new Date(d).getTime() : ts;
+    };
+
+    const startTime = Math.floor(fixDate(startDateRaw) / 1000);
+    const endTime = Math.floor(fixDate(endDateRaw) / 1000);
+
+    if (isNaN(startTime) || isNaN(endTime) || startTime === 0) continue;
+
+    const eventId = get('@id') || `event_${startTime}`;
+    const imageUrl = get('image') || null;
+    const link = get('url') || null;
+
+    // Extract description but clean it
+    let desc = get('description') || '';
+    desc = desc
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/&lt;[^&]*?&gt;/g, '')
+      .replace(/&amp;/g, '&')
+      .replace(/&quot;/g, '"')
+      .replace(/&#\d+;/g, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    events.push({
+      id: eventId,
+      title: name,
+      description: desc,
+      startTime,
+      endTime,
+      startDate: new Date(startTime * 1000).toISOString(),
+      endDate: new Date(endTime * 1000).toISOString(),
+      imageUrl,
+      link,
+    });
   }
 
-  // Also try parsing from data-time attributes + event title spans as fallback
+  // Fallback: parse from data attributes if no JSON-LD events found
   if (events.length === 0) {
     const eventBlockRegex = /data-event_id="(\d+)"[^>]*data-time="(\d+)-(\d+)"[\s\S]*?evcal_event_title[^>]*>([^<]+)/g;
     let fallbackMatch;
@@ -90,7 +151,6 @@ Deno.serve(async (req) => {
   }
 
   try {
-    // Fetch current month and next 2 months for a fuller agenda
     const now = new Date();
     const months: { month: number; year: number }[] = [];
     for (let i = 0; i < 3; i++) {
@@ -118,7 +178,17 @@ Deno.serve(async (req) => {
 
       const data = await response.json();
       const html = data.html || '';
+      // Debug: log a sample of the HTML to understand structure
+      if (month === months[0].month) {
+        const imgIdx = html.indexOf('"image"');
+        if (imgIdx !== -1) {
+          console.log('DEBUG image context:', html.substring(imgIdx, imgIdx + 200));
+        } else {
+          console.log('DEBUG: no "image" field found in HTML. First 500 chars:', html.substring(0, 500));
+        }
+      }
       const monthEvents = parseEventsFromCalendarApi(html);
+      console.log(`Month ${month}/${year}: found ${monthEvents.length} events, ${monthEvents.filter(e => e.imageUrl).length} with images`);
       allEvents.push(...monthEvents);
     }
 
