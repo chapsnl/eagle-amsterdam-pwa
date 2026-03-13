@@ -59,13 +59,8 @@ function parseEventsFromCalendarApi(html: string): ParsedEvent[] {
     // Only process Event types
     if (!block.includes('"Event"')) continue;
 
-    // Debug first block
-    if (events.length === 0) {
-      // Debug: try matching image directly
-      const imgTest = block.match(/"image"\s*:\s*"([^"]+)"/);
-      console.log('DEBUG image match:', imgTest ? imgTest[1] : 'NO MATCH');
-      console.log('DEBUG block around image:', block.substring(block.indexOf('"image"'), block.indexOf('"image"') + 150));
-    }
+
+
 
     // Extract fields via simple regex - no complex escaping needed since
     // the HTML is already JSON-decoded (no escaped quotes in URLs/names)
