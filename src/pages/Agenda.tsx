@@ -3,15 +3,17 @@ import { useEagleEvents } from "@/hooks/useEagleEvents";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
 
+const ONE_HOUR = 3600; // seconds
+
 function formatEventDate(startUnix: number, endUnix: number) {
-  const start = new Date(startUnix * 1000);
-  const end = new Date(endUnix * 1000);
+  // Subtract 1 hour from both start and end times
+  const start = new Date((startUnix - ONE_HOUR) * 1000);
+  const end = new Date((endUnix - ONE_HOUR) * 1000);
 
   const dateStr = format(start, "EEE, MMM d");
   const startTime = format(start, "HH:mm");
   const endTime = format(end, "HH:mm");
 
-  // If end date is different day, show it
   const sameDay = start.toDateString() === end.toDateString();
   const endDateStr = sameDay ? "" : ` (${format(end, "d")})`;
 
@@ -69,13 +71,17 @@ const Agenda = () => {
                 rel="noopener noreferrer"
                 className="group border border-border rounded-lg overflow-hidden bg-card hover:neon-border transition-all duration-300 block"
               >
-                {event.imageUrl && (
+                {event.imageUrl ? (
                   <img
-                    src={event.thumbUrl || event.imageUrl}
+                    src={event.imageUrl}
                     alt={event.title}
                     loading="lazy"
                     className="w-full h-40 object-cover"
                   />
+                ) : (
+                  <div className="w-full h-40 bg-secondary flex items-center justify-center">
+                    <Calendar className="w-10 h-10 text-muted-foreground" />
+                  </div>
                 )}
                 <div className="p-4">
                   <div className="flex items-start justify-between gap-2">
