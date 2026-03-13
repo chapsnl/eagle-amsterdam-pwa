@@ -161,7 +161,7 @@ Deno.serve(async (req) => {
     const allEvents: ParsedEvent[] = [];
 
     for (const { month, year } of months) {
-      const url = `https://www.eagleamsterdam.com/wp-json/eventon/calendar?month=${month}&year=${year}`;
+      const url = `https://www.eagleamsterdam.com/wp-json/eventon/calendar?month=${month}&year=${year}&show_et_ft_img=yes`;
       console.log('Fetching:', url);
 
       const response = await fetch(url, {
