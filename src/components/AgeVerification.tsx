@@ -55,7 +55,8 @@ const AgeVerification = ({ onVerified }: AgeVerificationProps) => {
           Warmoesstraat 90, Amsterdam
         </p>
       </div>
-    </div>
+      </div>
+    </>
   );
 };
 
