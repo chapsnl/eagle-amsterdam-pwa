@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { MapPin, ExternalLink, Send, Loader2, Mail } from "lucide-react";
+import { MapPin, ExternalLink, Send, Loader2, Mail, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
