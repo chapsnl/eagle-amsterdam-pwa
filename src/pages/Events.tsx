@@ -56,7 +56,7 @@ const Events = () => {
           <Button
             key={`${ticket.name}-${i}`}
             variant="eagle-outline"
-            className="w-full justify-between h-auto py-4 text-left"
+            className="w-full justify-between h-auto py-4 text-left text-foreground"
             onClick={() => handleClick(ticket)}
           >
             <span>{ticket.name}</span>
