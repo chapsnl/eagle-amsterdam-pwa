@@ -1,3 +1,5 @@
+import DOMPurify from 'dompurify';
+
 interface EagleHtmlContentProps {
   html: string;
   className?: string;
@@ -6,7 +8,7 @@ interface EagleHtmlContentProps {
 const EagleHtmlContent = ({ html, className = "" }: EagleHtmlContentProps) => (
   <div
     className={`eagle-content-wrapper prose prose-invert prose-red max-w-none text-foreground ${className}`}
-    dangerouslySetInnerHTML={{ __html: html }}
+    dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(html) }}
   />
 );
 
