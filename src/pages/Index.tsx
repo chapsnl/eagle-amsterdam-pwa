@@ -30,8 +30,7 @@ const Index = () => {
             EAGLE AMSTERDAM
           </h1>
           <p className="text-muted-foreground text-sm max-w-xs">
-            Amsterdam's legendary leather & fetish bar since 1981. Three floors
-            of attitude on Warmoesstraat.
+            Eagle Amsterdam is originally a men-only club and during regular hours that core identity remains. At the same time, we serve the wider LGBTQI+ community with a diverse program of inclusive fetish events.
           </p>
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <MapPin className="w-3 h-3 text-primary" />
