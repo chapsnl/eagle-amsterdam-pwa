@@ -54,17 +54,13 @@ const News = () => {
                 onClick={() => setExpandedId(isExpanded ? null : post.id)}
                 className="group border border-border rounded-lg overflow-hidden bg-card hover:neon-border transition-all duration-300 cursor-pointer"
               >
-                {post.imageUrl ? (
+                {post.imageUrl && (
                   <img
                     src={post.imageUrl}
                     alt={post.title}
                     loading="lazy"
                     className="w-full h-40 object-cover"
                   />
-                ) : (
-                  <div className="w-full h-40 bg-secondary flex items-center justify-center">
-                    <Newspaper className="w-10 h-10 text-muted-foreground" />
-                  </div>
                 )}
                 <div className="p-4">
                   <h3 className="font-display text-xl tracking-wider text-foreground group-hover:text-primary transition-colors">
