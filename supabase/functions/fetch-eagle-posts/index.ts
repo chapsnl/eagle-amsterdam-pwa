@@ -1,6 +1,6 @@
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
 interface WPPost {
@@ -9,29 +9,18 @@ interface WPPost {
   link: string;
   title: { rendered: string };
   excerpt: { rendered: string };
-  _embedded?: {
-    'wp:featuredmedia'?: Array<{
-      source_url?: string;
-      media_details?: {
-        sizes?: {
-          medium_large?: { source_url: string };
-          medium?: { source_url: string };
-          large?: { source_url: string };
-        };
-      };
-    }>;
-  };
+  featured_media: number;
 }
 
-function getImageUrl(post: WPPost): string | null {
-  const media = post._embedded?.['wp:featuredmedia']?.[0];
-  if (!media) return null;
-  const sizes = media.media_details?.sizes;
-  return sizes?.medium_large?.source_url
-    || sizes?.large?.source_url
-    || sizes?.medium?.source_url
-    || media.source_url
-    || null;
+interface WPMedia {
+  source_url?: string;
+  media_details?: {
+    sizes?: {
+      medium_large?: { source_url: string };
+      medium?: { source_url: string };
+      large?: { source_url: string };
+    };
+  };
 }
 
 function stripHtml(html: string): string {
@@ -51,13 +40,38 @@ function stripHtml(html: string): string {
     .trim();
 }
 
+async function fetchMediaUrl(mediaId: number): Promise<string | null> {
+  if (!mediaId) return null;
+  try {
+    const res = await fetch(
+      `https://www.eagleamsterdam.com/wp-json/wp/v2/media/${mediaId}?_fields=source_url,media_details`,
+      {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (compatible; EaglePWA/1.0)',
+          'Accept': 'application/json',
+        },
+      }
+    );
+    if (!res.ok) return null;
+    const media: WPMedia = await res.json();
+    const sizes = media.media_details?.sizes;
+    return sizes?.medium_large?.source_url
+      || sizes?.large?.source_url
+      || sizes?.medium?.source_url
+      || media.source_url
+      || null;
+  } catch {
+    return null;
+  }
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const url = 'https://www.eagleamsterdam.com/wp-json/wp/v2/posts?per_page=10&_fields=id,title,excerpt,date,link&_embed=wp:featuredmedia';
+    const url = 'https://www.eagleamsterdam.com/wp-json/wp/v2/posts?per_page=10&_fields=id,title,excerpt,date,link,featured_media';
 
     const response = await fetch(url, {
       headers: {
@@ -72,13 +86,18 @@ Deno.serve(async (req) => {
 
     const posts: WPPost[] = await response.json();
 
-    const formatted = posts.map(post => ({
+    // Fetch all media URLs in parallel
+    const mediaUrls = await Promise.all(
+      posts.map(post => fetchMediaUrl(post.featured_media))
+    );
+
+    const formatted = posts.map((post, i) => ({
       id: post.id,
       title: stripHtml(post.title.rendered),
       excerpt: stripHtml(post.excerpt.rendered),
       date: post.date,
       link: post.link,
-      imageUrl: getImageUrl(post),
+      imageUrl: mediaUrls[i],
     }));
 
     return new Response(
