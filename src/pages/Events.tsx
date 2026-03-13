@@ -6,7 +6,7 @@ import {
   Swords,
   Crown,
   Flame,
-  Horse,
+  Trophy,
   Skull,
   Gamepad2,
   EyeOff,
