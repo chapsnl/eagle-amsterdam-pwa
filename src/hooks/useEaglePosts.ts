@@ -5,6 +5,7 @@ export interface EaglePost {
   id: number;
   title: string;
   excerpt: string;
+  content: string;
   date: string;
   link: string;
   imageUrl: string | null;
