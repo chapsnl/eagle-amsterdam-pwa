@@ -85,9 +85,12 @@ const Agenda = () => {
                     <h3 className="font-display text-xl tracking-wider text-foreground group-hover:text-primary transition-colors">
                       {event.title}
                     </h3>
-                    <span className="text-primary text-xs mt-1 shrink-0 flex items-center gap-1">
+                  </div>
+                  <div className="flex items-center gap-3 mt-2">
+                    <span className="text-primary font-semibold text-sm">{dateStr}</span>
+                    <span className="flex items-center gap-1 text-muted-foreground text-xs">
                       <Clock className="w-3 h-3" />
-                      {dateStr} · {startTime} – {endTime}
+                      {startTime} – {endTime}
                     </span>
                   </div>
                   {isExpanded ? (
