@@ -61,15 +61,18 @@ function parseEventsFromCalendarApi(html: string): ParsedEvent[] {
 
     // Debug first block
     if (events.length === 0) {
-      console.log('DEBUG block length:', block.length, 'has image:', block.includes('"image"'));
-      console.log('DEBUG block first 300:', block.substring(0, 300));
+      // Debug: try matching image directly
+      const imgTest = block.match(/"image"\s*:\s*"([^"]+)"/);
+      console.log('DEBUG image match:', imgTest ? imgTest[1] : 'NO MATCH');
+      console.log('DEBUG block around image:', block.substring(block.indexOf('"image"'), block.indexOf('"image"') + 150));
     }
 
-    // Extract fields via regex (handles malformed JSON gracefully)
+    // Extract fields via simple regex - no complex escaping needed since
+    // the HTML is already JSON-decoded (no escaped quotes in URLs/names)
     const get = (field: string): string | null => {
-      const re = new RegExp(`"${field}"\\s*:\\s*"((?:[^"\\\\]|\\\\.)*)"`, 's');
+      const re = new RegExp(`"${field}"\\s*:\\s*"([^"]*)"`)
       const m = block.match(re);
-      return m ? m[1].replace(/\\\//g, '/') : null;
+      return m ? m[1] : null;
     };
 
     const name = get('name');
