@@ -52,12 +52,12 @@ const Events = () => {
         <Ticket className="w-7 h-7 text-primary" />
         TICKETS
       </h1>
-      <div className="grid gap-3" style={{ gridTemplateColumns: '1fr 1fr' }}>
+      <div className="grid gap-4" style={{ gridTemplateColumns: '1fr 1fr' }}>
         {tickets.map((ticket, i) => (
           <Button
             key={`${ticket.name}-${i}`}
             variant="eagle-outline"
-            className="w-full justify-between h-auto py-4 text-left text-foreground"
+            className="w-full justify-between h-auto py-6 px-5 text-left text-foreground text-base"
             onClick={() => handleClick(ticket)}
           >
             <span>{ticket.name}</span>
