@@ -61,30 +61,6 @@ const Index = () => {
         </Button>
       </div>
 
-      {/* Info Section */}
-      <div className="px-6 py-8 max-w-lg mx-auto w-full">
-        <div className="border border-border rounded-lg p-6 bg-card neon-border">
-          <h2 className="text-2xl font-display tracking-wider text-foreground mb-3">
-            WELCOME
-          </h2>
-          <p className="text-muted-foreground text-sm leading-relaxed">
-            Eagle Amsterdam is a world-renowned leather and fetish bar located in
-            the heart of Amsterdam's red-light district. Spread across three
-            floors, we offer a dance floor, cruising area, and darkroom. Whether
-            you're a local or visiting from abroad — all men are welcome.
-          </p>
-          <div className="mt-4 flex flex-wrap gap-2">
-            {["Leather", "Denim", "Fetish", "Bears", "Cruise"].map((tag) => (
-              <span
-                key={tag}
-                className="px-3 py-1 text-xs font-medium tracking-wider uppercase border border-border rounded-full text-muted-foreground"
-              >
-                {tag}
-              </span>
-            ))}
-          </div>
-        </div>
-      </div>
     </div>
   );
 };
