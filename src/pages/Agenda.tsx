@@ -2,7 +2,7 @@ import { Calendar, ExternalLink, Clock } from "lucide-react";
 import { useEagleEvents } from "@/hooks/useEagleEvents";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
-import parse from "html-react-parser";
+
 
 const ONE_HOUR = 3600; // seconds
 
