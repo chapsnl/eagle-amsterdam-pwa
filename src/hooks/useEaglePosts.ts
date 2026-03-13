@@ -1,9 +1,12 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { isDevMode } from "@/lib/devMode";
+import { getCache, setCache, clearCache } from "@/lib/cache";
 
 const TWENTY_FOUR_HOURS = 86_400_000;
 const CACHE_KEY = "eagle-posts-cache";
+const QUERY_KEY = ["eagle-posts"];
 
 export interface EaglePost {
   id: number;
@@ -21,30 +24,12 @@ interface FetchResponse {
   error?: string;
 }
 
-function getCachedData(): { data: EaglePost[]; timestamp: number } | null {
-  try {
-    const raw = localStorage.getItem(CACHE_KEY);
-    if (!raw) return null;
-    return JSON.parse(raw);
-  } catch {
-    return null;
-  }
-}
-
-function setCachedData(data: EaglePost[]) {
-  try {
-    localStorage.setItem(CACHE_KEY, JSON.stringify({ data, timestamp: Date.now() }));
-  } catch { /* quota exceeded */ }
-}
-
 async function fetchPosts(): Promise<EaglePost[]> {
   const dev = isDevMode();
 
   if (!dev) {
-    const cached = getCachedData();
-    if (cached && Date.now() - cached.timestamp < TWENTY_FOUR_HOURS) {
-      return cached.data;
-    }
+    const cached = getCache<EaglePost[]>(CACHE_KEY);
+    if (cached) return cached;
   }
 
   const { data, error } = await supabase.functions.invoke<FetchResponse>(
@@ -54,17 +39,26 @@ async function fetchPosts(): Promise<EaglePost[]> {
   if (error) throw new Error(error.message);
   if (!data?.success) throw new Error(data?.error || "Failed to fetch posts");
 
-  if (!dev) setCachedData(data.posts);
+  if (!dev) setCache(CACHE_KEY, data.posts);
   return data.posts;
 }
 
 export function useEaglePosts() {
   const dev = isDevMode();
-  return useQuery({
-    queryKey: ["eagle-posts"],
+  const queryClient = useQueryClient();
+
+  const query = useQuery({
+    queryKey: QUERY_KEY,
     queryFn: fetchPosts,
     staleTime: dev ? 0 : TWENTY_FOUR_HOURS,
     gcTime: dev ? 0 : TWENTY_FOUR_HOURS,
     retry: 2,
   });
+
+  const forceRefresh = useCallback(async () => {
+    clearCache(CACHE_KEY);
+    await queryClient.invalidateQueries({ queryKey: QUERY_KEY });
+  }, [queryClient]);
+
+  return { ...query, forceRefresh };
 }
