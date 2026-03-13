@@ -174,7 +174,7 @@ const Contact = () => {
       </div>
 
       {/* Google Maps */}
-      <div className="mt-6 rounded-lg overflow-hidden border-2 border-primary">
+      <div className="mt-6 rounded-lg overflow-hidden border border-border">
         <iframe
           title="Eagle Amsterdam location"
           src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2436.0!2d4.8966!3d52.3758!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x47c609b93deae857%3A0xa3c1b0cd1e87b3e3!2sEagle%20Amsterdam!5e0!3m2!1sen!2snl!4v1!5m2!1sen!2snl"
