@@ -59,6 +59,12 @@ function parseEventsFromCalendarApi(html: string): ParsedEvent[] {
     // Only process Event types
     if (!block.includes('"Event"')) continue;
 
+    // Debug first block
+    if (events.length === 0) {
+      console.log('DEBUG block length:', block.length, 'has image:', block.includes('"image"'));
+      console.log('DEBUG block first 300:', block.substring(0, 300));
+    }
+
     // Extract fields via regex (handles malformed JSON gracefully)
     const get = (field: string): string | null => {
       const re = new RegExp(`"${field}"\\s*:\\s*"((?:[^"\\\\]|\\\\.)*)"`, 's');
