@@ -81,10 +81,22 @@ function parseEventsFromCalendarApi(html: string): ParsedEvent[] {
 
     if (!name || !startDateRaw || !endDateRaw) continue;
 
-    const startTime = Math.floor(new Date(startDateRaw).getTime() / 1000);
-    const endTime = Math.floor(new Date(endDateRaw).getTime() / 1000);
+    // Fix non-standard date format: "2026-3-12T22:00+0:00" → proper ISO
+    const fixDate = (d: string): number => {
+      // Normalize: pad month/day, fix timezone offset format
+      const fixed = d
+        .replace(/(\d{4})-(\d{1,2})-(\d{1,2})/, (_m, y, mo, da) =>
+          `${y}-${mo.padStart(2, '0')}-${da.padStart(2, '0')}`)
+        .replace(/\+(\d):(\d{2})$/, '+0$1:$2')
+        .replace(/\+(\d{2}):(\d{2})$/, '+$1:$2');
+      const ts = new Date(fixed).getTime();
+      return isNaN(ts) ? new Date(d).getTime() : ts;
+    };
 
-    if (isNaN(startTime) || isNaN(endTime)) continue;
+    const startTime = Math.floor(fixDate(startDateRaw) / 1000);
+    const endTime = Math.floor(fixDate(endDateRaw) / 1000);
+
+    if (isNaN(startTime) || isNaN(endTime) || startTime === 0) continue;
 
     const eventId = get('@id') || `event_${startTime}`;
     const imageUrl = get('image') || null;
