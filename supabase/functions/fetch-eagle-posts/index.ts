@@ -57,7 +57,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const url = 'https://www.eagleamsterdam.com/wp-json/wp/v2/posts?per_page=10&_fields=id,title,excerpt,date,link&_embed=wp:featuredmedia';
+    const url = 'https://www.eagleamsterdam.com/wp-json/wp/v2/posts?per_page=10&_fields=id,title,excerpt,date,link,_embedded&_embed=wp:featuredmedia';
 
     const response = await fetch(url, {
       headers: {
