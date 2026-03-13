@@ -20,9 +20,9 @@ interface TicketItem {
 
 const tickets: TicketItem[] = [
   { name: "Bear Bash", type: "popup", popupMessage: "This is a free event" },
-  { name: "Horsemen & Knights", type: "popup", popupMessage: "Tickets only at the door" },
-  { name: "NcAdam", type: "popup", popupMessage: "Tickets only at the door" },
-  { name: "Cum Hunks", type: "popup", popupMessage: "Tickets only at the door" },
+  { name: "Horsemen & Knights", type: "popup", popupMessage: "Tickets only at the door for 8 Euro" },
+  { name: "NcAdam", type: "popup", popupMessage: "Tickets only at the door for 8 Euro" },
+  { name: "Cum Hunks", type: "popup", popupMessage: "Tickets only at the door for 8 Euro" },
   { name: "XXXFetish", type: "popup", popupMessage: "Tickets only at the door" },
   { name: "Ready2Play", type: "link", url: "https://www.ready-2-play.nl/#tickets" },
   { name: "Sneaky", type: "link", url: "https://www.sneaky-the-party.com/#tickets" },
