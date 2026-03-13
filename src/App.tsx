@@ -60,7 +60,7 @@ const App = () => {
             </Routes>
           </Suspense>
           <SmartInstallBanner />
-          <NotificationBell />
+          
           <BottomNav />
         </BrowserRouter>
       </TooltipProvider>
