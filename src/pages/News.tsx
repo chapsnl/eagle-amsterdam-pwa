@@ -73,7 +73,7 @@ const News = () => {
                     </span>
                   </div>
                   {isExpanded ? (
-                    <div className="blog-content text-sm mt-2">
+                    <div className="prose prose-invert max-w-none blog-content text-sm mt-2">
                       {parse(post.content)}
                     </div>
                   ) : (
