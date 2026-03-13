@@ -1,9 +1,25 @@
-import { Calendar, ExternalLink } from "lucide-react";
+import { Calendar, ExternalLink, Clock } from "lucide-react";
 import { useEagleEvents } from "@/hooks/useEagleEvents";
 import { Skeleton } from "@/components/ui/skeleton";
+import { format } from "date-fns";
+
+function formatEventDate(startUnix: number, endUnix: number) {
+  const start = new Date(startUnix * 1000);
+  const end = new Date(endUnix * 1000);
+
+  const dateStr = format(start, "EEE, MMM d");
+  const startTime = format(start, "HH:mm");
+  const endTime = format(end, "HH:mm");
+
+  // If end date is different day, show it
+  const sameDay = start.toDateString() === end.toDateString();
+  const endDateStr = sameDay ? "" : ` (${format(end, "d")})`;
+
+  return { dateStr, startTime, endTime: `${endTime}${endDateStr}` };
+}
 
 const Agenda = () => {
-  const { data: events, isLoading, isError, error } = useEagleEvents(20);
+  const { data: events, isLoading, isError, error } = useEagleEvents();
 
   return (
     <div className="flex flex-col min-h-screen pb-20 pt-6 px-4 max-w-lg mx-auto">
@@ -12,7 +28,7 @@ const Agenda = () => {
         AGENDA
       </h1>
       <p className="text-muted-foreground text-sm mb-6">
-        Live events from Eagle Amsterdam.
+        Upcoming events at Eagle Amsterdam.
       </p>
 
       {isLoading && (
@@ -22,8 +38,8 @@ const Agenda = () => {
               <Skeleton className="w-full h-40" />
               <div className="p-4 space-y-2">
                 <Skeleton className="h-6 w-3/4" />
+                <Skeleton className="h-4 w-1/2" />
                 <Skeleton className="h-4 w-full" />
-                <Skeleton className="h-4 w-2/3" />
               </div>
             </div>
           ))}
@@ -43,37 +59,47 @@ const Agenda = () => {
 
       {events && events.length > 0 && (
         <div className="flex flex-col gap-4">
-          {events.map((event) => (
-            <a
-              key={event.id}
-              href={event.link}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group border border-border rounded-lg overflow-hidden bg-card hover:neon-border transition-all duration-300 block"
-            >
-              {event.imageUrl && (
-                <img
-                  src={event.imageUrl}
-                  alt={event.imageAlt}
-                  loading="lazy"
-                  className="w-full h-40 object-cover"
-                />
-              )}
-              <div className="p-4">
-                <div className="flex items-start justify-between gap-2">
-                  <h3 className="font-display text-xl tracking-wider text-foreground group-hover:text-primary transition-colors">
-                    {event.title}
-                  </h3>
-                  <ExternalLink className="w-4 h-4 text-muted-foreground shrink-0 mt-1 opacity-0 group-hover:opacity-100 transition-opacity" />
-                </div>
-                {event.description && (
-                  <p className="text-muted-foreground text-sm mt-2 line-clamp-3">
-                    {event.description}
-                  </p>
+          {events.map((event) => {
+            const { dateStr, startTime, endTime } = formatEventDate(event.startTime, event.endTime);
+            return (
+              <a
+                key={event.id}
+                href={event.link || "#"}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group border border-border rounded-lg overflow-hidden bg-card hover:neon-border transition-all duration-300 block"
+              >
+                {event.imageUrl && (
+                  <img
+                    src={event.thumbUrl || event.imageUrl}
+                    alt={event.title}
+                    loading="lazy"
+                    className="w-full h-40 object-cover"
+                  />
                 )}
-              </div>
-            </a>
-          ))}
+                <div className="p-4">
+                  <div className="flex items-start justify-between gap-2">
+                    <h3 className="font-display text-xl tracking-wider text-foreground group-hover:text-primary transition-colors">
+                      {event.title}
+                    </h3>
+                    <ExternalLink className="w-4 h-4 text-muted-foreground shrink-0 mt-1 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </div>
+                  <div className="flex items-center gap-3 mt-2">
+                    <span className="text-primary font-semibold text-sm">{dateStr}</span>
+                    <span className="flex items-center gap-1 text-muted-foreground text-xs">
+                      <Clock className="w-3 h-3" />
+                      {startTime} – {endTime}
+                    </span>
+                  </div>
+                  {event.description && (
+                    <p className="text-muted-foreground text-sm mt-2 line-clamp-2">
+                      {event.description}
+                    </p>
+                  )}
+                </div>
+              </a>
+            );
+          })}
         </div>
       )}
     </div>
