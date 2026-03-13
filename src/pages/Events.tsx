@@ -2,18 +2,6 @@ import { useState } from "react";
 import {
   Ticket,
   ExternalLink,
-  Grip,
-  Swords,
-  Crown,
-  Flame,
-  Trophy,
-  Skull,
-  Gamepad2,
-  EyeOff,
-  Clock,
-  Dog,
-  Timer,
-  Zap,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
