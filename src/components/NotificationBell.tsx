@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Bell, BellRing } from "lucide-react";
 import { toast } from "@/components/ui/sonner";
 
@@ -10,6 +10,22 @@ declare global {
 
 const NotificationBell = () => {
   const [requesting, setRequesting] = useState(false);
+  const [subscribed, setSubscribed] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    window.OneSignalDeferred = window.OneSignalDeferred || [];
+    window.OneSignalDeferred.push(async (OneSignal: any) => {
+      const permission = await OneSignal.Notifications.permission;
+      setSubscribed(permission);
+
+      OneSignal.Notifications.addEventListener("permissionChange", (granted: boolean) => {
+        setSubscribed(granted);
+        if (granted) {
+          toast.success("Thanks! You'll now receive updates from Eagle Amsterdam. 🦅");
+        }
+      });
+    });
+  }, []);
 
   const handleClick = useCallback(() => {
     if (requesting) return;
@@ -18,20 +34,7 @@ const NotificationBell = () => {
     window.OneSignalDeferred = window.OneSignalDeferred || [];
     window.OneSignalDeferred.push(async (OneSignal: any) => {
       try {
-        const permission = await OneSignal.Notifications.permission;
-        if (permission) {
-          toast("You're already subscribed to notifications! 🔔");
-          setRequesting(false);
-          return;
-        }
-
         await OneSignal.Slidedown.promptPush();
-
-        // Check after prompt
-        const granted = await OneSignal.Notifications.permission;
-        if (granted) {
-          toast.success("Thanks! You'll now receive updates from Eagle Amsterdam. 🦅");
-        }
       } catch {
         // User dismissed or error
       } finally {
@@ -39,6 +42,9 @@ const NotificationBell = () => {
       }
     });
   }, [requesting]);
+
+  // Hide if already subscribed or still checking
+  if (subscribed !== false) return null;
 
   return (
     <button
