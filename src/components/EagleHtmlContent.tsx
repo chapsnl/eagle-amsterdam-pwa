@@ -8,11 +8,11 @@ interface EagleHtmlContentProps {
 const EagleHtmlContent = ({ html, className = "" }: EagleHtmlContentProps) => {
   const cleanContent = html
     .trim()
-    .replace(/\n/g, '')
-    .replace(/<p>&nbsp;<\/p>/gi, '')
-    .replace(/<p>\s*<\/p>/gi, '')
-    .replace(/(<br\s*\/?>){2,}/gi, '<br/>')
-    .replace(/&nbsp;/g, ' ');
+    .replace(/\r?\n|\r/g, '')
+    .replace(/<p[^>]*>(?:\s|&nbsp;|&#160;|<br\s*\/?>)*<\/p>/gi, '')
+    .replace(/(<br\s*\/?>\s*){2,}/gi, '<br/>')
+    .replace(/&nbsp;/gi, ' ')
+    .trim();
 
   return (
     <div

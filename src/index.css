@@ -120,21 +120,28 @@
   .eagle-content-wrapper p, .eagle-content-wrapper div { white-space: normal; }
 
   /* Blog-specific spacing fix */
+  .eagle-content-wrapper.blog-content-fix p,
+  .blog-content-fix p {
+    margin-top: 0 !important;
+    margin-bottom: 0.55rem !important;
+    line-height: 1.45 !important;
+  }
+
+  .eagle-content-wrapper.blog-content-fix p + p,
   .blog-content-fix p + p {
-    margin-top: -0.5rem !important;
+    margin-top: 0 !important;
   }
+
+  .eagle-content-wrapper.blog-content-fix br,
   .blog-content-fix br {
-    display: block;
-    content: "";
-    margin-top: 0;
-    margin-bottom: 0;
-    line-height: 1;
+    display: none !important;
+    margin: 0 !important;
+    line-height: 1 !important;
   }
+
+  .eagle-content-wrapper.blog-content-fix br + br,
   .blog-content-fix br + br {
     display: none !important;
-  }
-  .blog-content-fix p {
-    line-height: 1.5 !important;
   }
 
   .prose h1, .prose h2, .prose h3, .prose h4,
