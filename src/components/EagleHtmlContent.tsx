@@ -5,7 +5,7 @@ interface EagleHtmlContentProps {
 
 const EagleHtmlContent = ({ html, className = "" }: EagleHtmlContentProps) => (
   <div
-    className={`prose prose-invert prose-red max-w-none text-foreground ${className}`}
+    className={`eagle-content-wrapper prose prose-invert prose-red max-w-none text-foreground ${className}`}
     dangerouslySetInnerHTML={{ __html: html }}
   />
 );
