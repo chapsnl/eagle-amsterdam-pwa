@@ -15,6 +15,10 @@ const Index = () => {
           src={heroImage}
           alt="Eagle Amsterdam interior"
           className="absolute inset-0 w-full h-full object-cover"
+          width={1024}
+          height={768}
+          fetchPriority="high"
+          decoding="async"
         />
         <div
           className="absolute inset-0"
@@ -25,6 +29,9 @@ const Index = () => {
             src={eagleLogo}
             alt="Eagle Amsterdam logo"
             className="w-48 object-contain"
+            width={192}
+            height={96}
+            fetchPriority="high"
           />
           <h1 className="text-5xl font-display tracking-widest text-foreground text-glow-red">
             EAGLE AMSTERDAM
@@ -60,7 +67,6 @@ const Index = () => {
           FIND US
         </Button>
       </div>
-
     </div>
   );
 };

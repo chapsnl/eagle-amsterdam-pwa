@@ -1,5 +1,5 @@
-const CACHE_NAME = "eagle-v2";
-const STATIC_ASSETS = [
+const CACHE_NAME = "eagle-v3";
+const APP_SHELL = [
   "/",
   "/manifest.json",
   "/favicon.ico",
@@ -8,7 +8,7 @@ const STATIC_ASSETS = [
 // Install: pre-cache app shell
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(STATIC_ASSETS))
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL))
   );
   self.skipWaiting();
 });
@@ -23,15 +23,14 @@ self.addEventListener("activate", (event) => {
   self.clients.claim();
 });
 
-// Fetch: cache-first for static assets, network-first for API/navigation
+// Fetch: cache-first for static assets, network-first for navigation
 self.addEventListener("fetch", (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // Skip non-GET and cross-origin API calls
   if (request.method !== "GET") return;
 
-  // For static assets (JS, CSS, images, fonts): cache-first
+  // Static assets: cache-first (JS, CSS, images, fonts)
   if (
     url.pathname.match(/\.(js|css|png|jpg|jpeg|webp|svg|ico|woff2?)$/) ||
     url.pathname.startsWith("/assets/")
@@ -51,7 +50,7 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // For navigation (HTML): network-first with cache fallback
+  // Navigation: network-first, cache fallback to app shell
   if (request.mode === "navigate") {
     event.respondWith(
       fetch(request)
@@ -60,7 +59,7 @@ self.addEventListener("fetch", (event) => {
           caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
           return response;
         })
-        .catch(() => caches.match(request).then((cached) => cached || caches.match("/")))
+        .catch(() => caches.match("/"))
     );
     return;
   }

@@ -3,15 +3,18 @@
   "short_name": "Eagle AMS",
   "description": "Eagle Amsterdam — Leather & Fetish Bar",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#000000",
   "theme_color": "#FF0000",
   "orientation": "portrait",
+  "categories": ["entertainment", "social"],
   "icons": [
     {
       "src": "/favicon.ico",
       "sizes": "64x64",
       "type": "image/x-icon"
     }
-  ]
+  ],
+  "prefer_related_applications": false
 }
