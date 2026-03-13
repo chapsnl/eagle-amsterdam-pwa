@@ -63,12 +63,14 @@ const News = () => {
                   />
                 )}
                 <div className="p-4">
-                  <h3 className="font-display text-xl tracking-wider text-foreground group-hover:text-primary transition-colors">
-                    {post.title}
-                  </h3>
-                  <span className="text-primary font-semibold text-sm mt-2 block">
-                    {format(new Date(post.date), "EEE, MMM d yyyy")}
-                  </span>
+                  <div className="flex items-start justify-between gap-2">
+                    <h3 className="font-display text-xl tracking-wider text-foreground group-hover:text-primary transition-colors">
+                      {post.title}
+                    </h3>
+                    <span className="text-muted-foreground text-xs mt-1 shrink-0">
+                      News Posted: {format(new Date(post.date), "MMM d, yyyy")}
+                    </span>
+                  </div>
                   {isExpanded ? (
                     <p className="text-muted-foreground text-sm mt-2 whitespace-pre-line">
                       {post.content}
