@@ -2,18 +2,6 @@ import { useState } from "react";
 import {
   Ticket,
   ExternalLink,
-  Grip,
-  Swords,
-  Crown,
-  Flame,
-  Trophy,
-  Skull,
-  Gamepad2,
-  EyeOff,
-  Clock,
-  Dog,
-  Timer,
-  Zap,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -36,18 +24,18 @@ interface TicketItem {
 }
 
 const tickets: TicketItem[] = [
-  { name: "Bear Bash", type: "popup", popupMessage: "This is a free event", icon: Grip },
-  { name: "Horsemen & Knights", type: "popup", popupMessage: "Tickets only at the door for 8 Euro", icon: Swords },
-  { name: "NcAdam", type: "popup", popupMessage: "Tickets only at the door for 8 Euro", icon: Crown },
-  { name: "Cum Hunks", type: "popup", popupMessage: "Tickets only at the door for 8 Euro", icon: Flame },
-  { name: "Horse Fair", type: "popup", popupMessage: "Tickets only at the door for 12,50 Euro", icon: Trophy },
-  { name: "XXXFetish", type: "popup", popupMessage: "Tickets only at the door for 8 Euro", icon: Skull },
-  { name: "Ready2Play", type: "link", url: "https://www.ready-2-play.nl/#tickets", icon: Gamepad2 },
-  { name: "Sneaky", type: "link", url: "https://www.sneaky-the-party.com/#tickets", icon: EyeOff },
-  { name: "The Meantime", type: "link", url: "https://www.themeantime.nl/#tickets", icon: Clock },
-  { name: "Pup Unleashed", type: "link", url: "https://www.puppyunleashed.nl/#tickets", icon: Dog },
-  { name: "Corner Time", type: "link", url: "https://www.cornertime.nl/#tickets", icon: Timer },
-  { name: "XXXFetish", type: "link", url: "https://www.cornertime.nl/#tickets", icon: Zap },
+  { name: "Bear Bash", type: "popup", popupMessage: "This is a free event", icon: Ticket },
+  { name: "Horsemen & Knights", type: "popup", popupMessage: "Tickets only at the door for 8 Euro", icon: Ticket },
+  { name: "NcAdam", type: "popup", popupMessage: "Tickets only at the door for 8 Euro", icon: Ticket },
+  { name: "Cum Hunks", type: "popup", popupMessage: "Tickets only at the door for 8 Euro", icon: Ticket },
+  { name: "Horse Fair", type: "popup", popupMessage: "Tickets only at the door for 12,50 Euro", icon: Ticket },
+  { name: "XXXFetish", type: "popup", popupMessage: "Tickets only at the door for 8 Euro", icon: Ticket },
+  { name: "Ready2Play", type: "link", url: "https://www.ready-2-play.nl/#tickets", icon: Ticket },
+  { name: "Sneaky", type: "link", url: "https://www.sneaky-the-party.com/#tickets", icon: Ticket },
+  { name: "The Meantime", type: "link", url: "https://www.themeantime.nl/#tickets", icon: Ticket },
+  { name: "Pup Unleashed", type: "link", url: "https://www.puppyunleashed.nl/#tickets", icon: Ticket },
+  { name: "Corner Time", type: "link", url: "https://www.cornertime.nl/#tickets", icon: Ticket },
+  { name: "XXXFetish", type: "link", url: "https://www.cornertime.nl/#tickets", icon: Ticket },
 ];
 
 const Events = () => {
