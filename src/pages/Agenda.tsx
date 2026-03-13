@@ -3,15 +3,17 @@ import { useEagleEvents } from "@/hooks/useEagleEvents";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
 
+const ONE_HOUR = 3600; // seconds
+
 function formatEventDate(startUnix: number, endUnix: number) {
-  const start = new Date(startUnix * 1000);
-  const end = new Date(endUnix * 1000);
+  // Subtract 1 hour from both start and end times
+  const start = new Date((startUnix - ONE_HOUR) * 1000);
+  const end = new Date((endUnix - ONE_HOUR) * 1000);
 
   const dateStr = format(start, "EEE, MMM d");
   const startTime = format(start, "HH:mm");
   const endTime = format(end, "HH:mm");
 
-  // If end date is different day, show it
   const sameDay = start.toDateString() === end.toDateString();
   const endDateStr = sameDay ? "" : ` (${format(end, "d")})`;
 
