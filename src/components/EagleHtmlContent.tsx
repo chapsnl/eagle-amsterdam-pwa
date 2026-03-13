@@ -6,7 +6,8 @@ interface EagleHtmlContentProps {
 }
 
 const EagleHtmlContent = ({ html, className = "" }: EagleHtmlContentProps) => {
-  const cleanHtml = html
+  const cleanContent = html
+    .trim()
     .replace(/\n/g, '')
     .replace(/<p>&nbsp;<\/p>/gi, '')
     .replace(/<p>\s*<\/p>/gi, '')
@@ -16,7 +17,7 @@ const EagleHtmlContent = ({ html, className = "" }: EagleHtmlContentProps) => {
   return (
     <div
       className={`eagle-content-wrapper prose prose-invert prose-red max-w-none text-foreground ${className}`}
-      dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(cleanHtml) }}
+      dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(cleanContent) }}
     />
   );
 };

@@ -82,11 +82,39 @@
   }
 
   .eagle-content-wrapper strong, .prose strong { color: white !important; font-weight: 800 !important; display: inline; }
-  .eagle-content-wrapper p, .prose p { margin-top: 0 !important; margin-bottom: 1rem !important; line-height: 1.6 !important; color: white !important; display: block; }
+  .prose > *,
+  .eagle-content-wrapper > * {
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+  }
+
+  .eagle-content-wrapper p,
+  .prose p {
+    margin-top: 0 !important;
+    margin-bottom: 1rem !important;
+    line-height: 1.6 !important;
+    color: white !important;
+    display: block;
+  }
+
   .eagle-content-wrapper a, .prose a { color: #FF0000 !important; text-decoration: underline !important; font-weight: 700 !important; }
-  .eagle-content-wrapper br { content: ""; display: block; margin-bottom: 0.5rem; }
-  .eagle-content-wrapper br + br { display: none; }
-  .eagle-content-wrapper p:empty { display: none; }
+
+  .prose p:empty,
+  .prose p > br:only-child,
+  .eagle-content-wrapper p:empty,
+  .eagle-content-wrapper p > br:only-child {
+    display: none !important;
+  }
+
+  .prose br,
+  .eagle-content-wrapper br {
+    display: none !important;
+  }
+
+  .prose br + br,
+  .eagle-content-wrapper br + br {
+    display: none !important;
+  }
 
   .eagle-content-wrapper { white-space: normal; }
   .eagle-content-wrapper p, .eagle-content-wrapper div { white-space: normal; }
