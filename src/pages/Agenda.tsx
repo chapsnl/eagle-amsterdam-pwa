@@ -71,13 +71,17 @@ const Agenda = () => {
                 rel="noopener noreferrer"
                 className="group border border-border rounded-lg overflow-hidden bg-card hover:neon-border transition-all duration-300 block"
               >
-                {event.imageUrl && (
+                {event.imageUrl ? (
                   <img
-                    src={event.thumbUrl || event.imageUrl}
+                    src={event.imageUrl}
                     alt={event.title}
                     loading="lazy"
                     className="w-full h-40 object-cover"
                   />
+                ) : (
+                  <div className="w-full h-40 bg-secondary flex items-center justify-center">
+                    <Calendar className="w-10 h-10 text-muted-foreground" />
+                  </div>
                 )}
                 <div className="p-4">
                   <div className="flex items-start justify-between gap-2">
