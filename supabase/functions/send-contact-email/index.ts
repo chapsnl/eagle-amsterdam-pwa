@@ -103,9 +103,8 @@ Deno.serve(async (req) => {
     );
   } catch (error) {
     console.error('Error sending contact email:', error);
-    const msg = error instanceof Error ? error.message : 'Failed to send email';
     return new Response(
-      JSON.stringify({ success: false, error: msg }),
+      JSON.stringify({ success: false, error: 'Failed to send email. Please try again later.' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
