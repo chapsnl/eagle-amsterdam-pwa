@@ -36,7 +36,7 @@ const AgeVerification = ({ onVerified }: AgeVerificationProps) => {
         <img
           src={eagleLogo}
           alt="Eagle Amsterdam"
-          className="w-20 h-20 object-contain"
+          className="w-48 object-contain"
         />
         <h1 className="text-4xl font-display tracking-wider text-foreground">
           EAGLE AMSTERDAM

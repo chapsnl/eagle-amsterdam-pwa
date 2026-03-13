@@ -24,7 +24,7 @@ const Index = () => {
           <img
             src={eagleLogo}
             alt="Eagle Amsterdam logo"
-            className="w-16 h-16 object-contain"
+            className="w-48 object-contain"
           />
           <h1 className="text-5xl font-display tracking-widest text-foreground text-glow-red">
             EAGLE AMSTERDAM
