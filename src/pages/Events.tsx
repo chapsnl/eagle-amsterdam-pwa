@@ -51,7 +51,7 @@ const Events = () => {
         <Ticket className="w-7 h-7 text-primary" />
         TICKETS
       </h1>
-      <div className="flex flex-col gap-3">
+      <div className="grid grid-cols-2 gap-3">
         {tickets.map((ticket, i) => (
           <Button
             key={`${ticket.name}-${i}`}
