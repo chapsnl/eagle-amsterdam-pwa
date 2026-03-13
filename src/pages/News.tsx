@@ -67,7 +67,7 @@ const News = () => {
                     <h3 className="font-display text-xl tracking-wider text-foreground group-hover:text-primary transition-colors">
                       {post.title}
                     </h3>
-                    <span className="text-muted-foreground text-xs mt-1 shrink-0">
+                    <span className="text-primary text-xs mt-1 shrink-0">
                       News Posted: {format(new Date(post.date), "MMM d, yyyy")}
                     </span>
                   </div>
