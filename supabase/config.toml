@@ -3,5 +3,8 @@ project_id = "cohyfjbokmdsuluaoroz"
 [functions.fetch-eagle-events]
 verify_jwt = false
 
+[functions.fetch-eagle-posts]
+verify_jwt = false
+
 [functions.send-contact-email]
 verify_jwt = false
