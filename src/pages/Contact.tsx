@@ -1,7 +1,7 @@
 import { MapPin, ExternalLink, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-const JOTFORM_URL = "https://form.jotform.com/250826498498071";
+const JOTFORM_URL = "https://form.jotform.com/242694291362057";
 
 const Contact = () => (
   <div className="flex flex-col min-h-screen pb-20 pt-6 px-4 max-w-lg mx-auto">
