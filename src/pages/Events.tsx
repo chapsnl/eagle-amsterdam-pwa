@@ -1,5 +1,20 @@
 import { useState } from "react";
-import { Ticket, ExternalLink } from "lucide-react";
+import {
+  Ticket,
+  ExternalLink,
+  Grip,
+  Swords,
+  Crown,
+  Flame,
+  Trophy,
+  Skull,
+  Gamepad2,
+  EyeOff,
+  Clock,
+  Dog,
+  Timer,
+  Zap,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
@@ -10,27 +25,29 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import type { LucideIcon } from "lucide-react";
 
 interface TicketItem {
   name: string;
   type: "popup" | "link";
   url?: string;
   popupMessage?: string;
+  icon: LucideIcon;
 }
 
 const tickets: TicketItem[] = [
-  { name: "Bear Bash", type: "popup", popupMessage: "This is a free event" },
-  { name: "Horsemen & Knights", type: "popup", popupMessage: "Tickets only at the door for 8 Euro" },
-  { name: "NcAdam", type: "popup", popupMessage: "Tickets only at the door for 8 Euro" },
-  { name: "Cum Hunks", type: "popup", popupMessage: "Tickets only at the door for 8 Euro" },
-  { name: "Horse Fair", type: "popup", popupMessage: "Tickets only at the door for 12,50 Euro" },
-  { name: "XXXFetish", type: "popup", popupMessage: "Tickets only at the door for 8 Euro" },
-  { name: "Ready2Play", type: "link", url: "https://www.ready-2-play.nl/#tickets" },
-  { name: "Sneaky", type: "link", url: "https://www.sneaky-the-party.com/#tickets" },
-  { name: "The Meantime", type: "link", url: "https://www.themeantime.nl/#tickets" },
-  { name: "Pup Unleashed", type: "link", url: "https://www.puppyunleashed.nl/#tickets" },
-  { name: "Corner Time", type: "link", url: "https://www.cornertime.nl/#tickets" },
-  { name: "XXXFetish", type: "link", url: "https://www.cornertime.nl/#tickets" },
+  { name: "Bear Bash", type: "popup", popupMessage: "This is a free event", icon: Grip },
+  { name: "Horsemen & Knights", type: "popup", popupMessage: "Tickets only at the door for 8 Euro", icon: Swords },
+  { name: "NcAdam", type: "popup", popupMessage: "Tickets only at the door for 8 Euro", icon: Crown },
+  { name: "Cum Hunks", type: "popup", popupMessage: "Tickets only at the door for 8 Euro", icon: Flame },
+  { name: "Horse Fair", type: "popup", popupMessage: "Tickets only at the door for 12,50 Euro", icon: Trophy },
+  { name: "XXXFetish", type: "popup", popupMessage: "Tickets only at the door for 8 Euro", icon: Skull },
+  { name: "Ready2Play", type: "link", url: "https://www.ready-2-play.nl/#tickets", icon: Gamepad2 },
+  { name: "Sneaky", type: "link", url: "https://www.sneaky-the-party.com/#tickets", icon: EyeOff },
+  { name: "The Meantime", type: "link", url: "https://www.themeantime.nl/#tickets", icon: Clock },
+  { name: "Pup Unleashed", type: "link", url: "https://www.puppyunleashed.nl/#tickets", icon: Dog },
+  { name: "Corner Time", type: "link", url: "https://www.cornertime.nl/#tickets", icon: Timer },
+  { name: "XXXFetish", type: "link", url: "https://www.cornertime.nl/#tickets", icon: Zap },
 ];
 
 const Events = () => {
@@ -53,21 +70,28 @@ const Events = () => {
         TICKETS
       </h1>
       <div className="grid gap-4" style={{ gridTemplateColumns: '1fr 1fr' }}>
-        {tickets.map((ticket, i) => (
-          <Button
-            key={`${ticket.name}-${i}`}
-            variant="eagle-outline"
-            className="w-full justify-between h-auto py-6 px-5 text-left text-foreground text-base"
-            onClick={() => handleClick(ticket)}
-          >
-            <span>{ticket.name}</span>
-            {ticket.type === "link" ? (
-              <ExternalLink className="w-4 h-4 shrink-0 ml-2" />
-            ) : (
-              <Ticket className="w-4 h-4 shrink-0 ml-2" />
-            )}
-          </Button>
-        ))}
+        {tickets.map((ticket, i) => {
+          const Icon = ticket.icon;
+          return (
+            <button
+              key={`${ticket.name}-${i}`}
+              className="group relative flex flex-col items-center gap-3 rounded-lg border-2 border-border bg-secondary/50 py-6 px-4 text-foreground transition-all duration-300 hover:border-primary hover:bg-primary/10 hover:shadow-[0_0_20px_hsl(0_100%_50%/0.2)]"
+              onClick={() => handleClick(ticket)}
+            >
+              <Icon className="w-7 h-7 text-primary transition-transform duration-300 group-hover:scale-110" />
+              <span className="font-display text-sm tracking-wider text-center leading-tight">
+                {ticket.name}
+              </span>
+              <span className="absolute top-2 right-2">
+                {ticket.type === "link" ? (
+                  <ExternalLink className="w-3.5 h-3.5 text-muted-foreground" />
+                ) : (
+                  <Ticket className="w-3.5 h-3.5 text-muted-foreground" />
+                )}
+              </span>
+            </button>
+          );
+        })}
       </div>
 
       <AlertDialog open={popupOpen} onOpenChange={setPopupOpen}>
