@@ -8,7 +8,7 @@ import AgeVerification from "@/components/AgeVerification";
 import BottomNav from "@/components/BottomNav";
 import DevModeIndicator from "@/components/DevModeIndicator";
 import SmartInstallBanner from "@/components/SmartInstallBanner";
-import NotificationBell from "@/components/NotificationBell";
+
 
 // Lazy-loaded pages
 const Index = lazy(() => import("./pages/Index"));
@@ -60,7 +60,7 @@ const App = () => {
             </Routes>
           </Suspense>
           <SmartInstallBanner />
-          <NotificationBell />
+          
           <BottomNav />
         </BrowserRouter>
       </TooltipProvider>
