@@ -1,11 +1,12 @@
-import { Newspaper, ExternalLink } from "lucide-react";
+import { Newspaper } from "lucide-react";
 import { useEaglePosts } from "@/hooks/useEaglePosts";
-import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
+import { useState } from "react";
 
 const News = () => {
   const { data: posts, isLoading, error } = useEaglePosts();
+  const [expandedId, setExpandedId] = useState<number | null>(null);
 
   return (
     <div className="flex flex-col min-h-screen pb-20 pt-6 px-4 max-w-lg mx-auto">
@@ -13,72 +14,78 @@ const News = () => {
         <Newspaper className="w-7 h-7 text-primary" />
         NEWS
       </h1>
+      <p className="text-muted-foreground text-sm mb-6">
+        Latest news from Eagle Amsterdam.
+      </p>
 
       {isLoading && (
-        <div className="space-y-4">
+        <div className="flex flex-col gap-4">
           {Array.from({ length: 4 }).map((_, i) => (
-            <Card key={i} className="overflow-hidden">
-              <Skeleton className="h-44 w-full" />
-              <CardContent className="p-4 space-y-2">
-                <Skeleton className="h-4 w-24" />
-                <Skeleton className="h-5 w-3/4" />
+            <div key={i} className="border border-border rounded-lg overflow-hidden bg-card">
+              <Skeleton className="w-full h-40" />
+              <div className="p-4 space-y-2">
+                <Skeleton className="h-6 w-3/4" />
+                <Skeleton className="h-4 w-1/2" />
                 <Skeleton className="h-4 w-full" />
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           ))}
         </div>
       )}
 
       {error && (
-        <div className="border border-destructive/50 rounded-lg p-6 text-center">
-          <p className="text-destructive text-sm">Could not load news. Please try again later.</p>
+        <div className="border border-destructive/50 rounded-lg p-4 bg-destructive/10 text-destructive">
+          <p className="font-semibold">Failed to load news</p>
+          <p className="text-sm mt-1">Please try again later.</p>
         </div>
       )}
 
       {posts && posts.length === 0 && (
-        <div className="border border-border border-dashed rounded-lg p-8 flex items-center justify-center">
-          <p className="text-muted-foreground text-sm text-center">No news posts available.</p>
-        </div>
+        <p className="text-muted-foreground text-center py-12">No news posts available.</p>
       )}
 
       {posts && posts.length > 0 && (
-        <div className="space-y-4">
-          {posts.map((post) => (
-            <a
-              key={post.id}
-              href={post.link}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="block group"
-            >
-              <Card className="overflow-hidden transition-colors hover:border-primary/50">
-                {post.imageUrl && (
-                  <div className="relative h-44 w-full overflow-hidden">
-                    <img
-                      src={post.imageUrl}
-                      alt={post.title}
-                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                      loading="lazy"
-                    />
+        <div className="flex flex-col gap-4">
+          {posts.map((post) => {
+            const isExpanded = expandedId === post.id;
+            return (
+              <div
+                key={post.id}
+                onClick={() => setExpandedId(isExpanded ? null : post.id)}
+                className="group border border-border rounded-lg overflow-hidden bg-card hover:neon-border transition-all duration-300 cursor-pointer"
+              >
+                {post.imageUrl ? (
+                  <img
+                    src={post.imageUrl}
+                    alt={post.title}
+                    loading="lazy"
+                    className="w-full h-40 object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-40 bg-secondary flex items-center justify-center">
+                    <Newspaper className="w-10 h-10 text-muted-foreground" />
                   </div>
                 )}
-                <CardContent className="p-4">
-                  <p className="text-xs text-muted-foreground mb-1">
-                    {format(new Date(post.date), "d MMMM yyyy")}
-                  </p>
-                  <h2 className="text-base font-semibold text-foreground mb-1 group-hover:text-primary transition-colors flex items-center gap-1.5">
+                <div className="p-4">
+                  <h3 className="font-display text-xl tracking-wider text-foreground group-hover:text-primary transition-colors">
                     {post.title}
-                    <ExternalLink className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
-                  </h2>
-                  {post.excerpt && (
-                    <p className="text-sm text-muted-foreground line-clamp-2">
+                  </h3>
+                  <span className="text-primary font-semibold text-sm mt-2 block">
+                    {format(new Date(post.date), "EEE, MMM d yyyy")}
+                  </span>
+                  {isExpanded ? (
+                    <p className="text-muted-foreground text-sm mt-2 whitespace-pre-line">
+                      {post.excerpt}
+                    </p>
+                  ) : (
+                    <p className="text-muted-foreground text-sm mt-2 line-clamp-2">
                       {post.excerpt}
                     </p>
                   )}
-                </CardContent>
-              </Card>
-            </a>
-          ))}
+                </div>
+              </div>
+            );
+          })}
         </div>
       )}
     </div>
