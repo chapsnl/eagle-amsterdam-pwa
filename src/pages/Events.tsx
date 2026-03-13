@@ -40,7 +40,7 @@ const tickets: TicketItem[] = [
   { name: "Horsemen & Knights", type: "popup", popupMessage: "Tickets only at the door for 8 Euro", icon: Swords },
   { name: "NcAdam", type: "popup", popupMessage: "Tickets only at the door for 8 Euro", icon: Crown },
   { name: "Cum Hunks", type: "popup", popupMessage: "Tickets only at the door for 8 Euro", icon: Flame },
-  { name: "Horse Fair", type: "popup", popupMessage: "Tickets only at the door for 12,50 Euro", icon: Horse },
+  { name: "Horse Fair", type: "popup", popupMessage: "Tickets only at the door for 12,50 Euro", icon: Trophy },
   { name: "XXXFetish", type: "popup", popupMessage: "Tickets only at the door for 8 Euro", icon: Skull },
   { name: "Ready2Play", type: "link", url: "https://www.ready-2-play.nl/#tickets", icon: Gamepad2 },
   { name: "Sneaky", type: "link", url: "https://www.sneaky-the-party.com/#tickets", icon: EyeOff },
