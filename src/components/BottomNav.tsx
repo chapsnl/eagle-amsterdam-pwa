@@ -1,11 +1,11 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import { Home, Calendar, Newspaper, Tags, MapPin } from "lucide-react";
+import { Home, Calendar, Newspaper, Ticket, MapPin } from "lucide-react";
 
 const navItems = [
   { path: "/", label: "Home", icon: Home },
   { path: "/agenda", label: "Agenda", icon: Calendar },
   { path: "/news", label: "News", icon: Newspaper },
-  { path: "/events", label: "Events", icon: Tags },
+  { path: "/events", label: "Tickets", icon: Ticket },
   { path: "/contact", label: "Contact", icon: MapPin },
 ];
 
