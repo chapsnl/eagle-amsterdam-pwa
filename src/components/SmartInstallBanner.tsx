@@ -68,7 +68,7 @@ const SmartInstallBanner = () => {
   if (!visible) return null;
 
   return (
-    <div className="fixed bottom-20 left-0 right-0 z-50 px-4 animate-fade-in">
+    <div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-background/80 backdrop-blur-sm animate-fade-in">
       <div className="max-w-lg mx-auto rounded-xl border border-border bg-background/95 backdrop-blur-md p-4 shadow-lg">
         <div className="flex items-start gap-3">
           <div className="shrink-0 w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
