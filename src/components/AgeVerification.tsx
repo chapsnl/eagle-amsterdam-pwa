@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import eagleLogo from "@/assets/eagle-logo.png";
+import eagleLogo from "@/assets/eagle-logo-red.png";
 import heroImage from "@/assets/hero-header.webp";
 
 interface AgeVerificationProps {

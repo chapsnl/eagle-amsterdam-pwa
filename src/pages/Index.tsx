@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { Calendar, MapPin } from "lucide-react";
 import heroImage from "@/assets/hero-header.webp";
-import eagleLogo from "@/assets/eagle-logo.png";
+import eagleLogo from "@/assets/eagle-logo-red.png";
 
 const Index = () => {
   const navigate = useNavigate();
