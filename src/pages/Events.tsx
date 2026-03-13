@@ -52,7 +52,7 @@ const Events = () => {
         <Ticket className="w-7 h-7 text-primary" />
         TICKETS
       </h1>
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid gap-3" style={{ gridTemplateColumns: '1fr 1fr' }}>
         {tickets.map((ticket, i) => (
           <Button
             key={`${ticket.name}-${i}`}
