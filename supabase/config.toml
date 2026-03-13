@@ -1,1 +1,4 @@
 project_id = "cohyfjbokmdsuluaoroz"
+
+[functions.fetch-eagle-events]
+verify_jwt = false
