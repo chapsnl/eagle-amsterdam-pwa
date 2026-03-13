@@ -82,9 +82,11 @@
   }
 
   .eagle-content-wrapper strong, .prose strong { color: white !important; font-weight: 800 !important; display: inline; }
-  .eagle-content-wrapper p, .prose p { margin-bottom: 1.5rem !important; line-height: 1.6 !important; color: white !important; display: block; }
+  .eagle-content-wrapper p, .prose p { margin-top: 0.5rem !important; margin-bottom: 1rem !important; line-height: 1.6 !important; color: white !important; display: block; }
   .eagle-content-wrapper a, .prose a { color: #FF0000 !important; text-decoration: underline !important; font-weight: 700 !important; }
-  .eagle-content-wrapper br, .prose br { display: block; content: ""; margin-top: 1rem; }
+  .eagle-content-wrapper br, .prose br { display: block; content: ""; margin-top: 0.5rem; }
+  .eagle-content-wrapper br + br { display: none; }
+  .eagle-content-wrapper p:empty { display: none; }
 
   .eagle-content-wrapper { white-space: pre-line; }
   .eagle-content-wrapper p, .eagle-content-wrapper div { white-space: normal; }
