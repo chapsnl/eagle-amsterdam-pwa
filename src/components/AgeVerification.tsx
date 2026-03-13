@@ -19,7 +19,7 @@ const AgeVerification = ({ onVerified }: AgeVerificationProps) => {
   };
 
   const handleDecline = () => {
-    window.location.href = "https://www.google.com";
+    window.location.href = "https://www.disney.com";
   };
 
   return (
