@@ -15,22 +15,22 @@ const BottomNav = () => {
   const navigate = useNavigate();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-border bg-eagle-dark/95 backdrop-blur-md safe-area-pb">
-      <div className="flex items-center justify-around h-16 max-w-lg mx-auto">
+    <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-border bg-eagle-dark/95 backdrop-blur-md pb-[env(safe-area-inset-bottom)]">
+      <div className="flex items-center justify-around h-[72px] max-w-lg mx-auto px-4">
         {navItems.map(({ path, label, icon: Icon }) => {
           const active = location.pathname === path;
           return (
             <button
               key={path}
               onClick={() => navigate(path)}
-              className={`flex flex-col items-center gap-1 px-2 py-2 transition-colors duration-200 ${
+              className={`flex flex-col items-center gap-1 px-3 py-2 transition-colors duration-200 ${
                 active
                   ? "text-primary"
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
-              <Icon className="w-5 h-5" />
-              <span className="text-[10px] font-medium tracking-wide uppercase">
+              <Icon className="w-6 h-6" />
+              <span className="text-[11px] font-medium" style={{ letterSpacing: '-0.02em' }}>
                 {label}
               </span>
             </button>

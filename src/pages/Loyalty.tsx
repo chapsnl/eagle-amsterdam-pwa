@@ -139,14 +139,14 @@ const Loyalty = () => {
             <p className="text-foreground text-sm mb-6">
               <strong>Collect 10 stamps and earn one time free entry.</strong>
             </p>
-            <Button variant="eagle" size="lg" className="w-full" onClick={() => setRewardOpen(true)}>
+            <Button variant="eagle" size="lg" className="w-full text-base py-4" onClick={() => setRewardOpen(true)}>
               <Gift className="w-5 h-5 mr-2" />
               Redeem reward
             </Button>
           </div>
         ) : (
           <div className="rounded-2xl border border-border bg-card p-6">
-            <div className="grid grid-cols-5 gap-4 mb-2">
+            <div className="grid grid-cols-5 gap-5 mb-2">
               {Array.from({ length: TOTAL_STAMPS }).map((_, i) => {
                 const filled = i < stamps;
                 return (
@@ -158,12 +158,18 @@ const Loyalty = () => {
                         : "bg-secondary text-muted-foreground border border-border"
                     }`}
                   >
-                    {filled ? eagleStampSvg : <span className="text-xs font-semibold">{i + 1}</span>}
+                    {filled ? (
+                      <svg viewBox="0 0 24 24" fill="currentColor" className="w-7 h-7">
+                        <path d="M12 2L9.19 8.63 2 9.24l5.46 4.73L5.82 21 12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61z" />
+                      </svg>
+                    ) : (
+                      <span className="text-sm font-semibold">{i + 1}</span>
+                    )}
                   </div>
                 );
               })}
             </div>
-            <p className="text-center text-muted-foreground text-xs mt-4">
+            <p className="text-center text-muted-foreground text-sm mt-4">
               {stamps} / {TOTAL_STAMPS} stamps collected
             </p>
           </div>
@@ -173,7 +179,7 @@ const Loyalty = () => {
         <Button
           variant="eagle"
           size="lg"
-          className="w-full mt-6"
+          className="w-full mt-6 text-base py-4"
           onClick={handleScannerOpen}
         >
           <QrCode className="w-5 h-5 mr-2" />
