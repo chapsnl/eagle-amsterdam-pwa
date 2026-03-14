@@ -1,12 +1,13 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import { Home, Calendar, Newspaper, Ticket, Star } from "lucide-react";
+import { Home, Calendar, Newspaper, Ticket, Star, Mail } from "lucide-react";
 
 const navItems = [
   { path: "/", label: "Home", icon: Home },
   { path: "/agenda", label: "Agenda", icon: Calendar },
   { path: "/loyalty", label: "Loyalty", icon: Star },
+  { path: "/events", label: "Tickets", icon: Ticket },
   { path: "/news", label: "News", icon: Newspaper },
-  { path: "/contact", label: "Contact", icon: Ticket },
+  { path: "/contact", label: "Contact", icon: Mail },
 ];
 
 const BottomNav = () => {
@@ -22,7 +23,7 @@ const BottomNav = () => {
             <button
               key={path}
               onClick={() => navigate(path)}
-              className={`flex flex-col items-center gap-1 px-3 py-2 transition-colors duration-200 ${
+              className={`flex flex-col items-center gap-1 px-2 py-2 transition-colors duration-200 ${
                 active
                   ? "text-primary"
                   : "text-muted-foreground hover:text-foreground"

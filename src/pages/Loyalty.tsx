@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { QrCode, Gift, RotateCcw, X } from "lucide-react";
+import { QrCode, Gift, RotateCcw, X, Star } from "lucide-react";
 import { Html5Qrcode } from "html5-qrcode";
 import { useToast } from "@/hooks/use-toast";
 
@@ -59,8 +59,6 @@ const Loyalty = () => {
 
   const startScanner = useCallback(async () => {
     await stopScanner();
-
-    // Small delay to let the DOM render the container
     await new Promise((r) => setTimeout(r, 300));
 
     const el = document.getElementById("qr-reader");
@@ -85,7 +83,7 @@ const Loyalty = () => {
             toast({ title: "Invalid code", description: "This QR code is not recognized.", variant: "destructive" });
           }
         },
-        () => {} // ignore scan errors
+        () => {}
       );
     } catch {
       toast({ title: "Camera error", description: "Could not access the camera. Please allow camera permissions.", variant: "destructive" });
@@ -110,30 +108,32 @@ const Loyalty = () => {
     setStamps(0);
     setRedeemed(false);
     setRewardOpen(false);
-    toast({ title: "Redeemed!", description: "Your stamp card has been reset. Enjoy your drink! 🍻" });
+    toast({ title: "Redeemed!", description: "Your stamp card has been reset. Enjoy! 🍻" });
   };
 
   const isComplete = stamps >= TOTAL_STAMPS;
 
   return (
     <div className="flex flex-col min-h-screen pb-24">
-      {/* Header */}
-      <div className="pt-12 pb-6 px-6 text-center">
-        <h1 className="text-4xl text-foreground">LOYALTY CARD</h1>
-        <p className="text-muted-foreground text-sm mt-2">
-          Collect {TOTAL_STAMPS} stamps and earn a free drink
+      {/* Header — matches Agenda & Contact layout */}
+      <div className="pt-6 px-4 max-w-lg mx-auto w-full">
+        <h1 className="text-4xl font-display tracking-wider text-foreground mb-2 flex items-center gap-3">
+          <Star className="w-7 h-7 text-primary" />
+          LOYALTY
+        </h1>
+        <p className="text-muted-foreground text-sm mb-6">
+          Collect {TOTAL_STAMPS} stamps and earn one time free entry.
         </p>
       </div>
 
       {/* Stamp Grid */}
-      <div className="px-6 max-w-[90%] mx-auto w-full">
+      <div className="px-4 max-w-[90%] mx-auto w-full">
         {isComplete ? (
-          /* Reward State */
           <div className="relative rounded-2xl border-2 border-primary p-8 text-center neon-border">
             <Gift className="w-16 h-16 text-primary mx-auto mb-4 animate-pulse-red" />
             <h2 className="text-2xl text-foreground mb-2">CONGRATS!</h2>
             <p className="text-foreground text-sm mb-6">
-              Show this to the bartender for a <strong>free shot/drink</strong>.
+              <strong>Collect 10 stamps and earn one time free entry.</strong>
             </p>
             <Button variant="eagle" size="lg" className="w-full" onClick={() => setRewardOpen(true)}>
               <Gift className="w-5 h-5 mr-2" />
@@ -141,7 +141,6 @@ const Loyalty = () => {
             </Button>
           </div>
         ) : (
-          /* Stamp Grid */
           <div className="rounded-2xl border border-border bg-card p-6">
             <div className="grid grid-cols-5 gap-4 mb-2">
               {Array.from({ length: TOTAL_STAMPS }).map((_, i) => {
@@ -182,7 +181,10 @@ const Loyalty = () => {
       <Dialog open={scannerOpen} onOpenChange={(open) => { if (!open) handleScannerClose(); }}>
         <DialogContent className="max-w-[400px] w-[90%] rounded-2xl bg-card border-border">
           <DialogHeader>
-            <DialogTitle className="text-foreground">Scan QR Code</DialogTitle>
+            <DialogTitle className="text-foreground flex items-center gap-2">
+              <QrCode className="w-5 h-5 text-primary" />
+              Scan QR Code
+            </DialogTitle>
             <DialogDescription className="text-muted-foreground">
               Point your camera at the Eagle QR code to collect a stamp.
             </DialogDescription>
@@ -201,17 +203,25 @@ const Loyalty = () => {
 
       {/* Reward Dialog */}
       <Dialog open={rewardOpen} onOpenChange={setRewardOpen}>
-        <DialogContent className="max-w-[400px] w-[90%] rounded-2xl bg-card border-primary neon-border text-center">
+        <DialogContent className="max-w-[400px] w-[90%] rounded-2xl bg-card border-primary neon-border">
           <DialogHeader>
-            <DialogTitle className="text-foreground text-2xl">🎉 Free Drink!</DialogTitle>
+            <DialogTitle className="text-foreground text-2xl flex items-center gap-2">
+              <Gift className="w-6 h-6 text-primary" />
+              Free Entry!
+            </DialogTitle>
             <DialogDescription className="text-foreground text-sm">
               Show this screen to the bartender to claim your reward.
             </DialogDescription>
           </DialogHeader>
-          <Gift className="w-20 h-20 text-primary mx-auto my-4 animate-pulse-red" />
-          <p className="text-muted-foreground text-xs mb-4">
-            The bartender will tap "Redeem" to reset your card.
-          </p>
+          <div className="text-center">
+            <Gift className="w-20 h-20 text-primary mx-auto my-4 animate-pulse-red" />
+            <p className="text-foreground text-sm font-bold mb-2">
+              Collect 10 stamps and earn one time free entry.
+            </p>
+            <p className="text-muted-foreground text-xs mb-4">
+              The bartender will tap "Redeem" to reset your card.
+            </p>
+          </div>
           <Button variant="eagle" size="lg" className="w-full" onClick={handleRedeem}>
             <RotateCcw className="w-5 h-5 mr-2" />
             Redeem & reset card
@@ -219,13 +229,11 @@ const Loyalty = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Start scanner when dialog opens */}
       {scannerOpen && <ScannerStarter start={startScanner} />}
     </div>
   );
 };
 
-/** Triggers scanner start after mount */
 const ScannerStarter = ({ start }: { start: () => void }) => {
   useEffect(() => { start(); }, [start]);
   return null;
