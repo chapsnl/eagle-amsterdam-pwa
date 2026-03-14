@@ -18,6 +18,8 @@ const Loyalty = () => {
   const [rewardOpen, setRewardOpen] = useState(false);
   const [successOpen, setSuccessOpen] = useState(false);
   const [successMsg, setSuccessMsg] = useState("");
+  const [redeemSuccessOpen, setRedeemSuccessOpen] = useState(false);
+  const [redeemFading, setRedeemFading] = useState(false);
   const [cameraPermission, setCameraPermission] = useState<CameraPermission>("unknown");
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const hasScannedRef = useRef(false);
