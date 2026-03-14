@@ -146,7 +146,7 @@ const Loyalty = () => {
           </div>
         ) : (
           <div className="rounded-2xl border border-border bg-card p-6">
-            <div className="grid grid-cols-5 gap-5 mb-2">
+            <div className="grid grid-cols-2 gap-4 mb-2">
               {Array.from({ length: TOTAL_STAMPS }).map((_, i) => {
                 const filled = i < stamps;
                 return (
@@ -155,15 +155,15 @@ const Loyalty = () => {
                     className={`aspect-square rounded-full flex items-center justify-center transition-all duration-300 ${
                       filled
                         ? "bg-primary text-primary-foreground shadow-[var(--shadow-red)]"
-                        : "bg-secondary text-muted-foreground border border-border"
+                        : "bg-secondary text-muted-foreground border-2 border-border"
                     }`}
                   >
                     {filled ? (
-                      <svg viewBox="0 0 24 24" fill="currentColor" className="w-7 h-7">
+                      <svg viewBox="0 0 24 24" fill="currentColor" className="w-10 h-10">
                         <path d="M12 2L9.19 8.63 2 9.24l5.46 4.73L5.82 21 12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61z" />
                       </svg>
                     ) : (
-                      <span className="text-sm font-semibold">{i + 1}</span>
+                      <span className="text-lg font-bold tracking-[-0.02em]">{i + 1}</span>
                     )}
                   </div>
                 );
