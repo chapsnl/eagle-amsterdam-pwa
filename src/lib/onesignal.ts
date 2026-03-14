@@ -55,6 +55,12 @@ export async function activateOneSignalPush() {
         },
       });
 
+      // Tag device type: PWA (standalone) vs browser
+      const isStandalone =
+        (navigator as any).standalone === true ||
+        window.matchMedia("(display-mode: standalone)").matches;
+      await OneSignal.User.addTag("device_type", isStandalone ? "pwa" : "browser");
+
       await OneSignal.Notifications.requestPermission();
       resolve();
     });
