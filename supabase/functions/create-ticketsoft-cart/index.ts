@@ -27,10 +27,9 @@ serve(async (req) => {
       );
     }
 
-    const res = await fetch("https://ticketsoft.nl/api/cart", {
+    const res = await fetch(`https://ticketsoft.nl/api/cart?access_token=${encodeURIComponent(token)}`, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${token}`,
         Accept: "application/json",
         "Content-Type": "application/json",
       },
