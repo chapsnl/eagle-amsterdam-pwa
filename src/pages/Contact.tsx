@@ -75,21 +75,25 @@ const Contact = () => {
         CONTACT
       </h1>
 
-      {/* Address */}
+      {/* Opening Hours */}
       <div className="border border-border rounded-lg p-6 bg-card neon-border mb-4">
-        <h2 className="font-display text-2xl tracking-wider text-foreground mb-4">
-          EAGLE AMSTERDAM
+        <h2 className="font-display text-2xl tracking-wider text-foreground mb-4 flex items-center gap-2">
+          <Calendar className="w-5 h-5 text-primary" />
+          OPENING HOURS
         </h2>
-        <div className="flex flex-col gap-3 text-sm text-muted-foreground">
-          <div className="flex items-start gap-3">
-            <MapPin className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-            <div>
-              <p>Warmoesstraat 90</p>
-              <p>1012 JH Amsterdam</p>
-              <p>The Netherlands</p>
-            </div>
-          </div>
+        <div className="flex flex-col gap-2 text-sm">
+          <div className="flex justify-between"><span className="text-muted-foreground">Monday</span><span className="text-foreground font-semibold">Closed</span></div>
+          <div className="flex justify-between"><span className="text-muted-foreground">Tuesday</span><span className="text-foreground font-semibold">Closed</span></div>
+          <div className="flex justify-between"><span className="text-muted-foreground">Wednesday</span><span className="text-foreground font-semibold">Closed</span></div>
+          <div className="flex justify-between"><span className="text-muted-foreground">Thursday</span><span className="text-foreground font-semibold">22:00 – 04:00</span></div>
+          <div className="flex justify-between"><span className="text-muted-foreground">Friday</span><span className="text-foreground font-semibold">22:00 – 05:00</span></div>
+          <div className="flex justify-between"><span className="text-muted-foreground">Saturday</span><span className="text-foreground font-semibold">22:00 – 05:00</span></div>
+          <div className="flex justify-between"><span className="text-muted-foreground">Sunday</span><span className="text-foreground font-semibold">22:00 – 04:00</span></div>
         </div>
+        {/* For daytime parties and special events, check the Agenda page */}
+        <p className="text-xs text-muted-foreground mt-4 italic">
+          For daytime parties & special events, check our Agenda.
+        </p>
       </div>
 
       <Button
