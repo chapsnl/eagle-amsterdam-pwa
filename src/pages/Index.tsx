@@ -39,9 +39,9 @@ const Index = () => {
           <p className="text-muted-foreground text-sm max-w-xs">
             Eagle Amsterdam is originally a men-only club and during regular hours that core identity remains. At the same time, we serve the wider LGBTQI+ community with a diverse program of inclusive fetish events.
           </p>
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <MapPin className="w-3 h-3 text-primary" />
-            <span>Warmoesstraat 90, Amsterdam</span>
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <MapPin className="w-4 h-4 text-primary" />
+            <span className="font-semibold">Warmoesstraat 90, Amsterdam</span>
           </div>
         </div>
       </div>
