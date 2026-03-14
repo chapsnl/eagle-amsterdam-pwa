@@ -11,9 +11,3 @@ verify_jwt = false
 
 [functions.subscribe-newsletter]
 verify_jwt = false
-
-[functions.fetch-ticketsoft-events]
-verify_jwt = false
-
-[functions.create-ticketsoft-cart]
-verify_jwt = false
