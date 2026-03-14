@@ -196,7 +196,17 @@ const Loyalty = () => {
     setStamps(0);
     setRedeemed(false);
     setRewardOpen(false);
-    toast({ title: "Redeemed!", description: "Your stamp card has been reset. Enjoy! 🍻" });
+    setRedeemSuccessOpen(true);
+    setRedeemFading(false);
+
+    // Auto-hide after 2 seconds with fade-out
+    setTimeout(() => {
+      setRedeemFading(true);
+      setTimeout(() => {
+        setRedeemSuccessOpen(false);
+        setRedeemFading(false);
+      }, 300);
+    }, 1700);
   };
 
   const isComplete = stamps >= TOTAL_STAMPS;
