@@ -17,6 +17,7 @@ const Agenda = lazy(() => import("./pages/Agenda"));
 const News = lazy(() => import("./pages/News"));
 const Events = lazy(() => import("./pages/Events"));
 const Contact = lazy(() => import("./pages/Contact"));
+const Loyalty = lazy(() => import("./pages/Loyalty"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient({
@@ -49,6 +50,7 @@ const App = () => {
               <Route path="/news" element={<News />} />
               <Route path="/events" element={<Events />} />
               <Route path="/contact" element={<Contact />} />
+              <Route path="/loyalty" element={<Loyalty />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>
