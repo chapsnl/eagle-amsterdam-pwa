@@ -78,7 +78,7 @@ const Contact = () => {
       {/* Opening Hours */}
       <div className="border border-border rounded-lg p-6 bg-card neon-border mb-4">
         <h2 className="font-display text-2xl tracking-wider text-foreground mb-4 flex items-center gap-2">
-          <Calendar className="w-5 h-5 text-primary" />
+          <Clock className="w-5 h-5 text-primary" />
           OPENING HOURS
         </h2>
         <div className="flex flex-col gap-2 text-sm">
