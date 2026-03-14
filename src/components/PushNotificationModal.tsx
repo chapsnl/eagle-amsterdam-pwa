@@ -9,22 +9,34 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 
-const DISMISSED_KEY = "eagle-push-modal-dismissed";
+const ACCEPTED_KEY = "eagle-push-accepted";
+const DISMISSED_AT_KEY = "eagle-push-dismissed-at";
+const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
 
 export default function PushNotificationModal() {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    // Don't show if already dismissed or already subscribed
-    if (localStorage.getItem(DISMISSED_KEY) === "true") return;
+    // Never show again if accepted
+    if (localStorage.getItem(ACCEPTED_KEY) === "true") return;
+
+    // Check 7-day cooldown after dismiss
+    const dismissedAt = localStorage.getItem(DISMISSED_AT_KEY);
+    if (dismissedAt) {
+      const elapsed = Date.now() - parseInt(dismissedAt, 10);
+      if (elapsed < SEVEN_DAYS_MS) return;
+    }
 
     const timer = setTimeout(async () => {
-      // Check if OneSignal is loaded and user is already subscribed
+      // Check if already subscribed via OneSignal
       try {
         const perm = await (window as any).OneSignal?.Notifications?.permission;
-        if (perm) return; // already subscribed
+        if (perm) {
+          localStorage.setItem(ACCEPTED_KEY, "true");
+          return;
+        }
       } catch {
-        // OneSignal not ready yet, show modal anyway
+        // OneSignal not ready
       }
       setOpen(true);
     }, 3000);
@@ -34,9 +46,14 @@ export default function PushNotificationModal() {
 
   const handleAccept = async () => {
     setOpen(false);
-    localStorage.setItem(DISMISSED_KEY, "true");
+    localStorage.setItem(ACCEPTED_KEY, "true");
+    localStorage.removeItem(DISMISSED_AT_KEY);
     try {
-      await (window as any).OneSignal?.Slidedown?.promptPush();
+      // Use native permission request since we disabled OneSignal slidedown
+      const OneSignal = (window as any).OneSignal;
+      if (OneSignal?.Notifications) {
+        await OneSignal.Notifications.requestPermission();
+      }
     } catch {
       // fallback: ignore if OneSignal isn't available
     }
@@ -44,12 +61,12 @@ export default function PushNotificationModal() {
 
   const handleDismiss = () => {
     setOpen(false);
-    // Don't persist — modal will reappear next visit
+    localStorage.setItem(DISMISSED_AT_KEY, Date.now().toString());
   };
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && handleDismiss()}>
-      <DialogContent className="bg-card border-primary/30 max-w-sm mx-auto neon-border">
+      <DialogContent className="bg-card border-primary/30 w-[90%] max-w-[400px] mx-auto rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.5)] neon-border overflow-hidden">
         <DialogHeader className="items-center text-center gap-3">
           <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 border border-primary/30">
             <Bell className="h-7 w-7 text-primary" />
