@@ -58,12 +58,12 @@ export default function PushNotificationModal() {
             Stay up to date!
           </DialogTitle>
           <DialogDescription className="text-muted-foreground text-sm leading-relaxed">
-            Yes I am 18+ and want to receive notifications about events and special offers at Eagle Amsterdam.
+            Yes I am 18+ and want to receive notifications about events, line-ups and special offers at Eagle Amsterdam.
           </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col gap-2 mt-2">
           <Button variant="eagle" className="w-full" onClick={handleAccept}>
-            Subscribe
+            ENTER
           </Button>
           <Button variant="ghost" className="w-full text-muted-foreground" onClick={handleDismiss}>
             No, thanks
