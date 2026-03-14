@@ -33,9 +33,6 @@ const Index = () => {
             height={96}
             fetchPriority="high"
           />
-          <h1 className="text-5xl font-display tracking-widest text-foreground text-glow-red">
-            EAGLE AMSTERDAM
-          </h1>
           <p className="text-muted-foreground text-sm max-w-xs">
             Eagle Amsterdam is originally a men-only club and during regular hours that core identity remains. At the same time, we serve the wider LGBTQI+ community with a diverse program of inclusive fetish events.
           </p>
