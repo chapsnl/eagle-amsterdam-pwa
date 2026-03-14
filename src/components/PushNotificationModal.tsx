@@ -58,7 +58,7 @@ export default function PushNotificationModal() {
             Stay up to date!
           </DialogTitle>
           <DialogDescription className="text-muted-foreground text-sm leading-relaxed">
-            Receive notifications about events, line-ups and special offers at Eagle Amsterdam.
+            Yes I am 18+ and want to receive notifications about our events, line-ups and special offers at Eagle Amsterdam.
           </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col gap-2 mt-2">
