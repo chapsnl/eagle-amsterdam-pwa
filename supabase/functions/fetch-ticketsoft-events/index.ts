@@ -17,9 +17,8 @@ serve(async (req) => {
       throw new Error("TICKETSOFT_ACCESS_TOKEN not configured");
     }
 
-    const res = await fetch("https://ticketsoft.nl/api/events", {
+    const res = await fetch(`https://ticketsoft.nl/api/events?access_token=${encodeURIComponent(token)}`, {
       headers: {
-        Authorization: `Bearer ${token}`,
         Accept: "application/json",
       },
     });
