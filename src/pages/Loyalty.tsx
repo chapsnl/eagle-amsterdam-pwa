@@ -405,9 +405,6 @@ const Loyalty = () => {
             <p className="text-foreground text-sm font-bold mb-2 tracking-[-0.02em]">
               Collect 10 stamps to receive one free entry to an Eagle Amsterdam organized event.
             </p>
-            <p className="text-muted-foreground text-xs mb-4 tracking-[-0.02em]">
-              The bartender will tap "Redeem" to reset your card.
-            </p>
           </div>
           <Button variant="eagle" size="lg" className="w-full tracking-[-0.02em]" onClick={handleRedeem}>
             <RotateCcw className="w-5 h-5 mr-2" />
