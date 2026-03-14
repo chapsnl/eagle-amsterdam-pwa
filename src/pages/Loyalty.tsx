@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { QrCode, Gift, RotateCcw, X, Star } from "lucide-react";
+import { QrCode, Gift, RotateCcw, X, Star, CheckCircle } from "lucide-react";
 import { Html5Qrcode } from "html5-qrcode";
 import { useToast } from "@/hooks/use-toast";
 
@@ -20,6 +20,8 @@ const Loyalty = () => {
   const [redeemed, setRedeemed] = useState(false);
   const [scannerOpen, setScannerOpen] = useState(false);
   const [rewardOpen, setRewardOpen] = useState(false);
+  const [successOpen, setSuccessOpen] = useState(false);
+  const [successMsg, setSuccessMsg] = useState("");
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const { toast } = useToast();
 
@@ -74,8 +76,10 @@ const Loyalty = () => {
         (decodedText) => {
           if (decodedText.trim().toUpperCase() === VALID_CODE) {
             if (stamps < TOTAL_STAMPS) {
-              setStamps((prev) => Math.min(prev + 1, TOTAL_STAMPS));
-              toast({ title: "Stamp added!", description: `You now have ${Math.min(stamps + 1, TOTAL_STAMPS)} of ${TOTAL_STAMPS} stamps.` });
+              const newCount = Math.min(stamps + 1, TOTAL_STAMPS);
+              setStamps(newCount);
+              setSuccessMsg(`You now have ${newCount} of ${TOTAL_STAMPS} stamps.`);
+              setSuccessOpen(true);
             }
             stopScanner();
             setScannerOpen(false);
@@ -225,6 +229,24 @@ const Loyalty = () => {
           <Button variant="eagle" size="lg" className="w-full" onClick={handleRedeem}>
             <RotateCcw className="w-5 h-5 mr-2" />
             Redeem & reset card
+          </Button>
+        </DialogContent>
+      </Dialog>
+
+      {/* Success Dialog */}
+      <Dialog open={successOpen} onOpenChange={setSuccessOpen}>
+        <DialogContent className="max-w-[400px] w-[90%] rounded-2xl bg-card border-border">
+          <DialogHeader>
+            <DialogTitle className="text-foreground flex items-center gap-2">
+              <CheckCircle className="w-5 h-5 text-primary" />
+              Success
+            </DialogTitle>
+            <DialogDescription className="text-muted-foreground">
+              {successMsg}
+            </DialogDescription>
+          </DialogHeader>
+          <Button variant="eagle" className="w-full" onClick={() => setSuccessOpen(false)}>
+            OK
           </Button>
         </DialogContent>
       </Dialog>
