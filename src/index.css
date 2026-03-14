@@ -154,10 +154,7 @@
     display: none !important;
   }
 
-  .prose br + br,
-  .eagle-content-wrapper br + br {
-    display: none !important;
-  }
+  /* br + br already hidden by br rule above */
 
   .eagle-content-wrapper { white-space: normal; }
   .eagle-content-wrapper p, .eagle-content-wrapper div { white-space: normal; }
