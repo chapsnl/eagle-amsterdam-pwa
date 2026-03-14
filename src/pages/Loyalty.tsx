@@ -182,7 +182,7 @@ const Loyalty = () => {
             <Gift className="w-16 h-16 text-primary mx-auto mb-4 animate-pulse-red" />
             <h2 className="text-2xl text-foreground mb-2">CONGRATS!</h2>
             <p className="text-foreground text-sm mb-6">
-              <strong>Collect 10 stamps and earn one time free entry.</strong>
+              <strong>Collect 10 stamps and earn one time free entry an Eagle Amsterdam organized event.</strong>
             </p>
             <Button variant="eagle" size="lg" className="w-full text-base py-4" onClick={() => setRewardOpen(true)}>
               <Gift className="w-5 h-5 mr-2" />
