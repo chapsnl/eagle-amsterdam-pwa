@@ -28,7 +28,7 @@ const Index = () => {
           <img
             src={eagleLogo}
             alt="Eagle Amsterdam logo"
-            className="w-48 object-contain"
+            className="w-64 object-contain"
             width={192}
             height={96}
             fetchPriority="high"
