@@ -294,7 +294,7 @@ const Loyalty = () => {
           <div className="text-center">
             <Gift className="w-20 h-20 text-primary mx-auto my-4 animate-pulse-red" />
             <p className="text-foreground text-sm font-bold mb-2 tracking-[-0.02em]">
-              Collect 10 stamps and earn one time free entry.
+              Collect 10 stamps and earn one time free entry an Eagle Amsterdam organized event.
             </p>
             <p className="text-muted-foreground text-xs mb-4 tracking-[-0.02em]">
               The bartender will tap "Redeem" to reset your card.
