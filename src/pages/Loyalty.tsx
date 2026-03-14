@@ -76,8 +76,10 @@ const Loyalty = () => {
         (decodedText) => {
           if (decodedText.trim().toUpperCase() === VALID_CODE) {
             if (stamps < TOTAL_STAMPS) {
-              setStamps((prev) => Math.min(prev + 1, TOTAL_STAMPS));
-              toast({ title: "Stamp added!", description: `You now have ${Math.min(stamps + 1, TOTAL_STAMPS)} of ${TOTAL_STAMPS} stamps.` });
+              const newCount = Math.min(stamps + 1, TOTAL_STAMPS);
+              setStamps(newCount);
+              setSuccessMsg(`You now have ${newCount} of ${TOTAL_STAMPS} stamps.`);
+              setSuccessOpen(true);
             }
             stopScanner();
             setScannerOpen(false);
