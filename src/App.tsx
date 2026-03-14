@@ -35,14 +35,6 @@ const PageLoader = () => (
 );
 
 const App = () => {
-  const [verified, setVerified] = useState(() =>
-    localStorage.getItem("eagle-age-verified") === "true"
-  );
-
-  if (!verified) {
-    return <AgeVerification onVerified={() => setVerified(true)} />;
-  }
-
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
