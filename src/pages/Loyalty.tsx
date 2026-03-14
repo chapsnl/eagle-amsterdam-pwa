@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { QrCode, Gift, RotateCcw, X, Star, CheckCircle } from "lucide-react";
+import { QrCode, Gift, RotateCcw, X, Star, CheckCircle, Camera } from "lucide-react";
 import { Html5Qrcode } from "html5-qrcode";
 import { useToast } from "@/hooks/use-toast";
 
@@ -9,11 +9,7 @@ const STORAGE_KEY = "eagle-loyalty-stamps";
 const VALID_CODE = "EAGLE2026";
 const TOTAL_STAMPS = 10;
 
-const eagleStampSvg = (
-  <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
-    <path d="M12 2L9.19 8.63 2 9.24l5.46 4.73L5.82 21 12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61z" />
-  </svg>
-);
+type CameraPermission = "prompt" | "granted" | "denied" | "unknown";
 
 const Loyalty = () => {
   const [stamps, setStamps] = useState(0);
@@ -22,7 +18,9 @@ const Loyalty = () => {
   const [rewardOpen, setRewardOpen] = useState(false);
   const [successOpen, setSuccessOpen] = useState(false);
   const [successMsg, setSuccessMsg] = useState("");
+  const [cameraPermission, setCameraPermission] = useState<CameraPermission>("unknown");
   const scannerRef = useRef<Html5Qrcode | null>(null);
+  const hasScannedRef = useRef(false);
   const { toast } = useToast();
 
   // Load from localStorage
@@ -47,10 +45,31 @@ const Loyalty = () => {
     }
   }, [stamps, redeemed]);
 
+  // Check camera permission on mount
+  useEffect(() => {
+    const checkPermission = async () => {
+      try {
+        if (navigator.permissions && navigator.permissions.query) {
+          const result = await navigator.permissions.query({ name: "camera" as PermissionName });
+          setCameraPermission(result.state as CameraPermission);
+          result.addEventListener("change", () => {
+            setCameraPermission(result.state as CameraPermission);
+          });
+        }
+      } catch {
+        // permissions API not supported (e.g. Safari), that's fine
+      }
+    };
+    checkPermission();
+  }, []);
+
   const stopScanner = useCallback(async () => {
     if (scannerRef.current) {
       try {
-        await scannerRef.current.stop();
+        const state = scannerRef.current.getState();
+        if (state === 2) { // SCANNING
+          await scannerRef.current.stop();
+        }
         scannerRef.current.clear();
       } catch {
         // ignore
@@ -61,7 +80,23 @@ const Loyalty = () => {
 
   const startScanner = useCallback(async () => {
     await stopScanner();
-    await new Promise((r) => setTimeout(r, 300));
+    hasScannedRef.current = false;
+
+    // Pre-request permission so the browser remembers it for the domain
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: "environment" },
+      });
+      // Stop the pre-check stream immediately — html5-qrcode will open its own
+      stream.getTracks().forEach((t) => t.stop());
+      setCameraPermission("granted");
+    } catch {
+      setCameraPermission("denied");
+      return;
+    }
+
+    // Small delay for DOM to be ready
+    await new Promise((r) => setTimeout(r, 100));
 
     const el = document.getElementById("qr-reader");
     if (!el) return;
@@ -74,7 +109,11 @@ const Loyalty = () => {
         { facingMode: "environment" },
         { fps: 10, qrbox: { width: 220, height: 220 } },
         (decodedText) => {
+          // Prevent multiple scans
+          if (hasScannedRef.current) return;
+
           if (decodedText.trim().toUpperCase() === VALID_CODE) {
+            hasScannedRef.current = true;
             if (stamps < TOTAL_STAMPS) {
               const newCount = Math.min(stamps + 1, TOTAL_STAMPS);
               setStamps(newCount);
@@ -89,9 +128,15 @@ const Loyalty = () => {
         },
         () => {}
       );
+
+      // Force playsinline on the video element for iOS PWA
+      const video = el.querySelector("video");
+      if (video) {
+        video.setAttribute("playsinline", "true");
+        video.setAttribute("webkit-playsinline", "true");
+      }
     } catch {
-      toast({ title: "Camera error", description: "Could not access the camera. Please allow camera permissions.", variant: "destructive" });
-      setScannerOpen(false);
+      setCameraPermission("denied");
     }
   }, [stamps, stopScanner, toast]);
 
@@ -119,7 +164,7 @@ const Loyalty = () => {
 
   return (
     <div className="flex flex-col min-h-screen pb-24">
-      {/* Header — matches Agenda & Contact layout */}
+      {/* Header */}
       <div className="pt-6 px-4 max-w-lg mx-auto w-full">
         <h1 className="text-4xl font-display tracking-wider text-foreground mb-2 flex items-center gap-3">
           <Star className="w-7 h-7 text-primary" />
@@ -194,20 +239,37 @@ const Loyalty = () => {
       <Dialog open={scannerOpen} onOpenChange={(open) => { if (!open) handleScannerClose(); }}>
         <DialogContent className="max-w-[400px] w-[90%] rounded-2xl bg-card border-border">
           <DialogHeader>
-            <DialogTitle className="text-foreground flex items-center gap-2">
+            <DialogTitle className="text-foreground flex items-center gap-2 tracking-[-0.05em]">
               <QrCode className="w-5 h-5 text-primary" />
               Scan QR Code
             </DialogTitle>
-            <DialogDescription className="text-muted-foreground">
+            <DialogDescription className="text-muted-foreground tracking-[-0.02em]">
               Point your camera at the Eagle QR code to collect a stamp.
             </DialogDescription>
           </DialogHeader>
-          <div
-            id="qr-reader"
-            className="w-full rounded-lg overflow-hidden bg-background"
-            style={{ minHeight: 280 }}
-          />
-          <Button variant="eagle-outline" onClick={handleScannerClose} className="w-full mt-2">
+
+          {cameraPermission === "denied" ? (
+            <div className="rounded-xl bg-secondary p-5 text-center space-y-3">
+              <Camera className="w-10 h-10 text-primary mx-auto" />
+              <p className="text-foreground text-base font-bold tracking-[-0.02em]">
+                Camera access blocked
+              </p>
+              <p className="text-muted-foreground text-sm tracking-[-0.02em] leading-relaxed">
+                You previously denied camera access. To fix this:<br />
+                <strong>iOS Safari:</strong> Settings → Safari → Camera → Allow<br />
+                <strong>Android Chrome:</strong> Tap the lock icon in the address bar → Permissions → Camera → Allow<br />
+                Then reload this page.
+              </p>
+            </div>
+          ) : (
+            <div
+              id="qr-reader"
+              className="w-full rounded-lg overflow-hidden bg-background"
+              style={{ minHeight: 280 }}
+            />
+          )}
+
+          <Button variant="eagle-outline" onClick={handleScannerClose} className="w-full mt-2 tracking-[-0.02em]">
             <X className="w-4 h-4 mr-2" />
             Cancel
           </Button>
@@ -218,24 +280,24 @@ const Loyalty = () => {
       <Dialog open={rewardOpen} onOpenChange={setRewardOpen}>
         <DialogContent className="max-w-[400px] w-[90%] rounded-2xl bg-card border-primary neon-border">
           <DialogHeader>
-            <DialogTitle className="text-foreground text-2xl flex items-center gap-2">
+            <DialogTitle className="text-foreground text-2xl flex items-center gap-2 tracking-[-0.05em]">
               <Gift className="w-6 h-6 text-primary" />
               Free Entry!
             </DialogTitle>
-            <DialogDescription className="text-foreground text-sm">
+            <DialogDescription className="text-foreground text-sm tracking-[-0.02em]">
               Show this screen to the bartender to claim your reward.
             </DialogDescription>
           </DialogHeader>
           <div className="text-center">
             <Gift className="w-20 h-20 text-primary mx-auto my-4 animate-pulse-red" />
-            <p className="text-foreground text-sm font-bold mb-2">
+            <p className="text-foreground text-sm font-bold mb-2 tracking-[-0.02em]">
               Collect 10 stamps and earn one time free entry.
             </p>
-            <p className="text-muted-foreground text-xs mb-4">
+            <p className="text-muted-foreground text-xs mb-4 tracking-[-0.02em]">
               The bartender will tap "Redeem" to reset your card.
             </p>
           </div>
-          <Button variant="eagle" size="lg" className="w-full" onClick={handleRedeem}>
+          <Button variant="eagle" size="lg" className="w-full tracking-[-0.02em]" onClick={handleRedeem}>
             <RotateCcw className="w-5 h-5 mr-2" />
             Redeem & reset card
           </Button>
@@ -246,21 +308,21 @@ const Loyalty = () => {
       <Dialog open={successOpen} onOpenChange={setSuccessOpen}>
         <DialogContent className="max-w-[400px] w-[90%] rounded-2xl bg-card border-border">
           <DialogHeader>
-            <DialogTitle className="text-foreground flex items-center gap-2">
+            <DialogTitle className="text-foreground flex items-center gap-2 tracking-[-0.05em]">
               <CheckCircle className="w-5 h-5 text-primary" />
               Success
             </DialogTitle>
-            <DialogDescription className="text-muted-foreground">
+            <DialogDescription className="text-muted-foreground text-base tracking-[-0.02em]">
               {successMsg}
             </DialogDescription>
           </DialogHeader>
-          <Button variant="eagle" className="w-full" onClick={() => setSuccessOpen(false)}>
+          <Button variant="eagle" className="w-full tracking-[-0.02em]" onClick={() => setSuccessOpen(false)}>
             OK
           </Button>
         </DialogContent>
       </Dialog>
 
-      {scannerOpen && <ScannerStarter start={startScanner} />}
+      {scannerOpen && cameraPermission !== "denied" && <ScannerStarter start={startScanner} />}
     </div>
   );
 };
