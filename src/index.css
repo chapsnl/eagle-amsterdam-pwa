@@ -67,34 +67,49 @@
 
   * {
     @apply border-border;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
   }
 
   body {
-    @apply bg-background text-foreground antialiased;
+    @apply bg-background text-foreground;
     font-family: 'Manrope', sans-serif !important;
     font-size: 16px;
     font-weight: 400;
-    letter-spacing: -0.01em;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
+    letter-spacing: -0.02em !important;
   }
 
   h1, h2, h3, h4, h5, h6 {
     font-family: 'Manrope', sans-serif !important;
     font-weight: 800;
-    letter-spacing: -0.04em;
+    letter-spacing: -0.05em !important;
     line-height: 1.1;
   }
 
-  button, input, textarea, select {
+  button, [role="button"] {
     font-family: 'Manrope', sans-serif !important;
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
-    letter-spacing: -0.02em;
-    font-size: 14px;
+    letter-spacing: -0.03em !important;
+    font-size: 14px !important;
     font-weight: 600;
     line-height: 1.25;
+    text-transform: none !important;
+  }
+
+  input, textarea, select {
+    font-family: 'Manrope', sans-serif !important;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    letter-spacing: -0.02em !important;
+    font-size: 16px;
+  }
+
+  nav, nav * {
+    letter-spacing: -0.03em !important;
   }
 }
 
