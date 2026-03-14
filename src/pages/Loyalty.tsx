@@ -70,7 +70,7 @@ const Loyalty = () => {
     checkPermission();
   }, []);
 
-  // Clean up scanner on page unmount only
+  // Clean up scanner and camera on page unmount
   useEffect(() => {
     return () => {
       if (scannerRef.current) {
@@ -80,6 +80,16 @@ const Loyalty = () => {
           scannerRef.current.clear();
         } catch { /* ignore */ }
         scannerRef.current = null;
+      }
+      // Explicitly stop all video tracks to clear the recording indicator
+      const el = document.getElementById("qr-reader");
+      if (el) {
+        const video = el.querySelector("video");
+        if (video && video.srcObject) {
+          const stream = video.srcObject as MediaStream;
+          stream.getTracks().forEach((track) => track.stop());
+          video.srcObject = null;
+        }
       }
       scannerInitializedRef.current = false;
     };
