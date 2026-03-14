@@ -8,6 +8,7 @@ import AgeVerification from "@/components/AgeVerification";
 import BottomNav from "@/components/BottomNav";
 import DevModeIndicator from "@/components/DevModeIndicator";
 import SmartInstallBanner from "@/components/SmartInstallBanner";
+import PushNotificationModal from "@/components/PushNotificationModal";
 
 
 // Lazy-loaded pages
