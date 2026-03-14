@@ -76,22 +76,18 @@ const Contact = () => {
       </h1>
 
       {/* Opening Hours */}
-      <div className="border border-border rounded-lg p-6 bg-card neon-border mb-4">
-        <h2 className="font-display text-2xl tracking-wider text-foreground mb-4 flex items-center gap-2">
-          <Clock className="w-5 h-5 text-primary" />
+      <div className="border border-border rounded-lg p-4 bg-card neon-border mb-4">
+        <h2 className="font-display text-lg tracking-wider text-foreground mb-2 flex items-center gap-2">
+          <Clock className="w-4 h-4 text-primary" />
           OPENING HOURS
         </h2>
-        <div className="flex flex-col gap-2 text-sm">
-          <div className="flex justify-between"><span className="text-muted-foreground">Monday</span><span className="text-foreground font-semibold">Closed</span></div>
-          <div className="flex justify-between"><span className="text-muted-foreground">Tuesday</span><span className="text-foreground font-semibold">Closed</span></div>
-          <div className="flex justify-between"><span className="text-muted-foreground">Wednesday</span><span className="text-foreground font-semibold">Closed</span></div>
+        <div className="flex flex-col gap-1 text-xs">
+          <div className="flex justify-between"><span className="text-muted-foreground">Mon – Wed</span><span className="text-foreground font-semibold">Closed</span></div>
           <div className="flex justify-between"><span className="text-muted-foreground">Thursday</span><span className="text-foreground font-semibold">22:00 – 04:00</span></div>
-          <div className="flex justify-between"><span className="text-muted-foreground">Friday</span><span className="text-foreground font-semibold">22:00 – 05:00</span></div>
-          <div className="flex justify-between"><span className="text-muted-foreground">Saturday</span><span className="text-foreground font-semibold">22:00 – 05:00</span></div>
+          <div className="flex justify-between"><span className="text-muted-foreground">Fri & Sat</span><span className="text-foreground font-semibold">22:00 – 05:00</span></div>
           <div className="flex justify-between"><span className="text-muted-foreground">Sunday</span><span className="text-foreground font-semibold">22:00 – 04:00</span></div>
         </div>
-        {/* For daytime parties and special events, check the Agenda page */}
-        <p className="text-xs text-muted-foreground mt-4 italic">
+        <p className="text-[11px] text-muted-foreground mt-2 italic">
           For daytime parties & special events, check our Agenda.
         </p>
       </div>
