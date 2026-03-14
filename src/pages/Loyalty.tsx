@@ -10,7 +10,11 @@ const VALID_CODE = "EAGLE2026";
 const TOTAL_STAMPS = 10;
 
 type CameraPermission = "prompt" | "granted" | "denied" | "unknown";
-type WindowWithLocalStream = Window & { localStream?: MediaStream | null };
+
+interface WindowWithCameraKill extends Window {
+  localStream?: MediaStream | null;
+  stopAllCameraStreams?: () => void;
+}
 
 const Loyalty = () => {
   const [stamps, setStamps] = useState(0);
