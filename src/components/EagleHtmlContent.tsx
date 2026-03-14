@@ -14,6 +14,7 @@ const EagleHtmlContent = memo(({ html, className = "" }: EagleHtmlContentProps) 
       .replace(/<p[^>]*>(?:\s|&nbsp;|&#160;|<br\s*\/?>)*<\/p>/gi, "")
       .replace(/(<br\s*\/?>\s*){2,}/gi, "<br/>")
       .replace(/&nbsp;/gi, " ")
+      .replace(/https:\/\/app\./g, "https://www.")
       .trim();
     return DOMPurify.sanitize(cleaned);
   }, [html]);
