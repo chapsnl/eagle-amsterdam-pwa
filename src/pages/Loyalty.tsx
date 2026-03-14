@@ -22,6 +22,7 @@ const Loyalty = () => {
   const [redeemFading, setRedeemFading] = useState(false);
   const [cameraPermission, setCameraPermission] = useState<CameraPermission>("unknown");
   const scannerRef = useRef<Html5Qrcode | null>(null);
+  const activeStreamRef = useRef<MediaStream | null>(null);
   const hasScannedRef = useRef(false);
   const scannerInitializedRef = useRef(false);
   const stampsRef = useRef(stamps);
