@@ -63,7 +63,7 @@ export default function PushNotificationModal() {
         </DialogHeader>
         <div className="flex flex-col gap-2 mt-2">
           <Button variant="eagle" className="w-full" onClick={handleAccept}>
-            Subscribe
+            ENTER
           </Button>
           <Button variant="ghost" className="w-full text-muted-foreground" onClick={handleDismiss}>
             No, thanks
