@@ -6,11 +6,9 @@ import PullToRefresh from "@/components/PullToRefresh";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
 
-const ONE_HOUR = 3600;
-
 function formatEventDate(startUnix: number, endUnix: number) {
-  const start = new Date((startUnix - ONE_HOUR) * 1000);
-  const end = new Date((endUnix - ONE_HOUR) * 1000);
+  const start = new Date(startUnix * 1000);
+  const end = new Date(endUnix * 1000);
   const dateStr = format(start, "EEE, MMM d");
   const startTime = format(start, "HH:mm");
   const endTime = format(end, "HH:mm");
