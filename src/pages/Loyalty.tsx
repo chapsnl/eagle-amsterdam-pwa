@@ -233,6 +233,24 @@ const Loyalty = () => {
         </DialogContent>
       </Dialog>
 
+      {/* Success Dialog */}
+      <Dialog open={successOpen} onOpenChange={setSuccessOpen}>
+        <DialogContent className="max-w-[400px] w-[90%] rounded-2xl bg-card border-border">
+          <DialogHeader>
+            <DialogTitle className="text-foreground flex items-center gap-2">
+              <CheckCircle className="w-5 h-5 text-primary" />
+              Success
+            </DialogTitle>
+            <DialogDescription className="text-muted-foreground">
+              {successMsg}
+            </DialogDescription>
+          </DialogHeader>
+          <Button variant="eagle" className="w-full" onClick={() => setSuccessOpen(false)}>
+            OK
+          </Button>
+        </DialogContent>
+      </Dialog>
+
       {scannerOpen && <ScannerStarter start={startScanner} />}
     </div>
   );
