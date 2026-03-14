@@ -44,7 +44,7 @@ export default function PushNotificationModal() {
 
   const handleDismiss = () => {
     setOpen(false);
-    localStorage.setItem(DISMISSED_KEY, "true");
+    // Don't persist — modal will reappear next visit
   };
 
   return (
@@ -55,7 +55,7 @@ export default function PushNotificationModal() {
             <Bell className="h-7 w-7 text-primary" />
           </div>
           <DialogTitle className="font-display text-2xl tracking-wide text-foreground">
-            Stay up to date!
+            Strictly 18+ Only
           </DialogTitle>
           <DialogDescription className="text-muted-foreground text-sm leading-relaxed">
             Yes I am 18+ and want to receive notifications about events, line-ups and special offers at Eagle Amsterdam.
