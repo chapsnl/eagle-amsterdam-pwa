@@ -20,6 +20,8 @@ const Loyalty = () => {
   const [redeemed, setRedeemed] = useState(false);
   const [scannerOpen, setScannerOpen] = useState(false);
   const [rewardOpen, setRewardOpen] = useState(false);
+  const [successOpen, setSuccessOpen] = useState(false);
+  const [successMsg, setSuccessMsg] = useState("");
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const { toast } = useToast();
 
