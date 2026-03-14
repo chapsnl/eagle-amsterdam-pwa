@@ -22,6 +22,7 @@ const Loyalty = () => {
   const [redeemFading, setRedeemFading] = useState(false);
   const [cameraPermission, setCameraPermission] = useState<CameraPermission>("unknown");
   const scannerRef = useRef<Html5Qrcode | null>(null);
+  const activeStreamRef = useRef<MediaStream | null>(null);
   const hasScannedRef = useRef(false);
   const scannerInitializedRef = useRef(false);
   const stampsRef = useRef(stamps);
@@ -70,7 +71,34 @@ const Loyalty = () => {
     checkPermission();
   }, []);
 
-  // Clean up scanner and camera on page unmount — absolute termination
+  // Nuclear kill-switch: stop everything camera-related
+  const nuclearKillCamera = useCallback(() => {
+    // 1. Stop the globally tracked stream
+    if (activeStreamRef.current) {
+      activeStreamRef.current.getTracks().forEach((t) => {
+        t.enabled = false;
+        t.stop();
+      });
+      activeStreamRef.current = null;
+    }
+    // 2. Kill every video element's stream on the page
+    document.querySelectorAll("video").forEach((v) => {
+      if (v.srcObject) {
+        (v.srcObject as MediaStream).getTracks().forEach((t) => {
+          t.enabled = false;
+          t.stop();
+        });
+        v.srcObject = null;
+      }
+    });
+    // 3. Remove video elements from qr-reader to force DOM cleanup
+    const el = document.getElementById("qr-reader");
+    if (el) {
+      el.querySelectorAll("video").forEach((v) => v.remove());
+    }
+  }, []);
+
+  // Clean up scanner and camera on page unmount
   useEffect(() => {
     return () => {
       if (scannerRef.current) {
@@ -81,46 +109,10 @@ const Loyalty = () => {
         } catch { /* ignore */ }
         scannerRef.current = null;
       }
-      // Kill every video track on the page
-      document.querySelectorAll("video").forEach((v) => {
-        if (v.srcObject) {
-          (v.srcObject as MediaStream).getTracks().forEach((t) => {
-            t.enabled = false;
-            t.stop();
-          });
-          v.srcObject = null;
-        }
-      });
+      nuclearKillCamera();
       scannerInitializedRef.current = false;
     };
-  }, []);
-
-  const stopAllVideoTracks = useCallback(() => {
-    // Kill ANY remaining video tracks to remove the green recording indicator (iOS)
-    const el = document.getElementById("qr-reader");
-    if (el) {
-      const video = el.querySelector("video");
-      if (video && video.srcObject) {
-        const stream = video.srcObject as MediaStream;
-        stream.getTracks().forEach((track) => {
-          track.enabled = false;
-          track.stop();
-        });
-        video.srcObject = null;
-      }
-    }
-    // Also stop any orphaned tracks from navigator
-    try {
-      document.querySelectorAll("video").forEach((v) => {
-        if (v.srcObject) {
-          (v.srcObject as MediaStream).getTracks().forEach((t) => {
-            t.enabled = false;
-            t.stop();
-          });
-          v.srcObject = null;
-        }
-      });
-    } catch { /* ignore */ }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const pauseScanner = useCallback(async () => {
@@ -130,11 +122,13 @@ const Loyalty = () => {
         if (state === 2) {
           await scannerRef.current.stop();
         }
+        scannerRef.current.clear();
       } catch { /* ignore */ }
+      scannerRef.current = null;
+      scannerInitializedRef.current = false;
     }
-    // Always explicitly stop tracks to clear the recording indicator
-    stopAllVideoTracks();
-  }, [stopAllVideoTracks]);
+    nuclearKillCamera();
+  }, [nuclearKillCamera]);
 
   const handleScanResult = useCallback((decodedText: string) => {
     if (hasScannedRef.current) return;
@@ -160,7 +154,7 @@ const Loyalty = () => {
     const el = document.getElementById("qr-reader");
     if (!el) return;
 
-    // Singleton: stop any existing scanner first
+    // Singleton: destroy any existing scanner first
     if (scannerRef.current) {
       try {
         const state = scannerRef.current.getState();
@@ -170,14 +164,14 @@ const Loyalty = () => {
       scannerRef.current = null;
       scannerInitializedRef.current = false;
     }
-    stopAllVideoTracks();
+    nuclearKillCamera();
 
-    // Request camera access from user gesture context
+    // Request camera access — keep a global ref to the stream
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: "environment" },
       });
-      // Stop pre-check stream — html5-qrcode opens its own
+      // Stop this pre-check stream; html5-qrcode will open its own
       stream.getTracks().forEach((t) => { t.enabled = false; t.stop(); });
       setCameraPermission("granted");
     } catch {
@@ -197,22 +191,25 @@ const Loyalty = () => {
         () => {}
       );
 
-      // Force playsinline for iOS PWA
+      // Capture the active stream for guaranteed cleanup later
       const video = el.querySelector("video");
       if (video) {
         video.setAttribute("playsinline", "true");
         video.setAttribute("webkit-playsinline", "true");
+        if (video.srcObject) {
+          activeStreamRef.current = video.srcObject as MediaStream;
+        }
       }
     } catch {
       setCameraPermission("denied");
     }
-  }, [handleScanResult, stopAllVideoTracks]);
+  }, [handleScanResult, nuclearKillCamera]);
 
-  // Start scanner immediately when dialog opens
+  // Start scanner with slight delay after dialog opens (Safari permission persistence)
   useEffect(() => {
     if (scannerOpen && cameraPermission !== "denied") {
-      const id = requestAnimationFrame(() => { startScanner(); });
-      return () => cancelAnimationFrame(id);
+      const timeout = setTimeout(() => { startScanner(); }, 120);
+      return () => clearTimeout(timeout);
     }
   }, [scannerOpen, cameraPermission, startScanner]);
 
