@@ -76,16 +76,46 @@ function parseEventsFromCalendarApi(html: string): ParsedEvent[] {
 
     if (!name || !startDateRaw || !endDateRaw) continue;
 
-    // Fix non-standard date format: "2026-3-12T22:00+0:00" → proper ISO
+    // Fix non-standard date format: "2026-3-12T22:00+0:00"
+    // EventON returns local Amsterdam times with a bogus +0:00 offset.
+    // Strip the offset and compute the correct Unix timestamp for Europe/Amsterdam.
     const fixDate = (d: string): number => {
-      // Normalize: pad month/day, fix timezone offset format
-      const fixed = d
+      // Pad month/day and strip any timezone offset
+      const stripped = d
         .replace(/(\d{4})-(\d{1,2})-(\d{1,2})/, (_m, y, mo, da) =>
           `${y}-${mo.padStart(2, '0')}-${da.padStart(2, '0')}`)
-        .replace(/\+(\d):(\d{2})$/, '+0$1:$2')
-        .replace(/\+(\d{2}):(\d{2})$/, '+$1:$2');
-      const ts = new Date(fixed).getTime();
-      return isNaN(ts) ? new Date(d).getTime() : ts;
+        .replace(/[+-]\d{1,2}:\d{2}$/, '')
+        .replace(/Z$/, '');
+
+      // Parse the wall-clock components (Amsterdam local time)
+      const m = stripped.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/);
+      if (!m) return new Date(d).getTime();
+
+      const [, yr, mo, da, hr, mi] = m;
+
+      // Use Intl to find the UTC offset for this Amsterdam wall-clock time
+      // by formatting a probe date and comparing
+      const probeUtc = Date.UTC(+yr, +mo - 1, +da, +hr, +mi);
+      const fmt = new Intl.DateTimeFormat('en-GB', {
+        timeZone: 'Europe/Amsterdam',
+        year: 'numeric', month: '2-digit', day: '2-digit',
+        hour: '2-digit', minute: '2-digit', hour12: false,
+      });
+
+      // Binary approach: Amsterdam is UTC+1 or UTC+2 (DST).
+      // Try both offsets and pick the one where formatting back gives the same wall-clock.
+      for (const offsetHours of [1, 2]) {
+        const candidate = probeUtc - offsetHours * 3600_000;
+        const parts = fmt.formatToParts(new Date(candidate));
+        const get = (t: string) => parts.find(p => p.type === t)?.value || '';
+        const fmtStr = `${get('year')}-${get('month')}-${get('day')}T${get('hour')}:${get('minute')}`;
+        if (fmtStr === `${yr}-${mo}-${da}T${hr}:${mi}`) {
+          return candidate;
+        }
+      }
+
+      // Fallback: assume UTC+1
+      return probeUtc - 3600_000;
     };
 
     const startTime = Math.floor(fixDate(startDateRaw) / 1000);
