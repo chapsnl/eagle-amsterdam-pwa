@@ -165,7 +165,7 @@ const Loyalty = () => {
   return (
     <div className="flex flex-col min-h-screen pb-24">
       {/* Header */}
-      <div className="pt-6 px-4 max-w-lg mx-auto w-full">
+      <div className="pt-8 px-4 max-w-lg mx-auto w-full">
         <h1 className="text-4xl font-display tracking-wider text-foreground mb-2 flex items-center gap-3">
           <Star className="w-7 h-7 text-primary" />
           LOYALTY

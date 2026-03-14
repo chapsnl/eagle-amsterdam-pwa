@@ -30,7 +30,7 @@ const Agenda = () => {
 
   return (
     <PullToRefresh onRefresh={forceRefresh}>
-      <div className="flex flex-col min-h-screen pb-20 pt-6 px-4 max-w-lg mx-auto">
+      <div className="flex flex-col min-h-screen pb-20 pt-8 px-4 max-w-lg mx-auto">
         <h1 className="text-4xl font-display tracking-wider text-foreground mb-6 flex items-center gap-3">
           <Calendar className="w-7 h-7 text-primary" />
           AGENDA
