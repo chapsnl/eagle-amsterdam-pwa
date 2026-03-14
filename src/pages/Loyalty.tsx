@@ -241,7 +241,7 @@ const Loyalty = () => {
         if (video.srcObject) {
           const activeStream = video.srcObject as MediaStream;
           activeStreamRef.current = activeStream;
-          (window as WindowWithLocalStream).localStream = activeStream;
+          (window as WindowWithCameraKill).localStream = activeStream;
         }
       }
     } catch {
