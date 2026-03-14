@@ -58,29 +58,13 @@ const QRScanner = ({ onScanResult, onPermissionDenied }: QRScannerProps) => {
     }
   }, []);
 
-  // Start scanner on mount
+  // Start scanner on mount — NO delay, runs in user-gesture context
   useEffect(() => {
     let cancelled = false;
 
     const start = async () => {
       const el = document.getElementById("qr-reader");
       if (!el || cancelled) return;
-
-      // Request camera from user-gesture context, then release preflight stream
-      try {
-        const preflight = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: "environment" },
-        });
-        preflight.getTracks().forEach((t) => {
-          t.enabled = false;
-          t.stop();
-        });
-      } catch {
-        if (!cancelled) onPermissionDenied();
-        return;
-      }
-
-      if (cancelled) return;
 
       const qr = new Html5Qrcode("qr-reader");
       scannerRef.current = qr;
@@ -114,13 +98,12 @@ const QRScanner = ({ onScanResult, onPermissionDenied }: QRScannerProps) => {
       }
     };
 
-    // Small delay for Safari permission persistence
-    const timeout = setTimeout(start, 100);
+    // Start immediately — no delay keeps us in Safari's user-gesture window
+    start();
 
     // CLEANUP: this runs when React unmounts this component — total destruction
     return () => {
       cancelled = true;
-      clearTimeout(timeout);
 
       const scanner = scannerRef.current;
       if (scanner) {
