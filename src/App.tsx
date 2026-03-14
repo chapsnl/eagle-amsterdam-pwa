@@ -61,6 +61,7 @@ const App = () => {
             </Routes>
           </Suspense>
           <SmartInstallBanner />
+          <PushNotificationModal />
           
           <BottomNav />
         </BrowserRouter>
