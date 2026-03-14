@@ -98,7 +98,7 @@ const Contact = () => {
             <span className="text-foreground font-semibold">22:00 – 04:00</span>
           </div>
         </div>
-        <p className="text-foreground text-sm mt-4 font-bold">
+        <p className="text-foreground text-xs mt-4 font-bold italic">
           For daytime parties and special events, please consult the agenda.
         </p>
       </div>
