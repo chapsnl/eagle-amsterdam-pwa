@@ -171,7 +171,7 @@ const Loyalty = () => {
           LOYALTY
         </h1>
         <p className="text-muted-foreground text-sm mb-6">
-          Collect {TOTAL_STAMPS} stamps and earn one time free entry to one of the events organized by Eagle.
+          Collect {TOTAL_STAMPS} stamps and earn one time free entry.
         </p>
       </div>
 
@@ -182,7 +182,7 @@ const Loyalty = () => {
             <Gift className="w-16 h-16 text-primary mx-auto mb-4 animate-pulse-red" />
             <h2 className="text-2xl text-foreground mb-2">CONGRATS!</h2>
             <p className="text-foreground text-sm mb-6">
-              <strong>Collect 10 stamps and earn one time free entry to one of the events organized by Eagle.</strong>
+              <strong>Collect 10 stamps and earn one time free entry.</strong>
             </p>
             <Button variant="eagle" size="lg" className="w-full text-base py-4" onClick={() => setRewardOpen(true)}>
               <Gift className="w-5 h-5 mr-2" />
@@ -233,10 +233,6 @@ const Loyalty = () => {
           <QrCode className="w-5 h-5 mr-2" />
           {isComplete ? "View reward" : "Scan for stamp"}
         </Button>
-
-        <p className="mt-4 text-muted-foreground text-xs italic tracking-[-0.02em] text-center">
-          * Niet geldig bij evenementen van Ready2Kink, Horse Fair of andere externe event organizers.
-        </p>
       </div>
 
       {/* QR Scanner Dialog */}
@@ -295,7 +291,7 @@ const Loyalty = () => {
           <div className="text-center">
             <Gift className="w-20 h-20 text-primary mx-auto my-4 animate-pulse-red" />
             <p className="text-foreground text-sm font-bold mb-2 tracking-[-0.02em]">
-              Collect 10 stamps and earn one time free entry to one of the events organized by Eagle.
+              Collect 10 stamps and earn one time free entry.
             </p>
             <p className="text-muted-foreground text-xs mb-4 tracking-[-0.02em]">
               The bartender will tap "Redeem" to reset your card.
