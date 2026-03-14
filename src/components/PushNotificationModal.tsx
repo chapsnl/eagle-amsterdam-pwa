@@ -44,7 +44,7 @@ export default function PushNotificationModal() {
 
   const handleDismiss = () => {
     setOpen(false);
-    localStorage.setItem(DISMISSED_KEY, "true");
+    // Don't persist — modal will reappear next visit
   };
 
   return (
