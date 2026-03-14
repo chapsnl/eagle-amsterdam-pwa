@@ -49,11 +49,8 @@ export default function PushNotificationModal() {
     localStorage.setItem(ACCEPTED_KEY, "true");
     localStorage.removeItem(DISMISSED_AT_KEY);
     try {
-      // Use native permission request since we disabled OneSignal slidedown
-      const OneSignal = (window as any).OneSignal;
-      if (OneSignal?.Notifications) {
-        await OneSignal.Notifications.requestPermission();
-      }
+      const { activateOneSignalPush } = await import("@/lib/onesignal");
+      await activateOneSignalPush();
     } catch {
       // fallback: ignore if OneSignal isn't available
     }
