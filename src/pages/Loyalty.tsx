@@ -1,40 +1,30 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { QrCode, Gift, RotateCcw, X, Star, CheckCircle, Camera } from "lucide-react";
-import { Html5Qrcode } from "html5-qrcode";
 import { useToast } from "@/hooks/use-toast";
+import QRScanner from "@/components/QRScanner";
 
 const STORAGE_KEY = "eagle-loyalty-stamps";
 const VALID_CODE = "EAGLE2026";
 const TOTAL_STAMPS = 10;
 
-type CameraPermission = "prompt" | "granted" | "denied" | "unknown";
-
-interface WindowWithCameraKill extends Window {
-  localStream?: MediaStream | null;
-  stopAllCameraStreams?: () => void;
-}
-
 const Loyalty = () => {
   const [stamps, setStamps] = useState(0);
   const [redeemed, setRedeemed] = useState(false);
   const [scannerOpen, setScannerOpen] = useState(false);
+  const [scannerKey, setScannerKey] = useState(0);
   const [rewardOpen, setRewardOpen] = useState(false);
   const [successOpen, setSuccessOpen] = useState(false);
   const [successMsg, setSuccessMsg] = useState("");
   const [redeemSuccessOpen, setRedeemSuccessOpen] = useState(false);
   const [redeemFading, setRedeemFading] = useState(false);
-  const [cameraPermission, setCameraPermission] = useState<CameraPermission>("unknown");
-  const scannerRef = useRef<Html5Qrcode | null>(null);
-  const activeStreamRef = useRef<MediaStream | null>(null);
-  const hasScannedRef = useRef(false);
-  const scannerInitializedRef = useRef(false);
-  const stampsRef = useRef(stamps);
+  const [cameraBlocked, setCameraBlocked] = useState(false);
   const { toast } = useToast();
 
-  // Keep stampsRef in sync so the scan callback always has the latest value
-  useEffect(() => { stampsRef.current = stamps; }, [stamps]);
+  // We need a ref-like value for stamps inside callbacks
+  const [stampsSnapshot, setStampsSnapshot] = useState(0);
+  useEffect(() => { setStampsSnapshot(stamps); }, [stamps]);
 
   // Load from localStorage
   useEffect(() => {
@@ -58,216 +48,38 @@ const Loyalty = () => {
     }
   }, [stamps, redeemed]);
 
-  // Check camera permission on mount (non-Safari)
-  useEffect(() => {
-    const checkPermission = async () => {
-      try {
-        if (navigator.permissions && navigator.permissions.query) {
-          const result = await navigator.permissions.query({ name: "camera" as PermissionName });
-          setCameraPermission(result.state as CameraPermission);
-          result.addEventListener("change", () => {
-            setCameraPermission(result.state as CameraPermission);
-          });
-        }
-      } catch {
-        // permissions API not supported (e.g. Safari)
-      }
-    };
-    checkPermission();
-  }, []);
-
-  // Nuclear kill-switch: stop everything camera-related at hardware level
-  const nuclearKillCamera = useCallback(() => {
-    const w = window as WindowWithCameraKill;
-
-    // 1) Stop globally tracked active stream
-    if (activeStreamRef.current) {
-      activeStreamRef.current.getTracks().forEach((track) => {
-        track.enabled = false;
-        track.stop();
-      });
-      activeStreamRef.current = null;
-    }
-
-    // 2) Stop stream attached to window
-    if (w.localStream) {
-      w.localStream.getTracks().forEach((track) => {
-        track.enabled = false;
-        track.stop();
-      });
-      w.localStream = null;
-    }
-
-    // 3) Purge every video element: stop tracks, null source, pause, force reload
-    document.querySelectorAll("video").forEach((video) => {
-      if (video.srcObject) {
-        (video.srcObject as MediaStream).getTracks().forEach((track) => {
-          track.enabled = false;
-          track.stop();
-        });
-        video.srcObject = null;
-      }
-      video.pause();
-      video.removeAttribute("src");
-      video.load();
-    });
-
-    // 4) Remove QR scanner rendering nodes from DOM
-    const container = document.getElementById("qr-reader");
-    if (container) {
-      container.querySelectorAll("video, canvas").forEach((node) => node.remove());
-    }
-  }, []);
-
-  // Register global kill function + beforeunload listener
-  useEffect(() => {
-    const w = window as WindowWithCameraKill;
-    w.stopAllCameraStreams = nuclearKillCamera;
-
-    const handleBeforeUnload = () => {
-      nuclearKillCamera();
-    };
-    window.addEventListener("beforeunload", handleBeforeUnload);
-
-    return () => {
-      window.removeEventListener("beforeunload", handleBeforeUnload);
-      delete w.stopAllCameraStreams;
-    };
-  }, [nuclearKillCamera]);
-
-  // Clean up scanner and camera on page unmount
-  useEffect(() => {
-    return () => {
-      if (scannerRef.current) {
-        try { void scannerRef.current.stop(); } catch { /* ignore */ }
-        try { scannerRef.current.clear(); } catch { /* ignore */ }
-        scannerRef.current = null;
-      }
-      nuclearKillCamera();
-      scannerInitializedRef.current = false;
-    };
-  }, [nuclearKillCamera]);
-
-  const pauseScanner = useCallback(async () => {
-    const scanner = scannerRef.current;
-
-    if (scanner) {
-      try {
-        // Critical: await hardware shutdown before UI closes
-        await scanner.stop();
-      } catch { /* ignore */ }
-
-      try {
-        scanner.clear();
-      } catch { /* ignore */ }
-
-      scannerRef.current = null;
-      scannerInitializedRef.current = false;
-    }
-
-    nuclearKillCamera();
-  }, [nuclearKillCamera]);
-
-  const handleScanResult = useCallback(async (decodedText: string) => {
-    if (hasScannedRef.current) return;
-
+  const handleScanResult = useCallback((decodedText: string) => {
     if (decodedText.trim().toUpperCase() === VALID_CODE) {
-      hasScannedRef.current = true;
-      const currentStamps = stampsRef.current;
-      if (currentStamps < TOTAL_STAMPS) {
-        const newCount = Math.min(currentStamps + 1, TOTAL_STAMPS);
-        setStamps(newCount);
+      setStamps((prev) => {
+        const newCount = Math.min(prev + 1, TOTAL_STAMPS);
         setSuccessMsg(`You now have ${newCount} of ${TOTAL_STAMPS} stamps.`);
         setSuccessOpen(true);
-      }
-      await pauseScanner();
+        return newCount;
+      });
+      // Close scanner — component unmount kills camera
       setScannerOpen(false);
     } else {
       toast({ title: "Invalid code", description: "This QR code is not recognized.", variant: "destructive" });
     }
-  }, [pauseScanner, toast]);
+  }, [toast]);
 
-  const startScanner = useCallback(async () => {
-    hasScannedRef.current = false;
-    const el = document.getElementById("qr-reader");
-    if (!el) return;
-
-    // Singleton: destroy any existing scanner first
-    if (scannerRef.current) {
-      try {
-        await scannerRef.current.stop();
-      } catch { /* ignore */ }
-      try {
-        scannerRef.current.clear();
-      } catch { /* ignore */ }
-      scannerRef.current = null;
-      scannerInitializedRef.current = false;
-    }
-
-    nuclearKillCamera();
-
-    // Request camera access first from user gesture context, then release pre-check stream
-    try {
-      const preflightStream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "environment" },
-      });
-      preflightStream.getTracks().forEach((track) => {
-        track.enabled = false;
-        track.stop();
-      });
-      setCameraPermission("granted");
-    } catch {
-      setCameraPermission("denied");
-      return;
-    }
-
-    const qr = new Html5Qrcode("qr-reader");
-    scannerRef.current = qr;
-    scannerInitializedRef.current = true;
-
-    try {
-      await qr.start(
-        { facingMode: "environment" },
-        { fps: 10, qrbox: { width: 220, height: 220 } },
-        handleScanResult,
-        () => {}
-      );
-
-      // Capture the active stream for guaranteed cleanup
-      const video = el.querySelector("video");
-      if (video) {
-        video.setAttribute("playsinline", "true");
-        video.setAttribute("webkit-playsinline", "true");
-        if (video.srcObject) {
-          const activeStream = video.srcObject as MediaStream;
-          activeStreamRef.current = activeStream;
-          (window as WindowWithCameraKill).localStream = activeStream;
-        }
-      }
-    } catch {
-      setCameraPermission("denied");
-      nuclearKillCamera();
-    }
-  }, [handleScanResult, nuclearKillCamera]);
-
-  // Start scanner with slight delay after dialog opens (Safari permission persistence)
-  useEffect(() => {
-    if (scannerOpen && cameraPermission !== "denied") {
-      const timeout = setTimeout(() => { startScanner(); }, 100);
-      return () => clearTimeout(timeout);
-    }
-  }, [scannerOpen, cameraPermission, startScanner]);
+  const handlePermissionDenied = useCallback(() => {
+    setCameraBlocked(true);
+  }, []);
 
   const handleScannerOpen = () => {
     if (stamps >= TOTAL_STAMPS) {
       setRewardOpen(true);
       return;
     }
+    setCameraBlocked(false);
+    // New key forces React to create a brand-new component instance
+    setScannerKey((k) => k + 1);
     setScannerOpen(true);
   };
 
-  const handleScannerClose = async () => {
-    await pauseScanner();
+  const handleScannerClose = () => {
+    // Simply closing unmounts QRScanner → its cleanup kills hardware
     setScannerOpen(false);
   };
 
@@ -278,7 +90,6 @@ const Loyalty = () => {
     setRedeemSuccessOpen(true);
     setRedeemFading(false);
 
-    // Auto-hide after 2 seconds with fade-out
     setTimeout(() => {
       setRedeemFading(true);
       setTimeout(() => {
@@ -366,7 +177,7 @@ const Loyalty = () => {
         </p>
       </div>
 
-      {/* QR Scanner Dialog */}
+      {/* QR Scanner Dialog — component is FULLY UNMOUNTED when closed */}
       <Dialog open={scannerOpen} onOpenChange={(open) => { if (!open) handleScannerClose(); }}>
         <DialogContent className="max-w-[400px] w-[90%] rounded-2xl bg-card border-border">
           <DialogHeader>
@@ -379,7 +190,7 @@ const Loyalty = () => {
             </DialogDescription>
           </DialogHeader>
 
-          {cameraPermission === "denied" ? (
+          {cameraBlocked ? (
             <div className="rounded-xl bg-secondary p-5 text-center space-y-3">
               <Camera className="w-10 h-10 text-primary mx-auto" />
               <p className="text-foreground text-base font-bold tracking-[-0.02em]">
@@ -393,10 +204,11 @@ const Loyalty = () => {
               </p>
             </div>
           ) : (
-            <div
-              id="qr-reader"
-              className="w-full rounded-lg overflow-hidden bg-background"
-              style={{ minHeight: 280 }}
+            /* Key-based reset: new key = brand new component = fresh hardware session */
+            <QRScanner
+              key={scannerKey}
+              onScanResult={handleScanResult}
+              onPermissionDenied={handlePermissionDenied}
             />
           )}
 
