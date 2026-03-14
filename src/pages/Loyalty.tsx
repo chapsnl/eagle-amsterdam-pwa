@@ -411,8 +411,11 @@ const Loyalty = () => {
           </div>
           <Button variant="eagle" size="lg" className="w-full tracking-[-0.02em]" onClick={handleRedeem}>
             <RotateCcw className="w-5 h-5 mr-2" />
-            Redeem & reset card
+            RESET CARD & REDEEM
           </Button>
+          <p className="text-muted-foreground text-xs text-center mt-2 tracking-[-0.02em] italic">
+            *Do not click, the bartender will click & redeem for you. Otherwise you will loose your points.
+          </p>
         </DialogContent>
       </Dialog>
 
