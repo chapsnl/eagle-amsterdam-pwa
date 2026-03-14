@@ -85,6 +85,19 @@ const Loyalty = () => {
     };
   }, []);
 
+  const stopAllVideoTracks = useCallback(() => {
+    // Kill any remaining video tracks to remove the green recording indicator
+    const el = document.getElementById("qr-reader");
+    if (el) {
+      const video = el.querySelector("video");
+      if (video && video.srcObject) {
+        const stream = video.srcObject as MediaStream;
+        stream.getTracks().forEach((track) => track.stop());
+        video.srcObject = null;
+      }
+    }
+  }, []);
+
   const pauseScanner = useCallback(async () => {
     if (scannerRef.current) {
       try {
@@ -94,7 +107,9 @@ const Loyalty = () => {
         }
       } catch { /* ignore */ }
     }
-  }, []);
+    // Always explicitly stop tracks to clear the recording indicator
+    stopAllVideoTracks();
+  }, [stopAllVideoTracks]);
 
   const handleScanResult = useCallback((decodedText: string) => {
     if (hasScannedRef.current) return;
