@@ -12,9 +12,16 @@ export function initOneSignal() {
       serviceWorkerParam: { scope: "/" },
       serviceWorkerPath: "/OneSignalSDKWorker.js",
       autoPrompt: false,
+      autoRegister: false,
+      notifyButton: { enable: false },
       promptOptions: {
         slidedown: {
           prompts: [],
+          autoPrompt: false,
+        },
+        native: {
+          enabled: false,
+          autoPrompt: false,
         },
       },
     });
