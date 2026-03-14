@@ -98,13 +98,12 @@ const QRScanner = ({ onScanResult, onPermissionDenied }: QRScannerProps) => {
       }
     };
 
-    // Small delay for Safari permission persistence
-    const timeout = setTimeout(start, 100);
+    // Start immediately — no delay keeps us in Safari's user-gesture window
+    start();
 
     // CLEANUP: this runs when React unmounts this component — total destruction
     return () => {
       cancelled = true;
-      clearTimeout(timeout);
 
       const scanner = scannerRef.current;
       if (scanner) {

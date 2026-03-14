@@ -67,11 +67,26 @@ const Loyalty = () => {
     setCameraBlocked(true);
   }, []);
 
-  const handleScannerOpen = () => {
+  const handleScannerOpen = async () => {
     if (stamps >= TOTAL_STAMPS) {
       setRewardOpen(true);
       return;
     }
+
+    // Check permission state if Permissions API is available (avoids surprise blocks)
+    try {
+      if (navigator.permissions && navigator.permissions.query) {
+        const result = await navigator.permissions.query({ name: "camera" as PermissionName });
+        if (result.state === "denied") {
+          setCameraBlocked(true);
+          setScannerOpen(true);
+          return;
+        }
+      }
+    } catch {
+      // Permissions API not supported (older iOS) — proceed normally
+    }
+
     setCameraBlocked(false);
     // New key forces React to create a brand-new component instance
     setScannerKey((k) => k + 1);
