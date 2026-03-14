@@ -154,7 +154,7 @@ const Loyalty = () => {
     const el = document.getElementById("qr-reader");
     if (!el) return;
 
-    // Singleton: stop any existing scanner first
+    // Singleton: destroy any existing scanner first
     if (scannerRef.current) {
       try {
         const state = scannerRef.current.getState();
@@ -164,14 +164,14 @@ const Loyalty = () => {
       scannerRef.current = null;
       scannerInitializedRef.current = false;
     }
-    stopAllVideoTracks();
+    nuclearKillCamera();
 
-    // Request camera access from user gesture context
+    // Request camera access — keep a global ref to the stream
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: "environment" },
       });
-      // Stop pre-check stream — html5-qrcode opens its own
+      // Stop this pre-check stream; html5-qrcode will open its own
       stream.getTracks().forEach((t) => { t.enabled = false; t.stop(); });
       setCameraPermission("granted");
     } catch {
@@ -191,22 +191,25 @@ const Loyalty = () => {
         () => {}
       );
 
-      // Force playsinline for iOS PWA
+      // Capture the active stream for guaranteed cleanup later
       const video = el.querySelector("video");
       if (video) {
         video.setAttribute("playsinline", "true");
         video.setAttribute("webkit-playsinline", "true");
+        if (video.srcObject) {
+          activeStreamRef.current = video.srcObject as MediaStream;
+        }
       }
     } catch {
       setCameraPermission("denied");
     }
-  }, [handleScanResult, stopAllVideoTracks]);
+  }, [handleScanResult, nuclearKillCamera]);
 
-  // Start scanner immediately when dialog opens
+  // Start scanner with slight delay after dialog opens (Safari permission persistence)
   useEffect(() => {
     if (scannerOpen && cameraPermission !== "denied") {
-      const id = requestAnimationFrame(() => { startScanner(); });
-      return () => cancelAnimationFrame(id);
+      const timeout = setTimeout(() => { startScanner(); }, 120);
+      return () => clearTimeout(timeout);
     }
   }, [scannerOpen, cameraPermission, startScanner]);
 
