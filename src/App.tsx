@@ -17,6 +17,7 @@ const Agenda = lazy(() => import("./pages/Agenda"));
 const News = lazy(() => import("./pages/News"));
 const Events = lazy(() => import("./pages/Events"));
 const Contact = lazy(() => import("./pages/Contact"));
+const Loyalty = lazy(() => import("./pages/Loyalty"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient({
