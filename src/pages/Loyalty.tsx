@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { QrCode, Gift, RotateCcw, X, Star } from "lucide-react";
+import { QrCode, Gift, RotateCcw, X, Star, CheckCircle } from "lucide-react";
 import { Html5Qrcode } from "html5-qrcode";
 import { useToast } from "@/hooks/use-toast";
 
