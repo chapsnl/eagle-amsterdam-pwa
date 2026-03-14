@@ -4,6 +4,8 @@ declare global {
   }
 }
 
+const APP_ID = "e5e608d0-1fad-4e9a-84ca-9812ac96a3a1";
+
 let sdkLoaded = false;
 
 function loadOneSignalSDK(): Promise<void> {
@@ -20,38 +22,39 @@ function loadOneSignalSDK(): Promise<void> {
   });
 }
 
-export function initOneSignal() {
-  // Only prepare the deferred queue — SDK is NOT loaded yet.
-  // The SDK will be loaded on-demand when the user accepts the push prompt.
-  window.OneSignalDeferred = window.OneSignalDeferred || [];
-  window.OneSignalDeferred.push(async (OneSignal: any) => {
-    await OneSignal.init({
-      appId: "e5e608d0-1fad-4e9a-84ca-9812ac96a3a1",
-      serviceWorkerParam: { scope: "/" },
-      serviceWorkerPath: "/OneSignalSDKWorker.js",
-      autoPrompt: false,
-      autoRegister: false,
-      notifyButton: { enable: false },
-      promptOptions: {
-        slidedown: {
-          prompts: [],
-          autoPrompt: false,
-        },
-        native: {
-          enabled: false,
-          autoPrompt: false,
-        },
-      },
-    });
-  });
-}
-
+/**
+ * Loads the SDK, initialises OneSignal silently, then requests permission.
+ * Called ONLY when the user clicks "ENTER" in the custom modal.
+ */
 export async function activateOneSignalPush() {
   await loadOneSignalSDK();
-  // Wait for SDK to be ready
+
   return new Promise<void>((resolve) => {
     window.OneSignalDeferred = window.OneSignalDeferred || [];
     window.OneSignalDeferred.push(async (OneSignal: any) => {
+      await OneSignal.init({
+        appId: APP_ID,
+        serviceWorkerParam: { scope: "/" },
+        serviceWorkerPath: "/OneSignalSDKWorker.js",
+        autoPrompt: false,
+        autoRegister: false,
+        notifyButton: { enable: false },
+        promptOptions: {
+          slidedown: {
+            prompts: [
+              {
+                type: "push",
+                autoPrompt: false,
+              },
+            ],
+          },
+          native: {
+            enabled: false,
+            autoPrompt: false,
+          },
+        },
+      });
+
       await OneSignal.Notifications.requestPermission();
       resolve();
     });
