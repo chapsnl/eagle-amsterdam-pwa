@@ -55,18 +55,18 @@ export default function PushNotificationModal() {
             <Bell className="h-7 w-7 text-primary" />
           </div>
           <DialogTitle className="font-display text-2xl tracking-wide text-foreground">
-            Blijf op de hoogte!
+            Stay up to date!
           </DialogTitle>
           <DialogDescription className="text-muted-foreground text-sm leading-relaxed">
-            Ontvang meldingen over events, line-ups en speciale acties bij Eagle Amsterdam.
+            Receive notifications about events, line-ups and special offers at Eagle Amsterdam.
           </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col gap-2 mt-2">
           <Button variant="eagle" className="w-full" onClick={handleAccept}>
-            Ja, stuur mij updates
+            Yes, send me updates
           </Button>
           <Button variant="ghost" className="w-full text-muted-foreground" onClick={handleDismiss}>
-            Nee, bedankt
+            No, thanks
           </Button>
         </div>
       </DialogContent>
