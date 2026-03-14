@@ -1,9 +1,11 @@
 import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { QrCode, Gift, RotateCcw, X, Star, CheckCircle, Camera } from "lucide-react";
+import { QrCode, Star, CheckCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import QRScanner from "@/components/QRScanner";
+import StampCard from "@/components/loyalty/StampCard";
+import ScannerDialog from "@/components/loyalty/ScannerDialog";
+import RewardDialog from "@/components/loyalty/RewardDialog";
 
 const STORAGE_KEY = "eagle-loyalty-stamps";
 const VALID_CODE = "EAGLE2026";
@@ -22,10 +24,6 @@ const Loyalty = () => {
   const [cameraBlocked, setCameraBlocked] = useState(false);
   const { toast } = useToast();
 
-  // We need a ref-like value for stamps inside callbacks
-  const [stampsSnapshot, setStampsSnapshot] = useState(0);
-  useEffect(() => { setStampsSnapshot(stamps); }, [stamps]);
-
   // Load from localStorage
   useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
@@ -43,9 +41,7 @@ const Loyalty = () => {
 
   // Show reward dialog when 10 stamps reached
   useEffect(() => {
-    if (stamps >= TOTAL_STAMPS && !redeemed) {
-      setRewardOpen(true);
-    }
+    if (stamps >= TOTAL_STAMPS && !redeemed) setRewardOpen(true);
   }, [stamps, redeemed]);
 
   const handleScanResult = useCallback((decodedText: string) => {
@@ -56,49 +52,32 @@ const Loyalty = () => {
         setSuccessOpen(true);
         return newCount;
       });
-      // Close scanner — component unmount kills camera
       setScannerOpen(false);
     } else {
       toast({ title: "Invalid code", description: "This QR code is not recognized.", variant: "destructive" });
     }
   }, [toast]);
 
-  const handlePermissionDenied = useCallback(() => {
-    setCameraBlocked(true);
-  }, []);
+  const handlePermissionDenied = useCallback(() => setCameraBlocked(true), []);
 
-  const handleScannerOpen = async () => {
-    if (stamps >= TOTAL_STAMPS) {
-      setRewardOpen(true);
-      return;
-    }
+  const handleScannerOpen = useCallback(async () => {
+    if (stamps >= TOTAL_STAMPS) { setRewardOpen(true); return; }
 
-    // Check permission state if Permissions API is available (avoids surprise blocks)
     try {
-      if (navigator.permissions && navigator.permissions.query) {
+      if (navigator.permissions?.query) {
         const result = await navigator.permissions.query({ name: "camera" as PermissionName });
-        if (result.state === "denied") {
-          setCameraBlocked(true);
-          setScannerOpen(true);
-          return;
-        }
+        if (result.state === "denied") { setCameraBlocked(true); setScannerOpen(true); return; }
       }
-    } catch {
-      // Permissions API not supported (older iOS) — proceed normally
-    }
+    } catch { /* Permissions API not supported */ }
 
     setCameraBlocked(false);
-    // New key forces React to create a brand-new component instance
     setScannerKey((k) => k + 1);
     setScannerOpen(true);
-  };
+  }, [stamps]);
 
-  const handleScannerClose = () => {
-    // Simply closing unmounts QRScanner → its cleanup kills hardware
-    setScannerOpen(false);
-  };
+  const handleScannerClose = useCallback(() => setScannerOpen(false), []);
 
-  const handleRedeem = () => {
+  const handleRedeem = useCallback(() => {
     setStamps(0);
     setRedeemed(false);
     setRewardOpen(false);
@@ -107,12 +86,9 @@ const Loyalty = () => {
 
     setTimeout(() => {
       setRedeemFading(true);
-      setTimeout(() => {
-        setRedeemSuccessOpen(false);
-        setRedeemFading(false);
-      }, 300);
+      setTimeout(() => { setRedeemSuccessOpen(false); setRedeemFading(false); }, 300);
     }, 1700);
-  };
+  }, []);
 
   const isComplete = stamps >= TOTAL_STAMPS;
 
@@ -131,59 +107,9 @@ const Loyalty = () => {
 
       {/* Stamp Grid */}
       <div className="px-4 max-w-[90%] mx-auto w-full">
-        {isComplete ? (
-          <div className="relative rounded-2xl border-2 border-primary p-8 text-center neon-border">
-            <Gift className="w-16 h-16 text-primary mx-auto mb-4 animate-pulse-red" />
-            <h2 className="text-2xl text-foreground mb-2">CONGRATS!</h2>
-            <p className="text-foreground text-sm mb-6">
-              <strong>Collect 10 stamps to receive one free entry to an Eagle Amsterdam organized event.</strong>
-            </p>
-            <Button variant="eagle" size="lg" className="w-full text-base py-4" onClick={() => setRewardOpen(true)}>
-              <Gift className="w-5 h-5 mr-2" />
-              Redeem reward
-            </Button>
-          </div>
-        ) : (
-          <div className="rounded-2xl border border-border bg-card p-6">
-            <div className="grid grid-cols-3 gap-4 mb-2">
-              {Array.from({ length: TOTAL_STAMPS }).map((_, i) => {
-                const filled = i < stamps;
-                const isLast = i === TOTAL_STAMPS - 1;
-                return (
-                  <div
-                    key={i}
-                    className={`aspect-square rounded-full flex items-center justify-center transition-all duration-300 ${
-                      isLast ? "col-start-2" : ""
-                    } ${
-                      filled
-                        ? "bg-primary text-primary-foreground shadow-[var(--shadow-red)]"
-                        : "bg-secondary text-muted-foreground border-2 border-border"
-                    }`}
-                  >
-                    {filled ? (
-                      <svg viewBox="0 0 24 24" fill="currentColor" className="w-9 h-9">
-                        <path d="M12 2L9.19 8.63 2 9.24l5.46 4.73L5.82 21 12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61z" />
-                      </svg>
-                    ) : (
-                      <span className="text-base font-bold tracking-[-0.02em]">{i + 1}</span>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-            <p className="text-center text-muted-foreground text-sm mt-4">
-              {stamps} / {TOTAL_STAMPS} stamps collected
-            </p>
-          </div>
-        )}
+        <StampCard stamps={stamps} onRewardOpen={() => setRewardOpen(true)} />
 
-        {/* Scan Button */}
-        <Button
-          variant="eagle"
-          size="lg"
-          className="w-full mt-6 text-base py-4"
-          onClick={handleScannerOpen}
-        >
+        <Button variant="eagle" size="lg" className="w-full mt-6 text-base py-4" onClick={handleScannerOpen}>
           <QrCode className="w-5 h-5 mr-2" />
           {isComplete ? "View reward" : "Scan for stamp"}
         </Button>
@@ -192,77 +118,20 @@ const Loyalty = () => {
         </p>
       </div>
 
-      {/* QR Scanner Dialog — component is FULLY UNMOUNTED when closed */}
-      <Dialog open={scannerOpen} onOpenChange={(open) => { if (!open) handleScannerClose(); }}>
-        <DialogContent className="max-w-[400px] w-[90%] rounded-2xl bg-card border-border">
-          <DialogHeader>
-            <DialogTitle className="text-foreground flex items-center gap-2 tracking-[-0.05em]">
-              <QrCode className="w-5 h-5 text-primary" />
-              Scan QR Code
-            </DialogTitle>
-            <DialogDescription className="text-muted-foreground tracking-[-0.02em]">
-              Point your camera at the Eagle QR code to collect a stamp.
-            </DialogDescription>
-          </DialogHeader>
-
-          {cameraBlocked ? (
-            <div className="rounded-xl bg-secondary p-5 text-center space-y-3">
-              <Camera className="w-10 h-10 text-primary mx-auto" />
-              <p className="text-foreground text-base font-bold tracking-[-0.02em]">
-                Camera access blocked
-              </p>
-              <p className="text-muted-foreground text-sm tracking-[-0.02em] leading-relaxed">
-                You previously denied camera access. To fix this:<br />
-                <strong>iOS Safari:</strong> Settings → Safari → Camera → Allow<br />
-                <strong>Android Chrome:</strong> Tap the lock icon in the address bar → Permissions → Camera → Allow<br />
-                Then reload this page.
-              </p>
-            </div>
-          ) : (
-            /* Key-based reset: new key = brand new component = fresh hardware session */
-            <QRScanner
-              key={scannerKey}
-              onScanResult={handleScanResult}
-              onPermissionDenied={handlePermissionDenied}
-            />
-          )}
-
-          <Button variant="eagle-outline" onClick={handleScannerClose} className="w-full mt-2 tracking-[-0.02em]">
-            <X className="w-4 h-4 mr-2" />
-            Cancel
-          </Button>
-        </DialogContent>
-      </Dialog>
+      {/* QR Scanner — component FULLY UNMOUNTED when closed */}
+      <ScannerDialog
+        open={scannerOpen}
+        scannerKey={scannerKey}
+        cameraBlocked={cameraBlocked}
+        onClose={handleScannerClose}
+        onScanResult={handleScanResult}
+        onPermissionDenied={handlePermissionDenied}
+      />
 
       {/* Reward Dialog */}
-      <Dialog open={rewardOpen} onOpenChange={setRewardOpen}>
-        <DialogContent className="max-w-[400px] w-[90%] rounded-2xl bg-card border-primary neon-border">
-          <DialogHeader>
-            <DialogTitle className="text-foreground text-2xl flex items-center gap-2 tracking-[-0.05em]">
-              <Gift className="w-6 h-6 text-primary" />
-              Free Entry!
-            </DialogTitle>
-            <DialogDescription className="text-foreground text-sm tracking-[-0.02em]">
-              Show this screen to the bartender to claim your reward.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="text-center">
-            <Gift className="w-20 h-20 text-primary mx-auto my-4 animate-pulse-red" />
-            <p className="text-foreground text-sm font-bold mb-2 tracking-[-0.02em]">
-              Collect 10 stamps to receive one free entry to an Eagle Amsterdam organized event.
-            </p>
-          </div>
-          <Button variant="eagle" size="lg" className="w-full tracking-[-0.02em]" onClick={handleRedeem}>
-            <RotateCcw className="w-5 h-5 mr-2" />
-            RESET CARD & REDEEM
-          </Button>
-          <p className="text-muted-foreground text-xs text-center mt-2 tracking-[-0.02em] italic">
-            *Do not click, the bartender will click & redeem for you. Otherwise you will loose your points.
-          </p>
-        </DialogContent>
-      </Dialog>
+      <RewardDialog open={rewardOpen} onOpenChange={setRewardOpen} onRedeem={handleRedeem} />
 
-      {/* Success Dialog (stamp collected) */}
+      {/* Success Dialog */}
       <Dialog open={successOpen} onOpenChange={setSuccessOpen}>
         <DialogContent className="max-w-[400px] w-[90%] rounded-2xl bg-card border-border">
           <DialogHeader>
@@ -280,25 +149,13 @@ const Loyalty = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Redeem Success Overlay — auto-dismiss with fade */}
+      {/* Redeem Success Overlay */}
       {redeemSuccessOpen && (
-        <div
-          className={`fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm transition-opacity duration-300 ${
-            redeemFading ? "opacity-0" : "opacity-100"
-          }`}
-        >
-          <div
-            className={`max-w-[400px] w-[90%] rounded-2xl bg-card border border-primary p-8 text-center shadow-[var(--shadow-red-intense)] transition-all duration-300 ${
-              redeemFading ? "scale-95 opacity-0" : "animate-scale-in scale-100 opacity-100"
-            }`}
-          >
+        <div className={`fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm transition-opacity duration-300 ${redeemFading ? "opacity-0" : "opacity-100"}`}>
+          <div className={`max-w-[400px] w-[90%] rounded-2xl bg-card border border-primary p-8 text-center shadow-[var(--shadow-red-intense)] transition-all duration-300 ${redeemFading ? "scale-95 opacity-0" : "animate-scale-in scale-100 opacity-100"}`}>
             <CheckCircle className="w-12 h-12 text-primary mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-foreground mb-2" style={{ letterSpacing: "-0.05em" }}>
-              Reward Redeemed!
-            </h2>
-            <p className="text-foreground tracking-[-0.02em]">
-              Your stamp card has been reset. Enjoy! 🍻
-            </p>
+            <h2 className="text-2xl font-bold text-foreground mb-2" style={{ letterSpacing: "-0.05em" }}>Reward Redeemed!</h2>
+            <p className="text-foreground tracking-[-0.02em]">Your stamp card has been reset. Enjoy! 🍻</p>
           </div>
         </div>
       )}

@@ -1,10 +1,10 @@
 import { Newspaper } from "lucide-react";
 import { useEaglePosts } from "@/hooks/useEaglePosts";
-import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
 import { useState } from "react";
 import EagleHtmlContent from "@/components/EagleHtmlContent";
 import PullToRefresh from "@/components/PullToRefresh";
+import CardSkeletonList from "@/components/shared/CardSkeletonList";
 
 const News = () => {
   const { data: posts, isLoading, error, forceRefresh } = useEaglePosts();
@@ -21,20 +21,7 @@ const News = () => {
           Latest news from Eagle Amsterdam.
         </p>
 
-        {isLoading && (
-          <div className="flex flex-col gap-4">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="border border-border rounded-lg overflow-hidden bg-card">
-                <Skeleton className="w-full h-40" />
-                <div className="p-4 space-y-2">
-                  <Skeleton className="h-6 w-3/4" />
-                  <Skeleton className="h-4 w-1/2" />
-                  <Skeleton className="h-4 w-full" />
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+        {isLoading && <CardSkeletonList />}
 
         {error && (
           <div className="border border-destructive/50 rounded-lg p-4 bg-destructive/10 text-destructive">
