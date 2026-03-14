@@ -233,7 +233,7 @@ const Loyalty = () => {
           <QrCode className="w-5 h-5 mr-2" />
           {isComplete ? "View reward" : "Scan for stamp"}
         </Button>
-        <p className="text-muted-foreground text-[11px] text-center mt-3 tracking-[-0.02em] leading-snug">
+        <p className="text-muted-foreground text-xs text-center mt-3 tracking-[-0.02em] leading-snug">
           Not valid for events by Ready2Kink, Horse Fair, or other external event organizers.
         </p>
       </div>
