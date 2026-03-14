@@ -21,7 +21,12 @@ const Loyalty = () => {
   const [cameraPermission, setCameraPermission] = useState<CameraPermission>("unknown");
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const hasScannedRef = useRef(false);
+  const scannerInitializedRef = useRef(false);
+  const stampsRef = useRef(stamps);
   const { toast } = useToast();
+
+  // Keep stampsRef in sync so the scan callback always has the latest value
+  useEffect(() => { stampsRef.current = stamps; }, [stamps]);
 
   // Load from localStorage
   useEffect(() => {
@@ -45,7 +50,7 @@ const Loyalty = () => {
     }
   }, [stamps, redeemed]);
 
-  // Check camera permission on mount
+  // Check camera permission on mount (non-Safari)
   useEffect(() => {
     const checkPermission = async () => {
       try {
@@ -57,37 +62,83 @@ const Loyalty = () => {
           });
         }
       } catch {
-        // permissions API not supported (e.g. Safari), that's fine
+        // permissions API not supported (e.g. Safari)
       }
     };
     checkPermission();
   }, []);
 
-  const stopScanner = useCallback(async () => {
+  // Clean up scanner on page unmount only
+  useEffect(() => {
+    return () => {
+      if (scannerRef.current) {
+        try {
+          const state = scannerRef.current.getState();
+          if (state === 2) scannerRef.current.stop();
+          scannerRef.current.clear();
+        } catch { /* ignore */ }
+        scannerRef.current = null;
+      }
+      scannerInitializedRef.current = false;
+    };
+  }, []);
+
+  const pauseScanner = useCallback(async () => {
     if (scannerRef.current) {
       try {
         const state = scannerRef.current.getState();
-        if (state === 2) { // SCANNING
+        if (state === 2) {
           await scannerRef.current.stop();
         }
-        scannerRef.current.clear();
-      } catch {
-        // ignore
-      }
-      scannerRef.current = null;
+      } catch { /* ignore */ }
     }
   }, []);
 
-  const startScanner = useCallback(async () => {
-    await stopScanner();
-    hasScannedRef.current = false;
+  const handleScanResult = useCallback((decodedText: string) => {
+    if (hasScannedRef.current) return;
 
-    // Pre-request permission so the browser remembers it for the domain
+    if (decodedText.trim().toUpperCase() === VALID_CODE) {
+      hasScannedRef.current = true;
+      const currentStamps = stampsRef.current;
+      if (currentStamps < TOTAL_STAMPS) {
+        const newCount = Math.min(currentStamps + 1, TOTAL_STAMPS);
+        setStamps(newCount);
+        setSuccessMsg(`You now have ${newCount} of ${TOTAL_STAMPS} stamps.`);
+        setSuccessOpen(true);
+      }
+      pauseScanner();
+      setScannerOpen(false);
+    } else {
+      toast({ title: "Invalid code", description: "This QR code is not recognized.", variant: "destructive" });
+    }
+  }, [pauseScanner, toast]);
+
+  const startScanner = useCallback(async () => {
+    hasScannedRef.current = false;
+    const el = document.getElementById("qr-reader");
+    if (!el) return;
+
+    // If scanner was already initialized, just resume scanning
+    if (scannerInitializedRef.current && scannerRef.current) {
+      try {
+        await scannerRef.current.start(
+          { facingMode: "environment" },
+          { fps: 10, qrbox: { width: 220, height: 220 } },
+          handleScanResult,
+          () => {}
+        );
+        return;
+      } catch {
+        // Fall through to full init
+      }
+    }
+
+    // First time: request camera access directly from user gesture
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: "environment" },
       });
-      // Stop the pre-check stream immediately — html5-qrcode will open its own
+      // Stop pre-check stream — html5-qrcode opens its own
       stream.getTracks().forEach((t) => t.stop());
       setCameraPermission("granted");
     } catch {
@@ -95,41 +146,19 @@ const Loyalty = () => {
       return;
     }
 
-    // Small delay for DOM to be ready
-    await new Promise((r) => setTimeout(r, 100));
-
-    const el = document.getElementById("qr-reader");
-    if (!el) return;
-
     const qr = new Html5Qrcode("qr-reader");
     scannerRef.current = qr;
+    scannerInitializedRef.current = true;
 
     try {
       await qr.start(
         { facingMode: "environment" },
         { fps: 10, qrbox: { width: 220, height: 220 } },
-        (decodedText) => {
-          // Prevent multiple scans
-          if (hasScannedRef.current) return;
-
-          if (decodedText.trim().toUpperCase() === VALID_CODE) {
-            hasScannedRef.current = true;
-            if (stamps < TOTAL_STAMPS) {
-              const newCount = Math.min(stamps + 1, TOTAL_STAMPS);
-              setStamps(newCount);
-              setSuccessMsg(`You now have ${newCount} of ${TOTAL_STAMPS} stamps.`);
-              setSuccessOpen(true);
-            }
-            stopScanner();
-            setScannerOpen(false);
-          } else {
-            toast({ title: "Invalid code", description: "This QR code is not recognized.", variant: "destructive" });
-          }
-        },
+        handleScanResult,
         () => {}
       );
 
-      // Force playsinline on the video element for iOS PWA
+      // Force playsinline for iOS PWA
       const video = el.querySelector("video");
       if (video) {
         video.setAttribute("playsinline", "true");
@@ -138,7 +167,15 @@ const Loyalty = () => {
     } catch {
       setCameraPermission("denied");
     }
-  }, [stamps, stopScanner, toast]);
+  }, [handleScanResult]);
+
+  // Start scanner immediately when dialog opens
+  useEffect(() => {
+    if (scannerOpen && cameraPermission !== "denied") {
+      const id = requestAnimationFrame(() => { startScanner(); });
+      return () => cancelAnimationFrame(id);
+    }
+  }, [scannerOpen, cameraPermission, startScanner]);
 
   const handleScannerOpen = () => {
     if (stamps >= TOTAL_STAMPS) {
@@ -149,7 +186,7 @@ const Loyalty = () => {
   };
 
   const handleScannerClose = async () => {
-    await stopScanner();
+    await pauseScanner();
     setScannerOpen(false);
   };
 
@@ -324,15 +361,8 @@ const Loyalty = () => {
           </Button>
         </DialogContent>
       </Dialog>
-
-      {scannerOpen && cameraPermission !== "denied" && <ScannerStarter start={startScanner} />}
     </div>
   );
-};
-
-const ScannerStarter = ({ start }: { start: () => void }) => {
-  useEffect(() => { start(); }, [start]);
-  return null;
 };
 
 export default Loyalty;
