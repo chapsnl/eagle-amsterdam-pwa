@@ -96,16 +96,31 @@ const Loyalty = () => {
   }, []);
 
   const stopAllVideoTracks = useCallback(() => {
-    // Kill any remaining video tracks to remove the green recording indicator
+    // Kill ANY remaining video tracks to remove the green recording indicator (iOS)
     const el = document.getElementById("qr-reader");
     if (el) {
       const video = el.querySelector("video");
       if (video && video.srcObject) {
         const stream = video.srcObject as MediaStream;
-        stream.getTracks().forEach((track) => track.stop());
+        stream.getTracks().forEach((track) => {
+          track.enabled = false;
+          track.stop();
+        });
         video.srcObject = null;
       }
     }
+    // Also stop any orphaned tracks from navigator
+    try {
+      document.querySelectorAll("video").forEach((v) => {
+        if (v.srcObject) {
+          (v.srcObject as MediaStream).getTracks().forEach((t) => {
+            t.enabled = false;
+            t.stop();
+          });
+          v.srcObject = null;
+        }
+      });
+    } catch { /* ignore */ }
   }, []);
 
   const pauseScanner = useCallback(async () => {
