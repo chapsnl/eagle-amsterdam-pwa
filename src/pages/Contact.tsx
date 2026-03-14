@@ -75,21 +75,32 @@ const Contact = () => {
         CONTACT
       </h1>
 
-      {/* Address */}
+      {/* Opening Hours */}
       <div className="border border-border rounded-lg p-6 bg-card neon-border mb-4">
         <h2 className="font-display text-2xl tracking-wider text-foreground mb-4">
-          EAGLE AMSTERDAM
+          OPENING HOURS
         </h2>
-        <div className="flex flex-col gap-3 text-sm text-muted-foreground">
-          <div className="flex items-start gap-3">
-            <MapPin className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-            <div>
-              <p>Warmoesstraat 90</p>
-              <p>1012 JH Amsterdam</p>
-              <p>The Netherlands</p>
-            </div>
+        <div className="flex flex-col gap-2 text-sm">
+          <div className="flex justify-between">
+            <span className="text-muted-foreground">Mon – Wed</span>
+            <span className="text-foreground font-semibold">Closed</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-muted-foreground">Thursday</span>
+            <span className="text-foreground font-semibold">22:00 – 04:00</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-muted-foreground">Friday & Saturday</span>
+            <span className="text-foreground font-semibold">22:00 – 05:00</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-muted-foreground">Sunday</span>
+            <span className="text-foreground font-semibold">22:00 – 04:00</span>
           </div>
         </div>
+        <p className="text-muted-foreground text-xs mt-4 italic">
+          For daytime parties and special events, please consult the agenda.
+        </p>
       </div>
 
       <Button
@@ -98,7 +109,7 @@ const Contact = () => {
         className="w-full mb-4"
         onClick={() =>
           window.open(
-            "https://www.google.com/maps/search/?api=1&query=Eagle+Amsterdam+Warmoesstraat+90",
+            "https://www.google.com/maps/search/?api=1&query=Eagle+Amsterdam+Warmoesstraat+96+Amsterdam",
             "_blank"
           )
         }
