@@ -83,7 +83,7 @@ const Events = () => {
       </div>
 
       <AlertDialog open={popupOpen} onOpenChange={setPopupOpen}>
-        <AlertDialogContent className="bg-card border-border">
+        <AlertDialogContent className="bg-card border-border max-w-[calc(100vw-3rem)] sm:max-w-sm mx-auto">
           <AlertDialogHeader>
             <AlertDialogTitle className="font-display tracking-wider text-foreground">
               Ticket Info
