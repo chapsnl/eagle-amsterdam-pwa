@@ -72,7 +72,7 @@ export default function PushNotificationModal() {
             18+ to Enter and Subscribe
           </DialogTitle>
           <DialogDescription className="text-muted-foreground text-sm leading-relaxed">
-            Yes I am 18+ and want to receive notifications about events, line-ups and special offers at Eagle Amsterdam.
+            Click 'Allow' on the next system popup to complete your subscription.
           </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col gap-2 mt-2">
