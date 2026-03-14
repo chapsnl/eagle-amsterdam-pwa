@@ -179,10 +179,7 @@
     line-height: 1 !important;
   }
 
-  .eagle-content-wrapper.blog-content-fix br + br,
-  .blog-content-fix br + br {
-    display: none !important;
-  }
+  /* br + br already hidden by br rule above */
 
   .prose h1, .prose h2, .prose h3, .prose h4,
   .eagle-content-wrapper h1, .eagle-content-wrapper h2, .eagle-content-wrapper h3, .eagle-content-wrapper h4 {
