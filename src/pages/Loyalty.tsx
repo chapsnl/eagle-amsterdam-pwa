@@ -160,28 +160,25 @@ const Loyalty = () => {
     const el = document.getElementById("qr-reader");
     if (!el) return;
 
-    // If scanner was already initialized, just resume scanning
-    if (scannerInitializedRef.current && scannerRef.current) {
+    // Singleton: stop any existing scanner first
+    if (scannerRef.current) {
       try {
-        await scannerRef.current.start(
-          { facingMode: "environment" },
-          { fps: 10, qrbox: { width: 220, height: 220 } },
-          handleScanResult,
-          () => {}
-        );
-        return;
-      } catch {
-        // Fall through to full init
-      }
+        const state = scannerRef.current.getState();
+        if (state === 2) await scannerRef.current.stop();
+        scannerRef.current.clear();
+      } catch { /* ignore */ }
+      scannerRef.current = null;
+      scannerInitializedRef.current = false;
     }
+    stopAllVideoTracks();
 
-    // First time: request camera access directly from user gesture
+    // Request camera access from user gesture context
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: "environment" },
       });
       // Stop pre-check stream — html5-qrcode opens its own
-      stream.getTracks().forEach((t) => t.stop());
+      stream.getTracks().forEach((t) => { t.enabled = false; t.stop(); });
       setCameraPermission("granted");
     } catch {
       setCameraPermission("denied");
@@ -209,7 +206,7 @@ const Loyalty = () => {
     } catch {
       setCameraPermission("denied");
     }
-  }, [handleScanResult]);
+  }, [handleScanResult, stopAllVideoTracks]);
 
   // Start scanner immediately when dialog opens
   useEffect(() => {
