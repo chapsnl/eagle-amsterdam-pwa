@@ -17,24 +17,29 @@ serve(async (req) => {
       throw new Error("TICKETSOFT_ACCESS_TOKEN not configured");
     }
 
-    // Ticketsoft uses apiKey auth: raw token in Authorization header (no Bearer prefix)
-    const res = await fetch("https://ticketsoft.nl/api/events", {
-      headers: {
-        Authorization: token,
-        Accept: "application/json",
-      },
-    });
+    console.log("Token length:", token.length, "First 4 chars:", token.substring(0, 4));
 
-    if (!res.ok) {
+    // Try multiple auth methods
+    const methods = [
+      { url: `https://ticketsoft.nl/api/events?access_token=${encodeURIComponent(token)}`, headers: { Accept: "application/json" } },
+      { url: "https://ticketsoft.nl/api/events", headers: { Accept: "application/json", Authorization: `Bearer ${token}` } },
+      { url: "https://ticketsoft.nl/api/events", headers: { Accept: "application/json", "X-Access-Token": token } },
+      { url: "https://ticketsoft.nl/api/events", headers: { Accept: "application/json", Authorization: `Token ${token}` } },
+    ];
+
+    for (const method of methods) {
+      const res = await fetch(method.url, { headers: method.headers });
       const body = await res.text();
-      throw new Error(`Ticketsoft API error: ${res.status} - ${body}`);
+      console.log(`Auth method ${JSON.stringify(Object.keys(method.headers))} → ${res.status}: ${body.substring(0, 200)}`);
+      
+      if (res.ok) {
+        return new Response(body, {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
     }
 
-    const events = await res.json();
-
-    return new Response(JSON.stringify(events), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    throw new Error("All Ticketsoft auth methods failed (401). Please verify your access token.");
   } catch (error) {
     return new Response(
       JSON.stringify({ error: (error as Error).message }),

@@ -27,11 +27,9 @@ serve(async (req) => {
       );
     }
 
-    // Ticketsoft uses apiKey auth: raw token in Authorization header (no Bearer prefix)
-    const res = await fetch("https://ticketsoft.nl/api/cart", {
+    const res = await fetch(`https://ticketsoft.nl/api/cart?access_token=${encodeURIComponent(token)}`, {
       method: "POST",
       headers: {
-        Authorization: token,
         Accept: "application/json",
         "Content-Type": "application/json",
       },
