@@ -5,18 +5,9 @@ interface CacheEntry<T> {
   timestamp: number;
 }
 
-export function getCache<T>(key: string): T | null {
-  try {
-    const raw = localStorage.getItem(key);
-    if (!raw) return null;
-    const entry: CacheEntry<T> = JSON.parse(raw);
-    if (Date.now() - entry.timestamp < TWENTY_FOUR_HOURS) {
-      return entry.data;
-    }
-    return null;
-  } catch {
-    return null;
-  }
+export function getCache<T>(_key: string): T | null {
+  // Cache temporarily disabled
+  return null;
 }
 
 export function setCache<T>(key: string, data: T): void {
