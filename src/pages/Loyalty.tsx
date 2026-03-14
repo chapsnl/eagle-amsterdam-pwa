@@ -10,7 +10,11 @@ const VALID_CODE = "EAGLE2026";
 const TOTAL_STAMPS = 10;
 
 type CameraPermission = "prompt" | "granted" | "denied" | "unknown";
-type WindowWithLocalStream = Window & { localStream?: MediaStream | null };
+
+interface WindowWithCameraKill extends Window {
+  localStream?: MediaStream | null;
+  stopAllCameraStreams?: () => void;
+}
 
 const Loyalty = () => {
   const [stamps, setStamps] = useState(0);
@@ -72,9 +76,9 @@ const Loyalty = () => {
     checkPermission();
   }, []);
 
-  // Nuclear kill-switch: stop everything camera-related
+  // Nuclear kill-switch: stop everything camera-related at hardware level
   const nuclearKillCamera = useCallback(() => {
-    const windowWithLocalStream = window as WindowWithLocalStream;
+    const w = window as WindowWithCameraKill;
 
     // 1) Stop globally tracked active stream
     if (activeStreamRef.current) {
@@ -85,16 +89,16 @@ const Loyalty = () => {
       activeStreamRef.current = null;
     }
 
-    // 2) Safety fallback: stop stream attached to window
-    if (windowWithLocalStream.localStream) {
-      windowWithLocalStream.localStream.getTracks().forEach((track) => {
+    // 2) Stop stream attached to window
+    if (w.localStream) {
+      w.localStream.getTracks().forEach((track) => {
         track.enabled = false;
         track.stop();
       });
-      windowWithLocalStream.localStream = null;
+      w.localStream = null;
     }
 
-    // 3) Stop any remaining live MediaStreams on video elements
+    // 3) Purge every video element: stop tracks, null source, pause, force reload
     document.querySelectorAll("video").forEach((video) => {
       if (video.srcObject) {
         (video.srcObject as MediaStream).getTracks().forEach((track) => {
@@ -103,6 +107,9 @@ const Loyalty = () => {
         });
         video.srcObject = null;
       }
+      video.pause();
+      video.removeAttribute("src");
+      video.load();
     });
 
     // 4) Remove QR scanner rendering nodes from DOM
@@ -112,16 +119,28 @@ const Loyalty = () => {
     }
   }, []);
 
+  // Register global kill function + beforeunload listener
+  useEffect(() => {
+    const w = window as WindowWithCameraKill;
+    w.stopAllCameraStreams = nuclearKillCamera;
+
+    const handleBeforeUnload = () => {
+      nuclearKillCamera();
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+      delete w.stopAllCameraStreams;
+    };
+  }, [nuclearKillCamera]);
+
   // Clean up scanner and camera on page unmount
   useEffect(() => {
     return () => {
       if (scannerRef.current) {
-        try {
-          void scannerRef.current.stop();
-        } catch { /* ignore */ }
-        try {
-          scannerRef.current.clear();
-        } catch { /* ignore */ }
+        try { void scannerRef.current.stop(); } catch { /* ignore */ }
+        try { scannerRef.current.clear(); } catch { /* ignore */ }
         scannerRef.current = null;
       }
       nuclearKillCamera();
@@ -222,7 +241,7 @@ const Loyalty = () => {
         if (video.srcObject) {
           const activeStream = video.srcObject as MediaStream;
           activeStreamRef.current = activeStream;
-          (window as WindowWithLocalStream).localStream = activeStream;
+          (window as WindowWithCameraKill).localStream = activeStream;
         }
       }
     } catch {
