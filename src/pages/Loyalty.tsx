@@ -71,7 +71,34 @@ const Loyalty = () => {
     checkPermission();
   }, []);
 
-  // Clean up scanner and camera on page unmount — absolute termination
+  // Nuclear kill-switch: stop everything camera-related
+  const nuclearKillCamera = useCallback(() => {
+    // 1. Stop the globally tracked stream
+    if (activeStreamRef.current) {
+      activeStreamRef.current.getTracks().forEach((t) => {
+        t.enabled = false;
+        t.stop();
+      });
+      activeStreamRef.current = null;
+    }
+    // 2. Kill every video element's stream on the page
+    document.querySelectorAll("video").forEach((v) => {
+      if (v.srcObject) {
+        (v.srcObject as MediaStream).getTracks().forEach((t) => {
+          t.enabled = false;
+          t.stop();
+        });
+        v.srcObject = null;
+      }
+    });
+    // 3. Remove video elements from qr-reader to force DOM cleanup
+    const el = document.getElementById("qr-reader");
+    if (el) {
+      el.querySelectorAll("video").forEach((v) => v.remove());
+    }
+  }, []);
+
+  // Clean up scanner and camera on page unmount
   useEffect(() => {
     return () => {
       if (scannerRef.current) {
@@ -82,46 +109,10 @@ const Loyalty = () => {
         } catch { /* ignore */ }
         scannerRef.current = null;
       }
-      // Kill every video track on the page
-      document.querySelectorAll("video").forEach((v) => {
-        if (v.srcObject) {
-          (v.srcObject as MediaStream).getTracks().forEach((t) => {
-            t.enabled = false;
-            t.stop();
-          });
-          v.srcObject = null;
-        }
-      });
+      nuclearKillCamera();
       scannerInitializedRef.current = false;
     };
-  }, []);
-
-  const stopAllVideoTracks = useCallback(() => {
-    // Kill ANY remaining video tracks to remove the green recording indicator (iOS)
-    const el = document.getElementById("qr-reader");
-    if (el) {
-      const video = el.querySelector("video");
-      if (video && video.srcObject) {
-        const stream = video.srcObject as MediaStream;
-        stream.getTracks().forEach((track) => {
-          track.enabled = false;
-          track.stop();
-        });
-        video.srcObject = null;
-      }
-    }
-    // Also stop any orphaned tracks from navigator
-    try {
-      document.querySelectorAll("video").forEach((v) => {
-        if (v.srcObject) {
-          (v.srcObject as MediaStream).getTracks().forEach((t) => {
-            t.enabled = false;
-            t.stop();
-          });
-          v.srcObject = null;
-        }
-      });
-    } catch { /* ignore */ }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const pauseScanner = useCallback(async () => {
@@ -131,11 +122,13 @@ const Loyalty = () => {
         if (state === 2) {
           await scannerRef.current.stop();
         }
+        scannerRef.current.clear();
       } catch { /* ignore */ }
+      scannerRef.current = null;
+      scannerInitializedRef.current = false;
     }
-    // Always explicitly stop tracks to clear the recording indicator
-    stopAllVideoTracks();
-  }, [stopAllVideoTracks]);
+    nuclearKillCamera();
+  }, [nuclearKillCamera]);
 
   const handleScanResult = useCallback((decodedText: string) => {
     if (hasScannedRef.current) return;
