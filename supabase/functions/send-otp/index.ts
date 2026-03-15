@@ -142,7 +142,9 @@ Deno.serve(async (req) => {
     // === CHANNEL 2: Send via OneSignal Push ===
     const ONESIGNAL_REST_API_KEY = Deno.env.get("ONESIGNAL_REST_API_KEY");
     const ONESIGNAL_APP_ID = "e5e608d0-1fad-4e9a-84ca-9812ac96a3a1";
+    console.log("[OTP] OneSignal REST key present:", !!ONESIGNAL_REST_API_KEY);
 
+    let pushResult: any = null;
     if (ONESIGNAL_REST_API_KEY) {
       try {
         console.log("[OTP] Push request sent to OneSignal for external_id:", email.toLowerCase());
@@ -155,7 +157,6 @@ Deno.serve(async (req) => {
           },
           body: JSON.stringify({
             app_id: ONESIGNAL_APP_ID,
-            // Target the specific user by their external ID (email)
             include_aliases: { external_id: [email.toLowerCase()] },
             target_channel: "push",
             headings: { en: "Eagle Amsterdam VIP" },
@@ -163,19 +164,22 @@ Deno.serve(async (req) => {
           }),
         });
 
-        const pushData = await pushResponse.json();
+        pushResult = await pushResponse.json();
+        pushResult._status = pushResponse.status;
+        console.log("[OTP] OneSignal response:", JSON.stringify(pushResult));
 
         if (!pushResponse.ok) {
-          console.error("[OTP] OneSignal error:", pushData);
-          errors.push(`Push Error: ${JSON.stringify(pushData.errors || pushData)}`);
+          errors.push(`Push Error: ${JSON.stringify(pushResult.errors || pushResult)}`);
         } else {
-          console.log("[OTP] Push notification sent:", pushData.id);
+          console.log("[OTP] Push sent, recipients:", pushResult.recipients);
         }
       } catch (pushErr: any) {
         console.error("[OTP] Push error:", pushErr);
+        pushResult = { error: pushErr.message };
         errors.push(`Push Error: ${pushErr.message}`);
       }
     } else {
+      pushResult = { error: "key_missing" };
       console.log("[OTP] OneSignal REST API key not configured, skipping push");
     }
 
