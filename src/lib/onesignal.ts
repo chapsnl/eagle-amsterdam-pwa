@@ -103,12 +103,13 @@ export async function requestPushPermission(): Promise<boolean> {
       }
 
       const granted = Notification.permission === "granted";
-      if (granted) {
-        localStorage.setItem(INIT_FLAG, "true");
-        console.log("[OneSignal] Permission granted via user interaction");
-      }
+      if (!granted) return false;
 
-      return granted;
+      await OneSignal.User?.PushSubscription?.optIn?.();
+      localStorage.setItem(INIT_FLAG, "true");
+      console.log("[OneSignal] Permission granted + optIn forced via user interaction");
+
+      return true;
     } catch (err) {
       console.warn("[OneSignal] Permission request failed:", err);
       return false;
