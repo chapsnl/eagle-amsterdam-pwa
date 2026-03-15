@@ -76,19 +76,25 @@ export type Database = {
           created_at: string
           email: string
           id: string
+          member_number: string | null
           name: string
+          profile_image_url: string | null
         }
         Insert: {
           created_at?: string
           email?: string
           id: string
+          member_number?: string | null
           name?: string
+          profile_image_url?: string | null
         }
         Update: {
           created_at?: string
           email?: string
           id?: string
+          member_number?: string | null
           name?: string
+          profile_image_url?: string | null
         }
         Relationships: []
       }
@@ -97,7 +103,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      generate_member_number: { Args: never; Returns: string }
     }
     Enums: {
       [_ in never]: never
