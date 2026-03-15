@@ -38,7 +38,7 @@ const StampCard = memo(({ stamps, onRewardOpen }: StampCardProps) => {
             <div
               key={i}
               className={`aspect-square rounded-full flex items-center justify-center transition-all duration-300 ${
-                isLast ? "col-start-2" : ""
+                ""
               } ${
                 filled
                   ? "bg-primary text-primary-foreground shadow-[var(--shadow-red)]"
