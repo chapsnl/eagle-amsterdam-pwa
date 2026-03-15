@@ -112,12 +112,20 @@ Deno.serve(async (req) => {
     // Clean up used OTP codes for this email
     await supabase.from("otp_codes").delete().eq("email", email.toLowerCase());
 
+    // Fetch member_number from profile
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("member_number")
+      .eq("id", userId)
+      .single();
+
     return new Response(
       JSON.stringify({
         success: true,
         userId,
         email: email.toLowerCase(),
         name: otpRecord.name,
+        member_number: profile?.member_number || "",
         // Return the hashed_token so the client can exchange it for a session
         hashed_token: signInData?.properties?.hashed_token || "",
         verification_url: signInData?.properties?.action_link || "",
