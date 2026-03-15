@@ -157,13 +157,6 @@ const VipMemberPass = () => {
 
   return (
     <>
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/*"
-        className="hidden"
-        onChange={handlePhotoUpload}
-      />
 
       {isFullscreen ? (
         <div className="fixed inset-0 z-50 bg-background flex flex-col items-center justify-center p-4">
