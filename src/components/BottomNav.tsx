@@ -19,7 +19,6 @@ const BottomNav = () => {
       <div className="flex items-center justify-around h-14 max-w-lg mx-auto px-4">
         {navItems.map(({ path, label, icon: Icon }) => {
           const active = location.pathname === path || (path === "/vip" && location.pathname.startsWith("/vip"));
-          const isVip = path === "/vip";
           return (
             <button
               key={path}

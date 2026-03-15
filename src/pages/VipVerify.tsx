@@ -223,8 +223,8 @@ async function migrateLoyaltyStamps(userId: string, email: string) {
         last_scan_at: lastScan ? new Date(parseInt(lastScan)).toISOString() : null,
       });
     }
-  } catch (err) {
-    console.error("[VIP] Stamp migration error:", err);
+  } catch {
+    // Stamp migration failed silently
   }
 }
 
