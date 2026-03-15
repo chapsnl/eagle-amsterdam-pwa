@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Maximize2, Minimize2 } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/components/ui/sonner";
+
 import eagleLogo from "@/assets/eagle-logo-white.webp";
 
 interface VipSession {
