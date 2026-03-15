@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { Calendar, MapPin } from "lucide-react";
-const heroImage = "https://www.eagleamsterdam.com/wp-content/uploads/2026/app-back.webp";
+const heroImage = "https://www.eagleamsterdam.com/wp-content/uploads/2025/12/Header-3b-copy.webp";
 import eagleLogo from "@/assets/eagle-logo-white.webp";
 
 const Index = () => {
