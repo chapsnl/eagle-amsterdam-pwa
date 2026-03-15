@@ -216,3 +216,8 @@
 
   .prose em, .prose i, .eagle-content-wrapper em, .eagle-content-wrapper i { font-style: italic; }
 }
+
+@keyframes slide {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(400%); }
+}
