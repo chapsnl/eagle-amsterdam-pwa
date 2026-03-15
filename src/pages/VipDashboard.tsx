@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Crown, Star, Tag, Newspaper } from "lucide-react";
+import { Crown, Star, Tag, Newspaper, IdCard } from "lucide-react";
 
 interface VipSession {
   userId: string;
@@ -44,6 +44,11 @@ const VipDashboard = () => {
       label: "PRIVATE NEWS",
       icon: Newspaper,
       onClick: () => navigate("/vip/news"),
+    },
+    {
+      label: "MEMBER PASS",
+      icon: IdCard,
+      onClick: () => navigate("/vip/member-pass"),
     },
   ];
 
