@@ -83,7 +83,7 @@ const VipVerify = () => {
 
       if (fnError) {
         console.error("[VIP Verify] Function error:", fnError);
-        setError(fnError.message || "Verification failed.");
+        setError("You entered an invalid code, try again!");
         setLoading(false);
         return;
       }
