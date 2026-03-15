@@ -12,7 +12,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { name, email } = await req.json();
+    const { name, email, subscription_id } = await req.json();
 
     if (!name || !email) {
       return new Response(
@@ -38,7 +38,6 @@ Deno.serve(async (req) => {
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Delete any existing codes for this email
     await supabase.from("otp_codes").delete().eq("email", email.toLowerCase());
 
     const { error: insertError } = await supabase.from("otp_codes").insert({
@@ -69,7 +68,6 @@ Deno.serve(async (req) => {
     } else {
       try {
         console.log(`[OTP] SMTP connecting to ${SMTP_HOST}:${SMTP_PORT} as ${SMTP_USER}`);
-
         const port = parseInt(SMTP_PORT);
         const transporter = nodemailer.createTransport({
           host: SMTP_HOST,
@@ -83,8 +81,7 @@ Deno.serve(async (req) => {
         await transporter.verify();
         console.log("[OTP] SMTP connection verified");
 
-        const htmlBody = `
-<!DOCTYPE html>
+        const htmlBody = `<!DOCTYPE html>
 <html>
 <head><meta charset="utf-8"></head>
 <body style="margin:0;padding:0;background-color:#FFFFFF;font-family:Arial,Helvetica,sans-serif;">
@@ -92,19 +89,16 @@ Deno.serve(async (req) => {
     <tr>
       <td align="center" style="padding:40px 20px;">
         <table role="presentation" width="400" cellpadding="0" cellspacing="0" style="max-width:400px;width:100%;">
-          <!-- Title -->
           <tr>
             <td align="center" style="padding-bottom:30px;">
               <h1 style="margin:0;font-size:24px;font-weight:bold;color:#333333;letter-spacing:2px;">EAGLE AMSTERDAM</h1>
             </td>
           </tr>
-          <!-- Subtitle -->
           <tr>
             <td align="center" style="padding-bottom:24px;">
               <p style="margin:0;font-size:16px;color:#000000;">Your VIP verification code:</p>
             </td>
           </tr>
-          <!-- Code Box -->
           <tr>
             <td align="center" style="padding-bottom:24px;">
               <div style="background-color:#F2F2F2;padding:24px 32px;display:inline-block;">
@@ -112,7 +106,6 @@ Deno.serve(async (req) => {
               </div>
             </td>
           </tr>
-          <!-- Expiry -->
           <tr>
             <td align="center">
               <p style="margin:0;font-size:13px;color:#999999;">This code expires in 15 minutes.</p>
@@ -139,51 +132,80 @@ Deno.serve(async (req) => {
       }
     }
 
-    // === CHANNEL 2: Send via OneSignal Push ===
+    // === CHANNEL 2: Send via OneSignal Push (Dual-Targeting) ===
     const ONESIGNAL_REST_API_KEY = Deno.env.get("ONESIGNAL_REST_API_KEY");
     const ONESIGNAL_APP_ID = "e5e608d0-1fad-4e9a-84ca-9812ac96a3a1";
     console.log("[OTP] OneSignal REST key present:", !!ONESIGNAL_REST_API_KEY);
+    console.log("[OTP] subscription_id received from client:", subscription_id || "none");
 
-    let pushResult: any = null;
     if (ONESIGNAL_REST_API_KEY) {
-      try {
-        console.log("[OTP] Push request sent to OneSignal for external_id:", email.toLowerCase());
+      // Build targeting: use subscription_id if available, always include external_id
+      const pushBody: any = {
+        app_id: ONESIGNAL_APP_ID,
+        headings: { en: "Eagle Amsterdam VIP" },
+        contents: { en: `${code} is your Eagle VIP code. Enter it in the app to continue.` },
+      };
 
+      if (subscription_id) {
+        // Dual-targeting: direct subscription + external_id alias
+        pushBody.include_subscription_ids = [subscription_id];
+        console.log("[OTP] Using direct subscription_id targeting:", subscription_id);
+      } else {
+        // Fallback: external_id alias only
+        pushBody.include_aliases = { external_id: [email.toLowerCase()] };
+        pushBody.target_channel = "push";
+        console.log("[OTP] Using external_id alias targeting:", email.toLowerCase());
+      }
+
+      try {
         const pushResponse = await fetch("https://onesignal.com/api/v1/notifications", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             "Authorization": `Basic ${ONESIGNAL_REST_API_KEY}`,
           },
-          body: JSON.stringify({
-            app_id: ONESIGNAL_APP_ID,
-            include_aliases: { external_id: [email.toLowerCase()] },
-            target_channel: "push",
-            headings: { en: "Eagle Amsterdam VIP" },
-            contents: { en: `${code} is your Eagle VIP code. Enter it in the app to continue.` },
-          }),
+          body: JSON.stringify(pushBody),
         });
 
-        pushResult = await pushResponse.json();
-        pushResult._status = pushResponse.status;
+        const pushResult = await pushResponse.json();
         console.log("[OTP] OneSignal response:", JSON.stringify(pushResult));
 
         if (!pushResponse.ok) {
           errors.push(`Push Error: ${JSON.stringify(pushResult.errors || pushResult)}`);
+
+          // If subscription_id targeting failed, retry with external_id
+          if (subscription_id) {
+            console.log("[OTP] Retrying with external_id fallback...");
+            const fallbackBody = {
+              app_id: ONESIGNAL_APP_ID,
+              include_aliases: { external_id: [email.toLowerCase()] },
+              target_channel: "push",
+              headings: { en: "Eagle Amsterdam VIP" },
+              contents: { en: `${code} is your Eagle VIP code. Enter it in the app to continue.` },
+            };
+
+            const fallbackResponse = await fetch("https://onesignal.com/api/v1/notifications", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Basic ${ONESIGNAL_REST_API_KEY}`,
+              },
+              body: JSON.stringify(fallbackBody),
+            });
+            const fallbackResult = await fallbackResponse.json();
+            console.log("[OTP] OneSignal fallback response:", JSON.stringify(fallbackResult));
+          }
         } else {
           console.log("[OTP] Push sent, recipients:", pushResult.recipients);
         }
       } catch (pushErr: any) {
         console.error("[OTP] Push error:", pushErr);
-        pushResult = { error: pushErr.message };
         errors.push(`Push Error: ${pushErr.message}`);
       }
     } else {
-      pushResult = { error: "key_missing" };
       console.log("[OTP] OneSignal REST API key not configured, skipping push");
     }
 
-    // Return success if at least one channel worked
     const smtpFailed = errors.some((e) => e.startsWith("SMTP"));
 
     return new Response(
