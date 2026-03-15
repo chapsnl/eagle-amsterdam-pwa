@@ -18,6 +18,10 @@ const News = lazy(() => import("./pages/News"));
 const Events = lazy(() => import("./pages/Events"));
 const Contact = lazy(() => import("./pages/Contact"));
 const Loyalty = lazy(() => import("./pages/Loyalty"));
+const Vip = lazy(() => import("./pages/Vip"));
+const VipLogin = lazy(() => import("./pages/VipLogin"));
+const VipVerify = lazy(() => import("./pages/VipVerify"));
+const VipDashboard = lazy(() => import("./pages/VipDashboard"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient({
@@ -51,6 +55,11 @@ const App = () => {
               <Route path="/events" element={<Events />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/loyalty" element={<Loyalty />} />
+              <Route path="/vip" element={<Vip />} />
+              <Route path="/vip/login" element={<VipLogin />} />
+              <Route path="/vip/verify" element={<VipVerify />} />
+              <Route path="/vip/dashboard" element={<VipDashboard />} />
+              <Route path="/vip/loyalty" element={<Loyalty />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>
