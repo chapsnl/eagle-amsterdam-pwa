@@ -12,7 +12,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { name, email, subscriptionId } = await req.json();
+    const { name, email } = await req.json();
 
     if (!email) {
       return new Response(
@@ -29,18 +29,9 @@ Deno.serve(async (req) => {
       );
     }
 
-    const normalizedSubscriptionId =
-      typeof subscriptionId === "string" && subscriptionId.trim().length > 0
-        ? subscriptionId.trim()
-        : null;
-
     // Generate 4-digit code
     const code = Math.floor(1000 + Math.random() * 9000).toString();
     console.log(`[OTP] Generated code for ${email}: ${code}`);
-    console.log("[OTP] Incoming push target payload:", {
-      hasSubscriptionId: !!normalizedSubscriptionId,
-      subscriptionId: normalizedSubscriptionId,
-    });
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -62,27 +53,28 @@ Deno.serve(async (req) => {
       );
     }
 
-    const errors: string[] = [];
-
-    // === SMTP ===
+    // === Send email via SMTP ===
     const SMTP_HOST = Deno.env.get("SMTP_HOST");
     const SMTP_PORT = Deno.env.get("SMTP_PORT") || "465";
     const SMTP_USER = Deno.env.get("SMTP_USER");
     const SMTP_PASS = Deno.env.get("SMTP_PASS");
 
     if (!SMTP_HOST || !SMTP_USER || !SMTP_PASS) {
-      errors.push("SMTP not configured");
-    } else {
-      try {
-        const port = parseInt(SMTP_PORT);
-        const transporter = nodemailer.createTransport({
-          host: SMTP_HOST, port, secure: port === 465,
-          auth: { user: SMTP_USER, pass: SMTP_PASS },
-        });
+      return new Response(
+        JSON.stringify({ success: false, error: "SMTP not configured" }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
 
-        await transporter.verify();
+    const port = parseInt(SMTP_PORT);
+    const transporter = nodemailer.createTransport({
+      host: SMTP_HOST, port, secure: port === 465,
+      auth: { user: SMTP_USER, pass: SMTP_PASS },
+    });
 
-        const htmlBody = `
+    await transporter.verify();
+
+    const htmlBody = `
 <!DOCTYPE html>
 <html>
 <head><meta charset="utf-8"></head>
@@ -120,134 +112,20 @@ Deno.serve(async (req) => {
 </body>
 </html>`;
 
-        await transporter.sendMail({
-          from: SMTP_USER, to: email,
-          subject: "Eagle Amsterdam - Your VIP Code",
-          html: htmlBody,
-        });
+    await transporter.sendMail({
+      from: SMTP_USER, to: email,
+      subject: "Eagle Amsterdam - Your VIP Code",
+      html: htmlBody,
+    });
 
-        console.log("[OTP] Email sent successfully");
-      } catch (smtpErr: any) {
-        console.error("[OTP] SMTP error:", smtpErr);
-        errors.push(`SMTP Error: ${smtpErr.message}`);
-      }
-    }
-
-    // === OneSignal Push (Subscription-first fallback logic) ===
-    const ONESIGNAL_REST_API_KEY = Deno.env.get("ONESIGNAL_REST_API_KEY");
-    const ONESIGNAL_APP_ID = "e5e608d0-1fad-4e9a-84ca-9812ac96a3a1";
-    let pushDelivered: boolean | null = null;
-
-    if (ONESIGNAL_REST_API_KEY) {
-      const pushContent = `${code} is your Eagle VIP code.`;
-      const normalizedEmail = email.toLowerCase();
-      const sendPushToTarget = async (
-        pushBody: Record<string, unknown>,
-        targetType: "subscription_id" | "external_id"
-      ): Promise<boolean> => {
-        try {
-          const pushResponse = await fetch("https://api.onesignal.com/notifications?c=push", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Key ${ONESIGNAL_REST_API_KEY}`,
-            },
-            body: JSON.stringify(pushBody),
-          });
-
-          const pushResult = await pushResponse.json();
-          const hasErrors = Array.isArray(pushResult?.errors)
-            ? pushResult.errors.length > 0
-            : !!pushResult?.errors;
-          const messageId = typeof pushResult?.id === "string" ? pushResult.id : "";
-          const recipients = Number(pushResult?.recipients ?? 0);
-          const hasRecipient = Number.isFinite(recipients) && recipients > 0;
-          const accepted = pushResponse.ok && !hasErrors && messageId.length > 0;
-
-          if (accepted && hasRecipient) {
-            console.log(
-              `[OTP] Push delivered via ${targetType}. messageId=${messageId}, recipients=${recipients}`
-            );
-            return true;
-          }
-
-          if (accepted && !hasRecipient) {
-            console.warn(`[OTP] Push accepted but zero recipients via ${targetType}.`, {
-              messageId,
-              recipients,
-              targetType,
-              full: pushResult,
-            });
-            return false;
-          }
-
-          console.warn(`[OTP] Push via ${targetType} failed:`, {
-            status: pushResponse.status,
-            errors: pushResult?.errors,
-            id: pushResult?.id,
-            recipients: pushResult?.recipients,
-            full: pushResult,
-          });
-          return false;
-        } catch (pushErr: any) {
-          console.error(`[OTP] Push via ${targetType} failed:`, pushErr.message);
-          errors.push(`Push Error: ${pushErr.message}`);
-          return false;
-        }
-      };
-
-      let delivered = false;
-
-      const basePushPayload = {
-        app_id: ONESIGNAL_APP_ID,
-        target_channel: "push",
-        headings: { en: "Eagle Amsterdam VIP" },
-        contents: { en: pushContent },
-      };
-
-      // Absolute primary: direct subscription targeting
-      if (normalizedSubscriptionId) {
-        delivered = await sendPushToTarget(
-          {
-            ...basePushPayload,
-            include_subscription_ids: [normalizedSubscriptionId],
-          },
-          "subscription_id"
-        );
-      }
-
-      // Fallback: external_id alias targeting
-      if (!delivered) {
-        delivered = await sendPushToTarget(
-          {
-            ...basePushPayload,
-            include_aliases: { external_id: [normalizedEmail] },
-          },
-          "external_id"
-        );
-      }
-
-      if (!delivered) {
-        errors.push("Push not delivered: no reachable subscribed device found");
-      }
-
-      pushDelivered = delivered;
-    }
-
-    const smtpFailed = errors.some((e) => e.startsWith("SMTP"));
+    console.log("[OTP] Email sent successfully");
 
     return new Response(
-      JSON.stringify({
-        success: true,
-        warnings: errors.length > 0 ? errors : undefined,
-        smtp_error: smtpFailed ? errors.find((e) => e.startsWith("SMTP")) : undefined,
-        push_delivered: pushDelivered,
-        push_error: errors.find((e) => e.startsWith("Push")),
-      }),
+      JSON.stringify({ success: true }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error: any) {
-    console.error("[OTP] Unexpected error:", error);
+    console.error("[OTP] Error:", error);
     return new Response(
       JSON.stringify({ success: false, error: error.message || "Failed to send code" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
