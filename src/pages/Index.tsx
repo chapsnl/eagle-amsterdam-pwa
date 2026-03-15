@@ -8,9 +8,9 @@ const Index = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="flex flex-col min-h-screen pb-20">
-      {/* Hero Section */}
-      <div className="relative h-[70vh] min-h-[480px] w-full overflow-hidden">
+    <div className="flex flex-col h-[100dvh] pb-[calc(3.5rem+env(safe-area-inset-bottom))]">
+      {/* Hero Section — fills remaining space */}
+      <div className="relative flex-1 w-full overflow-hidden">
         <img
           src={heroImage}
           alt="Eagle Amsterdam interior"
@@ -24,16 +24,16 @@ const Index = () => {
           className="absolute inset-0"
           style={{ background: "var(--gradient-hero)" }}
         />
-        <div className="absolute bottom-0 left-0 right-0 p-6 flex flex-col items-center text-center gap-4 animate-fade-in">
+        <div className="absolute bottom-0 left-0 right-0 p-6 flex flex-col items-center text-center gap-3 animate-fade-in">
           <img
             src={eagleLogo}
             alt="Eagle Amsterdam logo"
-            className="w-64 object-contain"
+            className="w-56 sm:w-64 object-contain"
             width={192}
             height={96}
             fetchPriority="high"
           />
-          <p className="text-muted-foreground text-sm max-w-xs">
+          <p className="text-muted-foreground text-sm max-w-xs leading-snug">
             Eagle Amsterdam is originally a men-only club and during regular hours that core identity remains. At the same time, we serve the wider LGBTQI+ community with a diverse program of inclusive fetish events.
           </p>
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -43,8 +43,8 @@ const Index = () => {
         </div>
       </div>
 
-      {/* Quick Actions */}
-      <div className="p-6 flex flex-col gap-4 max-w-lg mx-auto w-full">
+      {/* Quick Actions — fixed height, always visible above nav */}
+      <div className="px-6 py-4 flex flex-col gap-3 max-w-lg mx-auto w-full shrink-0">
         <Button
           variant="eagle"
           size="lg"

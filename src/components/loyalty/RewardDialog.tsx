@@ -11,7 +11,7 @@ interface RewardDialogProps {
 
 const RewardDialog = memo(({ open, onOpenChange, onRedeem }: RewardDialogProps) => (
   <Dialog open={open} onOpenChange={onOpenChange}>
-    <DialogContent className="max-w-[400px] w-[90%] rounded-2xl bg-card border-primary neon-border">
+    <DialogContent className="max-w-[400px] w-[90%] rounded-none bg-primary border-primary p-6">
       <DialogHeader>
         <DialogTitle className="text-foreground text-2xl flex items-center gap-2 tracking-[-0.05em]">
           <Gift className="w-6 h-6 text-primary" />
