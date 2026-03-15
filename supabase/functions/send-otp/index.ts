@@ -124,60 +124,76 @@ Deno.serve(async (req) => {
       }
     }
 
-    // === OneSignal Push (Dual-Targeting) ===
+    // === OneSignal Push (Subscription-first fallback logic) ===
     const ONESIGNAL_REST_API_KEY = Deno.env.get("ONESIGNAL_REST_API_KEY");
     const ONESIGNAL_APP_ID = "e5e608d0-1fad-4e9a-84ca-9812ac96a3a1";
 
     if (ONESIGNAL_REST_API_KEY) {
       const pushContent = `${code} is your Eagle VIP code.`;
+      const normalizedEmail = email.toLowerCase();
+      const normalizedSubscriptionId =
+        typeof subscriptionId === "string" && subscriptionId.trim().length > 0
+          ? subscriptionId.trim()
+          : null;
 
-      // Strategy: Subscription ID first (most reliable), then external_id as fallback
-      const pushTargets: Record<string, unknown>[] = [];
-
-      // Primary target: By subscription ID (direct device, bypasses external ID sync)
-      if (subscriptionId) {
-        pushTargets.push({
-          app_id: ONESIGNAL_APP_ID,
-          include_subscription_ids: [subscriptionId],
-          headings: { en: "Eagle Amsterdam VIP" },
-          contents: { en: pushContent },
-        });
-      }
-
-      // Fallback target: By external_id (email alias)
-      pushTargets.push({
-        app_id: ONESIGNAL_APP_ID,
-        include_aliases: { external_id: [email.toLowerCase()] },
-        target_channel: "push",
-        headings: { en: "Eagle Amsterdam VIP" },
-        contents: { en: pushContent },
-      });
-
-      for (const pushBody of pushTargets) {
+      const sendPushToTarget = async (
+        pushBody: Record<string, unknown>,
+        targetType: "subscription_id" | "external_id"
+      ): Promise<boolean> => {
         try {
           const pushResponse = await fetch("https://onesignal.com/api/v1/notifications", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
-              "Authorization": `Basic ${ONESIGNAL_REST_API_KEY}`,
+              Authorization: `Basic ${ONESIGNAL_REST_API_KEY}`,
             },
             body: JSON.stringify(pushBody),
           });
 
           const pushResult = await pushResponse.json();
-          const targetType = "include_subscription_ids" in pushBody ? "subscription_id" : "external_id";
-          
-          if (pushResponse.ok && pushResult.recipients > 0) {
-            console.log(`[OTP] Push sent via ${targetType}, recipients: ${pushResult.recipients}`);
-            // If first target succeeds, skip the second to avoid duplicate
-            break;
-          } else {
-            console.warn(`[OTP] Push via ${targetType} — no recipients or error:`, pushResult.errors || pushResult);
+          const recipients = Number(pushResult?.recipients || 0);
+
+          if (pushResponse.ok && recipients > 0) {
+            console.log(`[OTP] Push sent via ${targetType}, recipients: ${recipients}`);
+            return true;
           }
+
+          console.warn(`[OTP] Push via ${targetType} — no recipients or error:`, pushResult?.errors || pushResult);
+          return false;
         } catch (pushErr: any) {
-          console.error("[OTP] Push error:", pushErr.message);
+          console.error(`[OTP] Push via ${targetType} failed:`, pushErr.message);
           errors.push(`Push Error: ${pushErr.message}`);
+          return false;
         }
+      };
+
+      let delivered = false;
+
+      // Absolute primary: direct subscription targeting
+      if (normalizedSubscriptionId) {
+        delivered = await sendPushToTarget(
+          {
+            app_id: ONESIGNAL_APP_ID,
+            include_subscription_ids: [normalizedSubscriptionId],
+            headings: { en: "Eagle Amsterdam VIP" },
+            contents: { en: pushContent },
+          },
+          "subscription_id"
+        );
+      }
+
+      // Fallback: external_id alias targeting
+      if (!delivered) {
+        await sendPushToTarget(
+          {
+            app_id: ONESIGNAL_APP_ID,
+            include_aliases: { external_id: [normalizedEmail] },
+            target_channel: "push",
+            headings: { en: "Eagle Amsterdam VIP" },
+            contents: { en: pushContent },
+          },
+          "external_id"
+        );
       }
     }
 

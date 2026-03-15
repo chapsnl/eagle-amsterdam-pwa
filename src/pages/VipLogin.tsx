@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Crown, ArrowRight, Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -8,18 +8,52 @@ import { supabase } from "@/integrations/supabase/client";
 
 const VipLogin = () => {
   const navigate = useNavigate();
+  const interactionTriggered = useRef(false);
+
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
+  const [syncingPush, setSyncingPush] = useState(false);
+  const [checkingPush, setCheckingPush] = useState(true);
   const [error, setError] = useState("");
   const [pushEnabled, setPushEnabled] = useState(
     () => localStorage.getItem("eagle-onesignal-initialized") === "true"
   );
+  const [subscriptionId, setSubscriptionId] = useState<string | null>(null);
 
-  const handleEnablePush = async () => {
+  const refreshPushState = useCallback(async () => {
     try {
-      const { requestPushPermission } = await import("@/lib/onesignal");
-      await requestPushPermission();
-      setPushEnabled(true);
+      const { getOneSignalPushState } = await import("@/lib/onesignal");
+      const state = await getOneSignalPushState();
+      setPushEnabled(state.permission === "granted");
+      setSubscriptionId(state.subscriptionId);
+    } catch {
+      // OneSignal may be blocked or unavailable
+    } finally {
+      setCheckingPush(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void refreshPushState();
+  }, [refreshPushState]);
+
+  const handleFirstInteraction = async () => {
+    if (interactionTriggered.current) return;
+    interactionTriggered.current = true;
+
+    try {
+      const { requestPushPermission, waitForValidSubscriptionId } = await import("@/lib/onesignal");
+      const granted = await requestPushPermission();
+      setPushEnabled(granted);
+
+      if (!granted) return;
+
+      try {
+        const ready = await waitForValidSubscriptionId(8000, 250);
+        setSubscriptionId(ready.subscriptionId);
+      } catch {
+        // Keep graceful fallback for browsers that need one extra interaction
+      }
     } catch {
       // OneSignal may not be available
     }
@@ -40,80 +74,90 @@ const VipLogin = () => {
     }
 
     setLoading(true);
+    setSyncingPush(true);
 
     try {
       const targetEmail = email.trim().toLowerCase();
-      let subscriptionId: string | null = null;
+      let syncedSubscriptionId: string | null = subscriptionId;
 
-      // Step 1: Force login to sync OneSignal identity
-      try {
-        const { setOneSignalExternalId } = await import("@/lib/onesignal");
-        console.log("[VIP Login] Step 1 — OneSignal.login() with:", targetEmail);
-        await setOneSignalExternalId(targetEmail);
+      const {
+        requestPushPermission,
+        setOneSignalExternalId,
+        waitForValidSubscriptionId,
+        getOneSignalPushState,
+      } = await import("@/lib/onesignal");
 
-        // Step 2: Capture hardware subscription ID
-        await new Promise<void>((resolve) => {
-          window.OneSignalDeferred = window.OneSignalDeferred || [];
-          window.OneSignalDeferred.push(async (OneSignal: any) => {
-            const pushId = OneSignal.User?.PushSubscription?.id;
-            if (pushId) {
-              subscriptionId = pushId;
-              console.log("[VIP Login] Step 2 — Captured subscription ID:", pushId);
-            } else {
-              console.warn("[VIP Login] Step 2 — No subscription ID available");
-            }
-            resolve();
-          });
-        });
-
-        // Step 3: Mandatory 2-second delay for OneSignal DB sync
-        console.log("[VIP Login] Step 3 — Waiting 2s for OneSignal DB sync...");
-        await new Promise((resolve) => setTimeout(resolve, 2000));
-        console.log("[VIP Login] Step 3 — Sync complete. subscriptionId:", subscriptionId);
-      } catch (e) {
-        console.warn("[VIP Login] OneSignal not available, skipping push sync:", e);
+      if (Notification.permission !== "granted") {
+        const granted = await requestPushPermission();
+        if (!granted) {
+          throw new Error("Push permission is required before sending your code.");
+        }
       }
 
-      // Step 4: Dispatch OTP with subscription ID for dual-targeting
-      console.log("[VIP Login] Step 4 — Dispatching OTP. email:", targetEmail, "subscriptionId:", subscriptionId);
+      console.log("[VIP Login] Step 1 — OneSignal.login() + addEmail() with:", targetEmail);
+      await setOneSignalExternalId(targetEmail);
+
+      console.log("[VIP Login] Step 2 — Waiting for valid subscription ID and optedIn=true");
+      const ready = await waitForValidSubscriptionId(12000, 250);
+      syncedSubscriptionId = ready.subscriptionId;
+
+      const proof = await getOneSignalPushState();
+      if (!proof.optedIn || !proof.subscriptionId) {
+        throw new Error("Push subscription is not fully active yet. Please try again.");
+      }
+
+      setSubscriptionId(proof.subscriptionId);
+      setPushEnabled(true);
+
+      console.log("[VIP Login] Step 3 — Waiting 2s for OneSignal global sync...");
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+      setSyncingPush(false);
+
+      console.log("[VIP Login] Step 4 — Dispatching OTP. email:", targetEmail, "subscriptionId:", syncedSubscriptionId);
       const { data, error: fnError } = await supabase.functions.invoke("send-otp", {
-        body: { email: targetEmail, subscriptionId },
+        body: { email: targetEmail, subscriptionId: syncedSubscriptionId },
       });
 
       if (fnError) {
         setError(fnError.message || "Failed to send code. Please try again.");
-        setLoading(false);
         return;
       }
 
       if (!data?.success) {
         setError(data?.error || "Failed to send code. Please try again.");
-        setLoading(false);
         return;
       }
 
       if (data.smtp_error) {
         setError(`Code generated but email failed: ${data.smtp_error}`);
-        setLoading(false);
         return;
       }
 
-      // Store email for verify page
       sessionStorage.setItem("vip_otp_email", targetEmail);
       localStorage.setItem("vip_otp_pending", JSON.stringify({ email: targetEmail }));
       navigate("/vip/verify");
     } catch (err: any) {
       setError(err.message || "Something went wrong. Please try again.");
     } finally {
+      setSyncingPush(false);
       setLoading(false);
     }
   };
 
+  const pushReady = pushEnabled && !!subscriptionId;
+
   return (
-    <div className="flex flex-col min-h-screen pb-24">
+    <div
+      className="flex flex-col min-h-screen pb-24"
+      onPointerDownCapture={() => {
+        void handleFirstInteraction();
+      }}
+      onKeyDownCapture={() => {
+        void handleFirstInteraction();
+      }}
+    >
       <div className="flex-1 flex flex-col items-center justify-center px-4">
         <div className="w-full max-w-[90%] mx-auto space-y-6">
-          {/* Header */}
           <div className="text-center space-y-2">
             <Crown className="w-10 h-10 text-primary mx-auto" />
             <h1 className="text-2xl text-foreground">VIP MEMBERS</h1>
@@ -122,7 +166,6 @@ const VipLogin = () => {
             </p>
           </div>
 
-          {/* Form — email only */}
           <div className="space-y-3">
             <div className="space-y-1.5">
               <Label htmlFor="email" className="text-foreground text-sm">Email</Label>
@@ -137,22 +180,21 @@ const VipLogin = () => {
               />
             </div>
 
-            {/* Push notification opt-in */}
-            {!pushEnabled && (
-              <button
-                type="button"
-                onClick={handleEnablePush}
-                className="w-full flex items-center gap-3 p-2.5 border border-border bg-secondary text-foreground text-sm rounded-none transition-colors hover:border-primary"
-              >
+            {!pushReady && (
+              <div className="flex items-center gap-3 p-2.5 border border-border bg-secondary text-foreground text-sm rounded-none">
                 <Bell className="w-5 h-5 text-primary shrink-0" />
-                <span className="text-xs">Activate Push Notifications to receive the Verification Code</span>
-              </button>
+                <span className="text-xs">
+                  {checkingPush
+                    ? "Checking push subscription..."
+                    : "Tap anywhere to enable push notifications and sync your device before sending the code."}
+                </span>
+              </div>
             )}
 
-            {pushEnabled && (
+            {pushReady && (
               <div className="flex items-center gap-3 p-2.5 border border-primary/30 bg-primary/10 text-foreground text-sm rounded-none">
                 <Bell className="w-5 h-5 text-primary shrink-0" />
-                <span className="text-xs">Push notifications enabled</span>
+                <span className="text-xs">Push ready and linked to this device.</span>
               </div>
             )}
 
@@ -167,10 +209,13 @@ const VipLogin = () => {
               size="lg"
               className="w-full h-12 text-lg rounded-none"
               onClick={handleSendCode}
-              disabled={loading}
+              disabled={loading || checkingPush}
             >
               {loading ? (
-                <div className="w-5 h-5 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
+                <>
+                  <div className="w-5 h-5 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin mr-2" />
+                  {syncingPush ? "SYNCING PUSH..." : "SENDING CODE..."}
+                </>
               ) : (
                 <>
                   SEND CODE

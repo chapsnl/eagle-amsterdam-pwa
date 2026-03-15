@@ -4,11 +4,14 @@ import { format } from "date-fns";
 import { useState } from "react";
 import EagleHtmlContent from "@/components/shared/EagleHtmlContent";
 import PullToRefresh from "@/components/shared/PullToRefresh";
-import CardSkeletonList from "@/components/shared/CardSkeletonList";
+import FirstVisitLoader from "@/components/shared/FirstVisitLoader";
 
 const News = () => {
   const { data: posts, isLoading, error, forceRefresh, isFetching, isPlaceholderData } = useEaglePosts();
   const [expandedId, setExpandedId] = useState<number | null>(null);
+
+  const hasCachedPosts = typeof window !== "undefined" && !!localStorage.getItem("eagle-posts-cache");
+  const showFirstVisitLoader = isLoading && !hasCachedPosts;
 
   return (
     <PullToRefresh onRefresh={forceRefresh}>
@@ -26,7 +29,7 @@ const News = () => {
           Latest news from Eagle Amsterdam.
         </p>
 
-        {isLoading && <CardSkeletonList />}
+        {showFirstVisitLoader && <FirstVisitLoader />}
 
         {error && (
           <div className="border border-destructive/50 rounded-lg p-4 bg-destructive/10 text-destructive">
@@ -35,7 +38,7 @@ const News = () => {
           </div>
         )}
 
-        {posts && posts.length === 0 && (
+        {posts && posts.length === 0 && !isLoading && (
           <p className="text-muted-foreground text-center py-12">No news posts available.</p>
         )}
 
