@@ -75,44 +75,6 @@ const VipMemberPass = () => {
     }
   };
 
-  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !session) return;
-
-    if (!file.type.startsWith("image/")) {
-      toast.error("Please select an image file");
-      return;
-    }
-
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error("Image must be under 5MB");
-      return;
-    }
-
-    setUploading(true);
-    try {
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("userId", session.userId);
-
-      const { data, error } = await supabase.functions.invoke("upload-profile-image", {
-        body: formData,
-      });
-
-      if (error || !data?.success) {
-        throw new Error(data?.error || error?.message || "Upload failed");
-      }
-
-      setProfileImage(data.imageUrl);
-      toast.success("Photo updated");
-    } catch (err: any) {
-      console.error("[MemberPass] Upload error:", err);
-      toast.error(err.message || "Failed to upload photo");
-    } finally {
-      setUploading(false);
-    }
-  };
-
   const toggleFullscreen = () => {
     setIsFullscreen(!isFullscreen);
   };
