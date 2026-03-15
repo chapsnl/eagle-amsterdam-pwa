@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Crown, ArrowRight, Bell } from "lucide-react";
+import { Crown, ArrowRight, Bell, Star, CreditCard, Gift } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -46,7 +46,7 @@ const VipLogin = () => {
       const targetEmail = email.trim().toLowerCase();
 
       // Step 1: Sync OneSignal identity BEFORE sending OTP
-      let pushReady = false;
+      let subscriptionId: string | null = null;
       try {
         const { setOneSignalExternalId } = await import("@/lib/onesignal");
         console.log("[VIP Login] Step 1: Calling OneSignal.login() with email:", targetEmail);
@@ -56,31 +56,29 @@ const VipLogin = () => {
         console.log("[VIP Login] Step 2: Waiting 2s for OneSignal sync...");
         await new Promise((resolve) => setTimeout(resolve, 2000));
 
-        // Step 3: Verify push subscription is active
-        await new Promise<void>((resolve) => {
+        // Step 3: Capture push subscription ID for dual-targeting
+        subscriptionId = await new Promise<string | null>((resolve) => {
           window.OneSignalDeferred = window.OneSignalDeferred || [];
           window.OneSignalDeferred.push(async (OneSignal: any) => {
-            const pushId = OneSignal.User?.PushSubscription?.id;
+            const pushId = OneSignal.User?.PushSubscription?.id || null;
             console.log("[VIP Login] PushSubscription.id:", pushId);
             if (!pushId) {
               console.warn("[VIP Login] ⚠️ Push subscription ID is null — push may not be delivered");
-            } else {
-              pushReady = true;
             }
-            resolve();
+            resolve(pushId);
           });
         });
 
-        console.log("[VIP Login] OneSignal sync complete. Push ready:", pushReady);
+        console.log("[VIP Login] OneSignal sync complete. Subscription ID:", subscriptionId);
       } catch {
         console.warn("[VIP Login] OneSignal not available, skipping push sync");
       }
 
-      // Step 3: Only NOW send the OTP
-      console.log("[VIP Login] Step 3: Sending OTP to:", targetEmail);
+      // Step 4: Send OTP with both email and subscription_id for dual-targeting
+      console.log("[VIP Login] Step 4: Sending OTP to:", targetEmail);
 
       const { data, error: fnError } = await supabase.functions.invoke("send-otp", {
-        body: { name: name.trim(), email: targetEmail },
+        body: { name: name.trim(), email: targetEmail, subscription_id: subscriptionId },
       });
 
       if (fnError) {
@@ -106,7 +104,6 @@ const VipLogin = () => {
 
       console.log("[VIP Login] OTP sent successfully");
 
-      // Persist login state in localStorage to survive notification clicks / app reloads
       const loginEmail = email.trim().toLowerCase();
       const loginName = name.trim();
       sessionStorage.setItem("vip_otp_email", loginEmail);
@@ -121,6 +118,12 @@ const VipLogin = () => {
     }
   };
 
+  const benefits = [
+    { icon: Star, title: "Exclusive Member Deals", desc: "Access special offers only available to VIPs." },
+    { icon: CreditCard, title: "Digital Member Pass", desc: "Your official entry to the Eagle inner circle." },
+    { icon: Gift, title: "Loyalty Card", desc: "Earn rewards and track your stamps digitally." },
+  ];
+
   return (
     <div className="flex flex-col min-h-screen pb-24">
       <div className="flex-1 flex flex-col items-center justify-center px-4">
@@ -128,9 +131,25 @@ const VipLogin = () => {
           {/* Header */}
           <div className="text-center space-y-3">
             <Crown className="w-12 h-12 text-primary mx-auto" />
-            <h1 className="text-3xl text-foreground">VIP MEMBERS</h1>
+            <h1 className="text-3xl text-foreground font-bold tracking-wider">JOIN THE EAGLE VIP CLUB</h1>
             <p className="text-muted-foreground text-sm">
               Enter your details to receive a verification code.
+            </p>
+          </div>
+
+          {/* Benefits Section */}
+          <div className="border border-border/50 bg-secondary/30 p-5 space-y-4">
+            {benefits.map(({ icon: Icon, title, desc }) => (
+              <div key={title} className="flex items-start gap-3">
+                <Icon className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-foreground text-sm font-semibold">{title}</p>
+                  <p className="text-muted-foreground text-xs">{desc}</p>
+                </div>
+              </div>
+            ))}
+            <p className="text-muted-foreground text-[11px] italic pt-1 border-t border-border/30">
+              More exclusive features coming soon.
             </p>
           </div>
 
