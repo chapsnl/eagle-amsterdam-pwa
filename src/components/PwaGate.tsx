@@ -95,78 +95,90 @@ const PwaGate = ({ children }: { children: React.ReactNode }) => {
       <div className="w-full max-w-xs space-y-6">
         {platform === "ios" ? (
           <>
-            <div className="flex flex-col items-center gap-2">
+            <div className="flex items-start gap-4 text-left">
               <div className="shrink-0 w-12 h-12 bg-primary flex items-center justify-center">
                 <span className="text-primary-foreground font-extrabold text-xl">1</span>
               </div>
-              <p className="text-foreground font-bold text-base" style={{ letterSpacing: '-0.03em' }}>
-                Tap the Share button
-              </p>
-              <p className="text-muted-foreground text-sm flex items-center gap-1" style={{ letterSpacing: '-0.02em' }}>
-                Look for the <Share className="inline w-5 h-5 text-primary" /> icon at the bottom of Safari
-              </p>
+              <div>
+                <p className="text-foreground font-bold text-base" style={{ letterSpacing: '-0.03em' }}>
+                  Tap the Share button
+                </p>
+                <p className="text-muted-foreground text-sm mt-1 flex items-center gap-1" style={{ letterSpacing: '-0.02em' }}>
+                  Look for the <Share className="inline w-5 h-5 text-primary" /> icon at the bottom of Safari
+                </p>
+              </div>
             </div>
 
-            <div className="flex flex-col items-center gap-2">
+            <div className="flex items-start gap-4 text-left">
               <div className="shrink-0 w-12 h-12 bg-primary flex items-center justify-center">
                 <span className="text-primary-foreground font-extrabold text-xl">2</span>
               </div>
-              <p className="text-foreground font-bold text-base" style={{ letterSpacing: '-0.03em' }}>
-                Select "Add to Home Screen"
-              </p>
-              <p className="text-muted-foreground text-sm" style={{ letterSpacing: '-0.02em' }}>
-                Scroll down in the menu and tap it
-              </p>
+              <div>
+                <p className="text-foreground font-bold text-base" style={{ letterSpacing: '-0.03em' }}>
+                  Select "Add to Home Screen"
+                </p>
+                <p className="text-muted-foreground text-sm mt-1" style={{ letterSpacing: '-0.02em' }}>
+                  Scroll down in the menu and tap it
+                </p>
+              </div>
             </div>
 
-            <div className="flex flex-col items-center gap-2">
+            <div className="flex items-start gap-4 text-left">
               <div className="shrink-0 w-12 h-12 bg-primary flex items-center justify-center">
                 <span className="text-primary-foreground font-extrabold text-xl">3</span>
               </div>
-              <p className="text-foreground font-bold text-base" style={{ letterSpacing: '-0.03em' }}>
-                Open from your home screen
-              </p>
-              <p className="text-muted-foreground text-sm" style={{ letterSpacing: '-0.02em' }}>
-                Tap the Eagle icon to launch the full app
-              </p>
+              <div>
+                <p className="text-foreground font-bold text-base" style={{ letterSpacing: '-0.03em' }}>
+                  Open from your home screen
+                </p>
+                <p className="text-muted-foreground text-sm mt-1" style={{ letterSpacing: '-0.02em' }}>
+                  Tap the Eagle icon to launch the full app
+                </p>
+              </div>
             </div>
           </>
         ) : (
           <>
-            <div className="flex flex-col items-center gap-2">
+            <div className="flex items-start gap-4 text-left">
               <div className="shrink-0 w-12 h-12 bg-primary flex items-center justify-center">
                 <span className="text-primary-foreground font-extrabold text-xl">1</span>
               </div>
-              <p className="text-foreground font-bold text-base" style={{ letterSpacing: '-0.03em' }}>
-                Tap the menu button
-              </p>
-              <p className="text-muted-foreground text-sm flex items-center gap-1" style={{ letterSpacing: '-0.02em' }}>
-                Look for the <MoreVertical className="inline w-5 h-5 text-primary" /> icon in your browser
-              </p>
+              <div>
+                <p className="text-foreground font-bold text-base" style={{ letterSpacing: '-0.03em' }}>
+                  Tap the menu button
+                </p>
+                <p className="text-muted-foreground text-sm mt-1 flex items-center gap-1" style={{ letterSpacing: '-0.02em' }}>
+                  Look for the <MoreVertical className="inline w-5 h-5 text-primary" /> icon in your browser
+                </p>
+              </div>
             </div>
 
-            <div className="flex flex-col items-center gap-2">
+            <div className="flex items-start gap-4 text-left">
               <div className="shrink-0 w-12 h-12 bg-primary flex items-center justify-center">
                 <span className="text-primary-foreground font-extrabold text-xl">2</span>
               </div>
-              <p className="text-foreground font-bold text-base" style={{ letterSpacing: '-0.03em' }}>
-                Select "Install app" or "Add to Home screen"
-              </p>
-              <p className="text-muted-foreground text-sm" style={{ letterSpacing: '-0.02em' }}>
-                Tap the option in the menu
-              </p>
+              <div>
+                <p className="text-foreground font-bold text-base" style={{ letterSpacing: '-0.03em' }}>
+                  Select "Install app" or "Add to Home screen"
+                </p>
+                <p className="text-muted-foreground text-sm mt-1" style={{ letterSpacing: '-0.02em' }}>
+                  Tap the option in the menu
+                </p>
+              </div>
             </div>
 
-            <div className="flex flex-col items-center gap-2">
+            <div className="flex items-start gap-4 text-left">
               <div className="shrink-0 w-12 h-12 bg-primary flex items-center justify-center">
                 <span className="text-primary-foreground font-extrabold text-xl">3</span>
               </div>
-              <p className="text-foreground font-bold text-base" style={{ letterSpacing: '-0.03em' }}>
-                Open from your home screen
-              </p>
-              <p className="text-muted-foreground text-sm" style={{ letterSpacing: '-0.02em' }}>
-                Tap the Eagle icon to launch the full app
-              </p>
+              <div>
+                <p className="text-foreground font-bold text-base" style={{ letterSpacing: '-0.03em' }}>
+                  Open from your home screen
+                </p>
+                <p className="text-muted-foreground text-sm mt-1" style={{ letterSpacing: '-0.02em' }}>
+                  Tap the Eagle icon to launch the full app
+                </p>
+              </div>
             </div>
           </>
         )}
