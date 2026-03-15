@@ -92,7 +92,7 @@
     transition: background-color 5000s ease-in-out 0s;
   }
 
-
+  h1, h2, h3, h4, h5, h6 {
     font-family: 'Manrope', sans-serif !important;
     font-weight: 800;
     letter-spacing: -0.05em !important;
