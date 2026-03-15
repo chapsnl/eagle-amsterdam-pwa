@@ -171,9 +171,12 @@ Deno.serve(async (req) => {
           }
 
           if (accepted && !hasRecipient) {
-            console.warn(
-              `[OTP] Push accepted but zero recipients via ${targetType}. Trying fallback target.`
-            );
+            console.warn(`[OTP] Push accepted but zero recipients via ${targetType}.`, {
+              messageId,
+              recipients,
+              targetType,
+              full: pushResult,
+            });
             return false;
           }
 
@@ -194,16 +197,19 @@ Deno.serve(async (req) => {
 
       let delivered = false;
 
+      const basePushPayload = {
+        app_id: ONESIGNAL_APP_ID,
+        target_channel: "push",
+        headings: { en: "Eagle Amsterdam VIP" },
+        contents: { en: pushContent },
+      };
+
       // Absolute primary: direct subscription targeting
       if (normalizedSubscriptionId) {
         delivered = await sendPushToTarget(
           {
-            app_id: ONESIGNAL_APP_ID,
+            ...basePushPayload,
             include_subscription_ids: [normalizedSubscriptionId],
-            target_channel: "push",
-            isAnyWeb: true,
-            headings: { en: "Eagle Amsterdam VIP" },
-            contents: { en: pushContent },
           },
           "subscription_id"
         );
@@ -211,17 +217,17 @@ Deno.serve(async (req) => {
 
       // Fallback: external_id alias targeting
       if (!delivered) {
-        await sendPushToTarget(
+        delivered = await sendPushToTarget(
           {
-            app_id: ONESIGNAL_APP_ID,
+            ...basePushPayload,
             include_aliases: { external_id: [normalizedEmail] },
-            target_channel: "push",
-            isAnyWeb: true,
-            headings: { en: "Eagle Amsterdam VIP" },
-            contents: { en: pushContent },
           },
           "external_id"
         );
+      }
+
+      if (!delivered) {
+        errors.push("Push not delivered: no reachable subscribed device found");
       }
     }
 
