@@ -10,6 +10,8 @@ import RewardDialog from "@/components/loyalty/RewardDialog";
 const STORAGE_KEY = "eagle-loyalty-stamps";
 const VALID_CODE = "EAGLE2026";
 const TOTAL_STAMPS = 10;
+const LAST_SCAN_KEY = "last_loyalty_scan";
+const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
 
 const Loyalty = () => {
   const [stamps, setStamps] = useState(0);
@@ -19,6 +21,7 @@ const Loyalty = () => {
   const [rewardOpen, setRewardOpen] = useState(false);
   const [successOpen, setSuccessOpen] = useState(false);
   const [successMsg, setSuccessMsg] = useState("");
+  const [limitOpen, setLimitOpen] = useState(false);
   const [redeemSuccessOpen, setRedeemSuccessOpen] = useState(false);
   const [redeemFading, setRedeemFading] = useState(false);
   const [cameraBlocked, setCameraBlocked] = useState(false);
@@ -46,9 +49,18 @@ const Loyalty = () => {
 
   const handleScanResult = useCallback((decodedText: string) => {
     if (decodedText.trim().toUpperCase() === VALID_CODE) {
+      // Check 7-day cooldown
+      const lastScan = localStorage.getItem(LAST_SCAN_KEY);
+      if (lastScan && Date.now() - parseInt(lastScan, 10) < SEVEN_DAYS_MS) {
+        setScannerOpen(false);
+        setLimitOpen(true);
+        return;
+      }
+
+      localStorage.setItem(LAST_SCAN_KEY, Date.now().toString());
       setStamps((prev) => {
         const newCount = Math.min(prev + 1, TOTAL_STAMPS);
-        setSuccessMsg(`You now have ${newCount} of ${TOTAL_STAMPS} stamps.`);
+        setSuccessMsg("Loyalty scan successful! See you next week.");
         setSuccessOpen(true);
         return newCount;
       });
@@ -149,7 +161,23 @@ const Loyalty = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Redeem Success Overlay */}
+      {/* Limit Reached Dialog */}
+      <Dialog open={limitOpen} onOpenChange={setLimitOpen}>
+        <DialogContent className="max-w-[400px] w-[90%] bg-primary border-primary">
+          <DialogHeader>
+            <DialogTitle className="text-primary-foreground text-xl tracking-[-0.05em]">
+              Limit Reached
+            </DialogTitle>
+            <DialogDescription className="text-primary-foreground/90 text-base tracking-[-0.02em]">
+              You have already scanned this week! Come back next week for your next loyalty stamp.
+            </DialogDescription>
+          </DialogHeader>
+          <Button variant="eagle-outline" className="w-full border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary tracking-[-0.02em]" onClick={() => setLimitOpen(false)}>
+            GOT IT
+          </Button>
+        </DialogContent>
+      </Dialog>
+
       {redeemSuccessOpen && (
         <div className={`fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm transition-opacity duration-300 ${redeemFading ? "opacity-0" : "opacity-100"}`}>
           <div className={`max-w-[400px] w-[90%] rounded-2xl bg-card border border-primary p-8 text-center shadow-[var(--shadow-red-intense)] transition-all duration-300 ${redeemFading ? "scale-95 opacity-0" : "animate-scale-in scale-100 opacity-100"}`}>
