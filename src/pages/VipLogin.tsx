@@ -140,6 +140,11 @@ const VipLogin = () => {
         return;
       }
 
+      if (data.push_delivered === false) {
+        setError(data.push_error || "Push kon niet worden afgeleverd. Open de app als PWA en probeer opnieuw.");
+        return;
+      }
+
       if (data.smtp_error) {
         setError(`Code generated but email failed: ${data.smtp_error}`);
         return;
