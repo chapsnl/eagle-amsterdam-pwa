@@ -146,8 +146,8 @@ export async function requestPushPermission(): Promise<boolean> {
       localStorage.setItem(INIT_FLAG, "true");
 
       return true;
-    } catch (err) {
-      console.warn("[OneSignal] Permission request failed:", err);
+    } catch {
+      return false;
       return false;
     }
   });
