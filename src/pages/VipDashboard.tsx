@@ -45,6 +45,11 @@ const VipDashboard = () => {
       icon: Newspaper,
       onClick: () => navigate("/vip/news"),
     },
+    {
+      label: "MEMBER PASS",
+      icon: IdCard,
+      onClick: () => navigate("/vip/member-pass"),
+    },
   ];
 
   return (
