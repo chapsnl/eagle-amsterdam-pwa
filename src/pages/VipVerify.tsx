@@ -42,49 +42,21 @@ const VipVerify = () => {
     inputRefs.current[0]?.focus();
   }, []);
 
-  // Hidden input catches OS auto-fill suggestions, then distributes digits
-  const hiddenRef = useRef<HTMLInputElement | null>(null);
-
-  const distributeCode = useCallback((code: string) => {
-    const cleaned = code.replace(/\D/g, "").slice(0, CODE_LENGTH);
-    if (!cleaned) return;
-    const newDigits = Array(CODE_LENGTH).fill("");
-    for (let i = 0; i < cleaned.length; i++) {
-      newDigits[i] = cleaned[i];
-    }
-    setDigits(newDigits);
-    const focusIndex = Math.min(cleaned.length, CODE_LENGTH - 1);
-    inputRefs.current[focusIndex]?.focus();
-  }, []);
-
-  const handleHiddenChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value;
-    if (val.length >= CODE_LENGTH) {
-      distributeCode(val);
-      // Clear hidden input after distributing
-      if (hiddenRef.current) hiddenRef.current.value = "";
-    }
-  }, [distributeCode]);
-
   const handleChange = useCallback((index: number, value: string) => {
-    // If pasted/autofilled multi-digit value, distribute across boxes
-    const cleaned = value.replace(/\D/g, "");
-    if (cleaned.length > 1) {
-      distributeCode(cleaned);
-      return;
-    }
+    // Only allow digits
+    const digit = value.replace(/\D/g, "").slice(-1);
 
-    const digit = cleaned.slice(-1);
     setDigits((prev) => {
       const next = [...prev];
       next[index] = digit;
       return next;
     });
 
+    // Auto-advance
     if (digit && index < CODE_LENGTH - 1) {
       inputRefs.current[index + 1]?.focus();
     }
-  }, [distributeCode]);
+  }, []);
 
   const handleKeyDown = useCallback((index: number, e: React.KeyboardEvent) => {
     if (e.key === "Backspace" && !digits[index] && index > 0) {
@@ -94,8 +66,18 @@ const VipVerify = () => {
 
   const handlePaste = useCallback((e: React.ClipboardEvent) => {
     e.preventDefault();
-    distributeCode(e.clipboardData.getData("text"));
-  }, [distributeCode]);
+    const pasted = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, CODE_LENGTH);
+    if (!pasted) return;
+
+    const newDigits = Array(CODE_LENGTH).fill("");
+    for (let i = 0; i < pasted.length; i++) {
+      newDigits[i] = pasted[i];
+    }
+    setDigits(newDigits);
+
+    const focusIndex = Math.min(pasted.length, CODE_LENGTH - 1);
+    inputRefs.current[focusIndex]?.focus();
+  }, []);
 
   const handleVerify = async () => {
     const code = digits.join("");
@@ -197,18 +179,6 @@ const VipVerify = () => {
             </p>
           </div>
 
-          {/* Hidden input to catch OS one-time-code auto-fill */}
-          <input
-            ref={hiddenRef}
-            type="text"
-            inputMode="numeric"
-            autoComplete="one-time-code"
-            onChange={handleHiddenChange}
-            className="absolute opacity-0 w-0 h-0 pointer-events-none"
-            tabIndex={-1}
-            aria-hidden="true"
-          />
-
           {/* 6-digit split input */}
           <div className="flex justify-center gap-3" onPaste={handlePaste}>
             {digits.map((digit, i) => (
@@ -223,7 +193,7 @@ const VipVerify = () => {
                 onChange={(e) => handleChange(i, e.target.value)}
                 onKeyDown={(e) => handleKeyDown(i, e)}
                 className="w-12 h-14 text-center text-2xl font-bold bg-secondary border-2 border-border text-foreground rounded-none focus:border-primary focus:outline-none transition-colors"
-                autoComplete={i === 0 ? "one-time-code" : "off"}
+                autoComplete="one-time-code"
               />
             ))}
           </div>
