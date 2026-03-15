@@ -40,6 +40,12 @@ const PageLoader = () => (
 );
 
 const App = () => {
+  useEffect(() => {
+    import("@/lib/onesignal")
+      .then(({ initOneSignalSilently }) => initOneSignalSilently())
+      .catch(() => {/* OneSignal unavailable */});
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
@@ -64,8 +70,6 @@ const App = () => {
             </Routes>
           </Suspense>
           <SmartInstallBanner />
-          <PushNotificationModal />
-          
           <BottomNav />
         </BrowserRouter>
       </TooltipProvider>
