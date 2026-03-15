@@ -24,8 +24,14 @@ const VipLogin = () => {
     try {
       const { getOneSignalPushState } = await import("@/lib/onesignal");
       const state = await getOneSignalPushState();
-      setPushEnabled(state.permission === "granted");
-      setSubscriptionId(state.subscriptionId);
+      const ready =
+        state.permission === "granted" &&
+        state.optedIn &&
+        !!state.subscriptionId &&
+        !!state.token;
+
+      setPushEnabled(ready);
+      setSubscriptionId(ready ? state.subscriptionId : null);
     } catch {
       // OneSignal may be blocked or unavailable
     } finally {
@@ -108,7 +114,7 @@ const VipLogin = () => {
       syncedSubscriptionId = ready.subscriptionId;
 
       const proof = await getOneSignalPushState();
-      if (!proof.optedIn || !proof.subscriptionId) {
+      if (!proof.optedIn || !proof.subscriptionId || !proof.token || proof.permission !== "granted") {
         throw new Error("Push subscription is not fully active yet. Please try again.");
       }
 
@@ -119,10 +125,14 @@ const VipLogin = () => {
       await new Promise((resolve) => setTimeout(resolve, 2000));
       setSyncingPush(false);
 
+      const dispatchOtp = async (targetSubscriptionId: string | null) => {
+        return supabase.functions.invoke("send-otp", {
+          body: { email: targetEmail, subscriptionId: targetSubscriptionId },
+        });
+      };
+
       console.log("[VIP Login] Step 4 — Dispatching OTP. email:", targetEmail, "subscriptionId:", syncedSubscriptionId);
-      const { data, error: fnError } = await supabase.functions.invoke("send-otp", {
-        body: { email: targetEmail, subscriptionId: syncedSubscriptionId },
-      });
+      let { data, error: fnError } = await dispatchOtp(syncedSubscriptionId);
 
       if (fnError) {
         setError(fnError.message || "Failed to send code. Please try again.");
@@ -131,6 +141,34 @@ const VipLogin = () => {
 
       if (!data?.success) {
         setError(data?.error || "Failed to send code. Please try again.");
+        return;
+      }
+
+      if (data.push_delivered === false) {
+        console.log("[VIP Login] Push not delivered. Re-linking device and retrying once...");
+        await setOneSignalExternalId(targetEmail);
+
+        const retried = await waitForValidSubscriptionId(18000, 250);
+        syncedSubscriptionId = retried.subscriptionId;
+        setSubscriptionId(retried.subscriptionId);
+
+        const retryResult = await dispatchOtp(syncedSubscriptionId);
+        data = retryResult.data;
+        fnError = retryResult.error;
+      }
+
+      if (fnError) {
+        setError(fnError.message || "Failed to send code. Please try again.");
+        return;
+      }
+
+      if (!data?.success) {
+        setError(data?.error || "Failed to send code. Please try again.");
+        return;
+      }
+
+      if (data.push_delivered === false) {
+        setError(data.push_error || "Push kon niet worden afgeleverd. Open de app als PWA en probeer opnieuw.");
         return;
       }
 
