@@ -81,7 +81,18 @@
     letter-spacing: -0.02em !important;
   }
 
-  h1, h2, h3, h4, h5, h6 {
+  /* Fix autofill yellow background — use light grey instead */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 30px hsl(0 0% 12%) inset !important;
+    -webkit-text-fill-color: hsl(0 0% 100%) !important;
+    caret-color: hsl(0 0% 100%) !important;
+    transition: background-color 5000s ease-in-out 0s;
+  }
+
+
     font-family: 'Manrope', sans-serif !important;
     font-weight: 800;
     letter-spacing: -0.05em !important;
