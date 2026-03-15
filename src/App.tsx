@@ -18,6 +18,10 @@ const News = lazy(() => import("./pages/News"));
 const Events = lazy(() => import("./pages/Events"));
 const Contact = lazy(() => import("./pages/Contact"));
 const Loyalty = lazy(() => import("./pages/Loyalty"));
+const Vip = lazy(() => import("./pages/Vip"));
+const VipLogin = lazy(() => import("./pages/VipLogin"));
+const VipVerify = lazy(() => import("./pages/VipVerify"));
+const VipDashboard = lazy(() => import("./pages/VipDashboard"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient({
