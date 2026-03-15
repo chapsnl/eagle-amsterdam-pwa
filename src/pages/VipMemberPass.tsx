@@ -19,10 +19,10 @@ const VipMemberPass = () => {
   const [session, setSession] = useState<VipSession | null>(null);
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [memberNumber, setMemberNumber] = useState("");
+  const [memberSince, setMemberSince] = useState("");
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const cardRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const stored = localStorage.getItem("vip_session");
@@ -44,14 +44,13 @@ const VipMemberPass = () => {
     try {
       const { data } = await supabase
         .from("profiles")
-        .select("member_number, profile_image_url")
+        .select("member_number, profile_image_url, created_at")
         .eq("id", userId)
         .single();
 
       if (data) {
         if (data.member_number) {
           setMemberNumber(data.member_number);
-          // Update session with member_number if missing
           const stored = localStorage.getItem("vip_session");
           if (stored) {
             const parsed = JSON.parse(stored);
@@ -63,6 +62,12 @@ const VipMemberPass = () => {
         }
         if (data.profile_image_url) {
           setProfileImage(data.profile_image_url);
+        }
+        if (data.created_at) {
+          const d = new Date(data.created_at);
+          setMemberSince(
+            `${String(d.getDate()).padStart(2, "0")}-${String(d.getMonth() + 1).padStart(2, "0")}-${d.getFullYear()}`
+          );
         }
       }
     } catch (err) {
@@ -86,6 +91,15 @@ const VipMemberPass = () => {
 
     setUploading(true);
     try {
+      // Check if we have an active Supabase session
+      const { data: authData } = await supabase.auth.getSession();
+      if (!authData.session) {
+        console.warn("[MemberPass] No Supabase auth session, attempting re-auth...");
+        toast.error("Please log in again to upload a photo");
+        setUploading(false);
+        return;
+      }
+
       const ext = file.name.split(".").pop();
       const path = `${session.userId}/avatar.${ext}`;
 
@@ -124,114 +138,103 @@ const VipMemberPass = () => {
 
   const cardContent = (
     <div
-      ref={cardRef}
-      className={`relative overflow-hidden border border-border bg-gradient-to-br from-secondary via-background to-secondary ${
-        isFullscreen
-          ? "w-full max-w-lg mx-auto"
-          : "w-full"
+      className={`relative overflow-hidden bg-primary ${
+        isFullscreen ? "w-full max-w-lg mx-auto" : "w-full"
       }`}
-      style={{ aspectRatio: isFullscreen ? "auto" : undefined }}
+      style={{ aspectRatio: "1.586/1" }}
     >
-      {/* Top red accent stripe */}
-      <div className="h-1.5 bg-primary w-full" />
+      {/* Top bar: Logo + VIP label */}
+      <div className="absolute top-0 left-0 right-0 flex items-center justify-between px-5 pt-4">
+        <img src={eagleLogo} alt="Eagle Amsterdam" className="h-6 w-auto opacity-90" />
+        <span className="text-primary-foreground/80 text-[10px] font-bold tracking-[0.25em] uppercase">
+          VIP Member
+        </span>
+      </div>
 
-      {/* Card body */}
-      <div className="p-5 space-y-5">
-        {/* Header row: Logo + Title */}
-        <div className="flex items-center justify-between">
-          <img src={eagleLogo} alt="Eagle Amsterdam" className="h-8 w-auto" />
-          <span className="text-xs font-bold tracking-[0.3em] text-primary uppercase">
-            VIP Member
-          </span>
-        </div>
-
-        {/* Main content: Photo + Info */}
-        <div className="flex gap-4 items-start">
-          {/* Photo */}
-          <div className="relative flex-shrink-0">
-            <div className="w-20 h-20 bg-secondary border border-border overflow-hidden flex items-center justify-center">
-              {profileImage ? (
-                <img
-                  src={profileImage}
-                  alt="Profile"
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <User className="w-10 h-10 text-muted-foreground" />
-              )}
-            </div>
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              disabled={uploading}
-              className="absolute -bottom-1 -right-1 w-7 h-7 bg-primary text-primary-foreground flex items-center justify-center border border-border hover:opacity-90 transition-opacity"
-            >
-              {uploading ? (
-                <div className="w-3 h-3 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
-              ) : (
-                <Camera className="w-3.5 h-3.5" />
-              )}
-            </button>
-          </div>
-
-          {/* User info */}
-          <div className="flex-1 min-w-0 space-y-1">
-            <p className="text-foreground font-bold text-lg leading-tight truncate">
-              {session.name}
-            </p>
-            <p className="text-muted-foreground text-xs truncate">
-              {session.email}
-            </p>
-            <div className="pt-1">
-              <p className="text-muted-foreground text-[10px] uppercase tracking-widest">
-                Member ID
-              </p>
-              <p className="text-foreground font-mono text-base font-bold tracking-[0.2em]">
-                {memberNumber || "--------"}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Bottom row: QR Code + Status */}
-        <div className="flex items-end justify-between border-t border-border pt-4">
-          <div className="space-y-1">
-            <p className="text-muted-foreground text-[10px] uppercase tracking-widest">
-              Status
-            </p>
-            <p className="text-primary text-sm font-bold tracking-wider">
-              ACTIVE
-            </p>
-            <p className="text-muted-foreground text-[10px] uppercase tracking-widest pt-1">
-              Member Since
-            </p>
-            <p className="text-foreground text-xs">
-              {new Date().getFullYear()}
-            </p>
-          </div>
-
-          {/* QR Code */}
-          {memberNumber && (
-            <div className="bg-white p-2">
-              <QRCodeSVG
-                value={memberNumber}
-                size={isFullscreen ? 100 : 80}
-                bgColor="#ffffff"
-                fgColor="#000000"
-                level="M"
+      {/* Photo area - left side */}
+      <div className="absolute left-5 top-14">
+        <div className="relative">
+          <div className="w-16 h-16 bg-primary-foreground/10 border border-primary-foreground/20 overflow-hidden flex items-center justify-center">
+            {profileImage ? (
+              <img
+                src={profileImage}
+                alt="Profile"
+                className="w-full h-full object-cover"
               />
-            </div>
-          )}
+            ) : (
+              <User className="w-8 h-8 text-primary-foreground/40" />
+            )}
+          </div>
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            disabled={uploading}
+            className="absolute -bottom-1 -right-1 w-6 h-6 bg-primary-foreground text-primary flex items-center justify-center hover:opacity-90 transition-opacity"
+          >
+            {uploading ? (
+              <div className="w-3 h-3 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+            ) : (
+              <Camera className="w-3 h-3" />
+            )}
+          </button>
         </div>
       </div>
 
-      {/* Bottom red accent stripe */}
-      <div className="h-1.5 bg-primary w-full" />
+      {/* Member ID - center, large */}
+      <div className="absolute left-5 right-5 bottom-[4.5rem]">
+        <p className="text-primary-foreground font-mono text-2xl font-bold tracking-[0.35em]">
+          {memberNumber
+            ? memberNumber.replace(/(.{4})/g, "$1 ").trim()
+            : "---- ----"}
+        </p>
+      </div>
+
+      {/* Bottom row: Name, Since, QR */}
+      <div className="absolute left-5 right-5 bottom-3 flex items-end justify-between">
+        <div className="flex-1 min-w-0 space-y-0.5">
+          <p className="text-primary-foreground font-bold text-sm tracking-wider truncate uppercase">
+            {session.name}
+          </p>
+          <p className="text-primary-foreground/60 text-[10px] truncate">
+            {session.email}
+          </p>
+          <div className="flex gap-6 pt-1">
+            <div>
+              <p className="text-primary-foreground/40 text-[8px] uppercase tracking-widest">
+                Member Since
+              </p>
+              <p className="text-primary-foreground/80 text-[11px] font-mono">
+                {memberSince || "--/--/----"}
+              </p>
+            </div>
+            <div>
+              <p className="text-primary-foreground/40 text-[8px] uppercase tracking-widest">
+                Status
+              </p>
+              <p className="text-primary-foreground/80 text-[11px] font-bold tracking-wider">
+                ACTIVE
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* QR Code */}
+        {memberNumber && (
+          <div className="bg-white p-1.5 flex-shrink-0">
+            <QRCodeSVG
+              value={memberNumber}
+              size={isFullscreen ? 64 : 52}
+              bgColor="#ffffff"
+              fgColor="#000000"
+              level="M"
+            />
+          </div>
+        )}
+      </div>
     </div>
   );
 
   return (
     <>
-      {/* Hidden file input */}
       <input
         ref={fileInputRef}
         type="file"
@@ -241,7 +244,6 @@ const VipMemberPass = () => {
       />
 
       {isFullscreen ? (
-        /* Fullscreen overlay */
         <div className="fixed inset-0 z-50 bg-background flex flex-col items-center justify-center p-4">
           <button
             onClick={toggleFullscreen}
@@ -252,7 +254,6 @@ const VipMemberPass = () => {
           {cardContent}
         </div>
       ) : (
-        /* Normal page view */
         <div className="flex flex-col min-h-screen pb-24">
           <div className="pt-8 px-4 max-w-[90%] mx-auto w-full space-y-4">
             <div className="text-center space-y-2">
