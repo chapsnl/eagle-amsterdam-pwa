@@ -20,15 +20,8 @@ async function loadOneSignalSDK(): Promise<void> {
     );
 
     if (existingScript) {
-      if (sdkLoaded) {
-        resolve();
-        return;
-      }
-      existingScript.addEventListener("load", () => {
-        sdkLoaded = true;
-        resolve();
-      });
-      existingScript.addEventListener("error", () => reject(new Error("Failed to load OneSignal SDK")));
+      sdkLoaded = true;
+      resolve();
       return;
     }
 
