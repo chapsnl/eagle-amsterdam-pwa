@@ -30,7 +30,7 @@ const BottomNav = () => {
                   : "text-muted-foreground hover:text-primary"
               }`}
             >
-              <Icon className={`${isVip ? 'w-8 h-8' : 'w-7 h-7'}`} />
+              <Icon className="w-6 h-6" />
               <span className="text-[11px] font-medium" style={{ letterSpacing: '-0.02em' }}>
                 {label}
               </span>
