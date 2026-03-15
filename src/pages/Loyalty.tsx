@@ -171,7 +171,7 @@ const Loyalty = () => {
       <RewardDialog open={rewardOpen} onOpenChange={setRewardOpen} onRedeem={handleRedeem} />
 
       <Dialog open={successOpen} onOpenChange={setSuccessOpen}>
-        <DialogContent className="max-w-[400px] w-[90%] rounded-2xl bg-card border-border">
+        <DialogContent className="max-w-[400px] w-[90%] rounded-none bg-card border-border">
           <DialogHeader>
             <DialogTitle className="text-foreground flex items-center gap-2 tracking-[-0.05em]">
               <CheckCircle className="w-5 h-5 text-primary" />
