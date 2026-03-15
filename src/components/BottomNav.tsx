@@ -27,9 +27,7 @@ const BottomNav = () => {
               className={`flex flex-col items-center gap-1 px-3 py-2 transition-colors duration-200 ${
                 active
                   ? "text-primary"
-                  : isVip
-                    ? "text-muted-foreground hover:text-primary"
-                    : "text-muted-foreground hover:text-foreground"
+                  : "text-muted-foreground hover:text-primary"
               }`}
             >
               <Icon className="w-6 h-6" />
