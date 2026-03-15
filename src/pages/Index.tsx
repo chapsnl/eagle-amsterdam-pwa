@@ -44,7 +44,7 @@ const Index = () => {
       </div>
 
       {/* Quick Actions */}
-      <div className="p-6 flex flex-col gap-4 max-w-lg mx-auto w-full">
+      <div className="p-6 pb-24 flex flex-col gap-4 max-w-lg mx-auto w-full">
         <Button
           variant="eagle"
           size="lg"
