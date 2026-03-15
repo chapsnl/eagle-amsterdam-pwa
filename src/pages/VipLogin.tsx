@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/components/ui/sonner";
 
 const VipLogin = () => {
   const navigate = useNavigate();
@@ -47,6 +46,14 @@ const VipLogin = () => {
       if (!data?.success) {
         console.error("[VIP Login] Send failed:", data?.error);
         setError(data?.error || "Failed to send code. Please try again.");
+        setLoading(false);
+        return;
+      }
+
+      // Show SMTP error for debugging if present
+      if (data.smtp_error) {
+        console.warn("[VIP Login] SMTP warning:", data.smtp_error);
+        setError(`Code generated but email failed: ${data.smtp_error}`);
         setLoading(false);
         return;
       }
