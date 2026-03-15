@@ -24,8 +24,14 @@ const VipLogin = () => {
     try {
       const { getOneSignalPushState } = await import("@/lib/onesignal");
       const state = await getOneSignalPushState();
-      setPushEnabled(state.permission === "granted");
-      setSubscriptionId(state.subscriptionId);
+      const ready =
+        state.permission === "granted" &&
+        state.optedIn &&
+        !!state.subscriptionId &&
+        !!state.token;
+
+      setPushEnabled(ready);
+      setSubscriptionId(ready ? state.subscriptionId : null);
     } catch {
       // OneSignal may be blocked or unavailable
     } finally {

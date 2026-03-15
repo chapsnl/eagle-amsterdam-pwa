@@ -85,6 +85,7 @@ async function sleep(ms: number): Promise<void> {
 export interface OneSignalPushState {
   permission: NotificationPermission;
   subscriptionId: string | null;
+  token: string | null;
   optedIn: boolean;
 }
 
@@ -98,6 +99,7 @@ export async function initOneSignalSilently() {
       appId: APP_ID,
       serviceWorkerParam: { scope: "/" },
       serviceWorkerPath: "/OneSignalSDKWorker.js",
+      serviceWorkerUpdaterPath: "/OneSignalSDKUpdaterWorker.js",
       autoPrompt: false,
       autoRegister: true,
       notifyButton: { enable: false },
@@ -114,11 +116,13 @@ export async function initOneSignalSilently() {
 export async function getOneSignalPushState(): Promise<OneSignalPushState> {
   return withOneSignal(async (OneSignal) => {
     const subscriptionId = OneSignal.User?.PushSubscription?.id ?? null;
+    const token = OneSignal.User?.PushSubscription?.token ?? null;
     const optedIn = OneSignal.User?.PushSubscription?.optedIn === true;
 
     return {
       permission: Notification.permission,
       subscriptionId,
+      token,
       optedIn,
     };
   });
@@ -160,14 +164,14 @@ export async function setOneSignalExternalId(email: string) {
 }
 
 export async function waitForValidSubscriptionId(
-  timeoutMs = 12000,
+  timeoutMs = 18000,
   intervalMs = 250
 ): Promise<{ subscriptionId: string; optedIn: true }> {
   const startedAt = Date.now();
 
   while (Date.now() - startedAt <= timeoutMs) {
     const state = await getOneSignalPushState();
-    if (state.subscriptionId && state.optedIn) {
+    if (state.subscriptionId && state.token && state.optedIn && state.permission === "granted") {
       return { subscriptionId: state.subscriptionId, optedIn: true };
     }
     await sleep(intervalMs);
