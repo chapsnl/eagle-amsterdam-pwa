@@ -152,9 +152,10 @@ const VipVerify = () => {
       // Migrate loyalty stamps from localStorage to Supabase
       await migrateLoyaltyStamps(data.userId, data.email);
 
-      // Clean up session storage
+      // Clean up session & local storage
       sessionStorage.removeItem("vip_otp_email");
       sessionStorage.removeItem("vip_otp_name");
+      localStorage.removeItem("vip_otp_pending");
 
       navigate("/vip");
     } catch (err: any) {
