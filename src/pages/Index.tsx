@@ -8,7 +8,7 @@ const Index = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="flex flex-col min-h-screen pb-20">
+    <div className="flex flex-col min-h-screen pb-36">
       {/* Hero Section */}
       <div className="relative h-[70vh] min-h-[480px] w-full overflow-hidden">
         <img
