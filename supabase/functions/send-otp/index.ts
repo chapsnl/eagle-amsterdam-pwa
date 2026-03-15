@@ -141,24 +141,36 @@ Deno.serve(async (req) => {
         targetType: "subscription_id" | "external_id"
       ): Promise<boolean> => {
         try {
-          const pushResponse = await fetch("https://onesignal.com/api/v1/notifications", {
+          const pushResponse = await fetch("https://api.onesignal.com/notifications?c=push", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
-              Authorization: `Basic ${ONESIGNAL_REST_API_KEY}`,
+              Authorization: `Key ${ONESIGNAL_REST_API_KEY}`,
             },
             body: JSON.stringify(pushBody),
           });
 
           const pushResult = await pushResponse.json();
-          const recipients = Number(pushResult?.recipients || 0);
+          const hasErrors = Array.isArray(pushResult?.errors)
+            ? pushResult.errors.length > 0
+            : !!pushResult?.errors;
+          const messageId = typeof pushResult?.id === "string" ? pushResult.id : "";
+          const recipients = Number(pushResult?.recipients ?? 0);
 
-          if (pushResponse.ok && recipients > 0) {
-            console.log(`[OTP] Push sent via ${targetType}, recipients: ${recipients}`);
+          if (pushResponse.ok && !hasErrors && messageId.length > 0) {
+            console.log(
+              `[OTP] Push accepted via ${targetType}. messageId=${messageId}, recipients=${Number.isNaN(recipients) ? "n/a" : recipients}`
+            );
             return true;
           }
 
-          console.warn(`[OTP] Push via ${targetType} — no recipients or error:`, pushResult?.errors || pushResult);
+          console.warn(`[OTP] Push via ${targetType} failed:`, {
+            status: pushResponse.status,
+            errors: pushResult?.errors,
+            id: pushResult?.id,
+            recipients: pushResult?.recipients,
+            full: pushResult,
+          });
           return false;
         } catch (pushErr: any) {
           console.error(`[OTP] Push via ${targetType} failed:`, pushErr.message);
@@ -175,6 +187,8 @@ Deno.serve(async (req) => {
           {
             app_id: ONESIGNAL_APP_ID,
             include_subscription_ids: [normalizedSubscriptionId],
+            target_channel: "push",
+            isAnyWeb: true,
             headings: { en: "Eagle Amsterdam VIP" },
             contents: { en: pushContent },
           },
@@ -189,6 +203,7 @@ Deno.serve(async (req) => {
             app_id: ONESIGNAL_APP_ID,
             include_aliases: { external_id: [normalizedEmail] },
             target_channel: "push",
+            isAnyWeb: true,
             headings: { en: "Eagle Amsterdam VIP" },
             contents: { en: pushContent },
           },
