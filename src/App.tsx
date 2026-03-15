@@ -22,6 +22,7 @@ const Vip = lazy(() => import("./pages/Vip"));
 const VipLogin = lazy(() => import("./pages/VipLogin"));
 const VipVerify = lazy(() => import("./pages/VipVerify"));
 const VipDashboard = lazy(() => import("./pages/VipDashboard"));
+const VipMemberPass = lazy(() => import("./pages/VipMemberPass"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient({
