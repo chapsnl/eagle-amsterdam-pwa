@@ -136,33 +136,14 @@ const VipMemberPass = () => {
         </span>
       </div>
 
-      {/* Photo area - left side */}
-      <div className="absolute left-5 top-14">
-        <div className="relative">
+      {/* Profile image (display only) */}
+      {profileImage && (
+        <div className="absolute left-5 top-[4.5rem]">
           <div className="w-16 h-16 bg-primary-foreground/10 border border-primary-foreground/20 overflow-hidden flex items-center justify-center">
-            {profileImage ? (
-              <img
-                src={profileImage}
-                alt="Profile"
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <User className="w-8 h-8 text-primary-foreground/40" />
-            )}
+            <img src={profileImage} alt="Profile" className="w-full h-full object-cover" />
           </div>
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            disabled={uploading}
-            className="absolute -bottom-1 -right-1 w-6 h-6 bg-primary-foreground text-primary flex items-center justify-center hover:opacity-90 transition-opacity"
-          >
-            {uploading ? (
-              <div className="w-3 h-3 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-            ) : (
-              <Camera className="w-3 h-3" />
-            )}
-          </button>
         </div>
-      </div>
+      )}
 
       {/* Name + Email + Member Since - left bottom area */}
       <div className="absolute left-5 bottom-4 space-y-0.5">
