@@ -1,10 +1,10 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import { Home, Calendar, Newspaper, Ticket, Star, Mail } from "lucide-react";
+import { Home, Calendar, Newspaper, Ticket, Crown, Mail } from "lucide-react";
 
 const navItems = [
   { path: "/", label: "Home", icon: Home },
   { path: "/agenda", label: "Agenda", icon: Calendar },
-  { path: "/loyalty", label: "Loyalty", icon: Star },
+  { path: "/vip", label: "VIP", icon: Crown },
   { path: "/events", label: "Tickets", icon: Ticket },
   { path: "/news", label: "News", icon: Newspaper },
   { path: "/contact", label: "Contact", icon: Mail },
@@ -18,7 +18,8 @@ const BottomNav = () => {
     <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-border bg-eagle-dark/95 backdrop-blur-md pb-[env(safe-area-inset-bottom)]">
       <div className="flex items-center justify-around h-14 max-w-lg mx-auto px-4">
         {navItems.map(({ path, label, icon: Icon }) => {
-          const active = location.pathname === path;
+          const active = location.pathname === path || 
+            (path === "/vip" && location.pathname === "/loyalty");
           return (
             <button
               key={path}
