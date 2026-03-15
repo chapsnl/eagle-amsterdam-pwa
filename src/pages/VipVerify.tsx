@@ -14,8 +14,23 @@ const VipVerify = () => {
   const [error, setError] = useState("");
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
-  const email = sessionStorage.getItem("vip_otp_email") || "";
-  const name = sessionStorage.getItem("vip_otp_name") || "";
+  // Restore from sessionStorage first, fallback to localStorage (survives notification clicks)
+  const getLoginState = () => {
+    const sEmail = sessionStorage.getItem("vip_otp_email");
+    const sName = sessionStorage.getItem("vip_otp_name");
+    if (sEmail) return { email: sEmail, name: sName || "" };
+    try {
+      const pending = JSON.parse(localStorage.getItem("vip_otp_pending") || "{}");
+      if (pending.email) {
+        // Re-hydrate sessionStorage
+        sessionStorage.setItem("vip_otp_email", pending.email);
+        sessionStorage.setItem("vip_otp_name", pending.name || "");
+        return { email: pending.email, name: pending.name || "" };
+      }
+    } catch {}
+    return { email: "", name: "" };
+  };
+  const { email, name } = getLoginState();
 
   // Redirect if no email stored
   useEffect(() => {
@@ -137,9 +152,10 @@ const VipVerify = () => {
       // Migrate loyalty stamps from localStorage to Supabase
       await migrateLoyaltyStamps(data.userId, data.email);
 
-      // Clean up session storage
+      // Clean up session & local storage
       sessionStorage.removeItem("vip_otp_email");
       sessionStorage.removeItem("vip_otp_name");
+      localStorage.removeItem("vip_otp_pending");
 
       navigate("/vip");
     } catch (err: any) {

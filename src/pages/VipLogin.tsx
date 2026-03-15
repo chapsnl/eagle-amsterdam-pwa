@@ -85,8 +85,12 @@ const VipLogin = () => {
 
       console.log("[VIP Login] OTP sent successfully");
 
-      sessionStorage.setItem("vip_otp_email", email.trim().toLowerCase());
-      sessionStorage.setItem("vip_otp_name", name.trim());
+      // Persist login state in localStorage to survive notification clicks / app reloads
+      const loginEmail = email.trim().toLowerCase();
+      const loginName = name.trim();
+      sessionStorage.setItem("vip_otp_email", loginEmail);
+      sessionStorage.setItem("vip_otp_name", loginName);
+      localStorage.setItem("vip_otp_pending", JSON.stringify({ email: loginEmail, name: loginName }));
       navigate("/vip/verify");
     } catch (err: any) {
       console.error("[VIP Login] Unexpected error:", err);

@@ -159,7 +159,7 @@ Deno.serve(async (req) => {
             include_aliases: { external_id: [email.toLowerCase()] },
             target_channel: "push",
             headings: { en: "Eagle Amsterdam VIP" },
-            contents: { en: `Your verification code is: ${code}` },
+            contents: { en: `${code} is your Eagle VIP code. Enter it in the app to continue.` },
           }),
         });
 
