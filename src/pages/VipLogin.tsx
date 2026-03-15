@@ -44,14 +44,19 @@ const VipLogin = () => {
 
     try {
       // Set OneSignal External User ID so the OTP push targets this user
+      const targetEmail = email.trim().toLowerCase();
       try {
         const { setOneSignalExternalId } = await import("@/lib/onesignal");
-        await setOneSignalExternalId(email.trim().toLowerCase());
+        console.log("[VIP Login] Syncing OneSignal with email:", targetEmail);
+        await setOneSignalExternalId(targetEmail);
+        // Wait for OneSignal to register the device-to-email link
+        await new Promise((resolve) => setTimeout(resolve, 500));
+        console.log("[VIP Login] OneSignal sync complete for:", targetEmail);
       } catch {
-        // OneSignal may not be available
+        console.warn("[VIP Login] OneSignal not available, skipping push sync");
       }
 
-      console.log("[VIP Login] Sending OTP to:", email);
+      console.log("[VIP Login] Sending OTP to:", targetEmail);
 
       const { data, error: fnError } = await supabase.functions.invoke("send-otp", {
         body: { name: name.trim(), email: email.trim().toLowerCase() },
