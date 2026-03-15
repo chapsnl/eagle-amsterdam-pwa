@@ -1,8 +1,16 @@
 import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { QrCode, Star, CheckCircle } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
 import StampCard from "@/components/loyalty/StampCard";
 import ScannerDialog from "@/components/loyalty/ScannerDialog";
 import RewardDialog from "@/components/loyalty/RewardDialog";
