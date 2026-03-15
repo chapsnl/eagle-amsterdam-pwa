@@ -34,21 +34,25 @@ const VipDashboard = () => {
       label: "LOYALTY CARD",
       icon: Star,
       onClick: () => navigate("/vip/loyalty"),
+      disabled: false,
     },
     {
       label: "MEMBER DEALS",
       icon: Tag,
-      onClick: () => navigate("/vip/deals"),
+      onClick: undefined,
+      disabled: true,
     },
     {
       label: "PRIVATE NEWS",
       icon: Newspaper,
-      onClick: () => navigate("/vip/news"),
+      onClick: undefined,
+      disabled: true,
     },
     {
       label: "MEMBER PASS",
       icon: IdCard,
       onClick: () => navigate("/vip/member-pass"),
+      disabled: false,
     },
   ];
 
@@ -66,11 +70,16 @@ const VipDashboard = () => {
 
         {/* 4-button grid */}
         <div className="grid grid-cols-2 gap-4">
-          {menuItems.map(({ label, icon: Icon, onClick }) => (
+          {menuItems.map(({ label, icon: Icon, onClick, disabled }) => (
             <button
               key={label}
-              onClick={onClick}
-              className="aspect-square flex flex-col items-center justify-center gap-3 bg-primary text-primary-foreground rounded-none border-0 transition-all duration-200 active:scale-95 hover:opacity-90"
+              onClick={disabled ? undefined : onClick}
+              disabled={disabled}
+              className={`aspect-square flex flex-col items-center justify-center gap-3 rounded-none border-0 transition-all duration-200 ${
+                disabled
+                  ? "bg-muted text-muted-foreground cursor-not-allowed opacity-50"
+                  : "bg-primary text-primary-foreground active:scale-95 hover:opacity-90"
+              }`}
             >
               <Icon className="w-10 h-10" />
               <span className="text-sm font-bold tracking-wide">{label}</span>
