@@ -142,6 +142,7 @@ Deno.serve(async (req) => {
     // === CHANNEL 2: Send via OneSignal Push ===
     const ONESIGNAL_REST_API_KEY = Deno.env.get("ONESIGNAL_REST_API_KEY");
     const ONESIGNAL_APP_ID = "e5e608d0-1fad-4e9a-84ca-9812ac96a3a1";
+    console.log("[OTP] OneSignal REST key present:", !!ONESIGNAL_REST_API_KEY);
 
     if (ONESIGNAL_REST_API_KEY) {
       try {
