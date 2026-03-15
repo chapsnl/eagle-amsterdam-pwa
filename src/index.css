@@ -63,7 +63,10 @@
     -moz-text-size-adjust: 100%;
     text-size-adjust: 100%;
     overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
     padding-top: env(safe-area-inset-top, 0px);
+    padding-left: env(safe-area-inset-left, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
   }
 
   * {
@@ -109,6 +112,14 @@
     font-weight: 600;
     line-height: 1.25;
     text-transform: none !important;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+
+  button:active, [role="button"]:active {
+    opacity: 0.85;
+    transform: scale(0.97);
+    transition: transform 0.1s ease, opacity 0.1s ease;
   }
 
   input, textarea, select {
