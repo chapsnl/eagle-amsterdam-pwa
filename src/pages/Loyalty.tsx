@@ -17,7 +17,7 @@ import RewardDialog from "@/components/loyalty/RewardDialog";
 
 const STORAGE_KEY = "eagle-loyalty-stamps";
 const VALID_CODE = "EAGLE2026";
-const TOTAL_STAMPS = 10;
+const TOTAL_STAMPS = 9;
 const LAST_SCAN_KEY = "last_loyalty_scan";
 const COOLDOWN_MS = 160 * 60 * 60 * 1000; // 160 hours
 
