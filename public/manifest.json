@@ -1,12 +1,13 @@
 {
   "name": "Eagle Amsterdam",
   "short_name": "Eagle AMS",
+  "id": "/",
   "description": "Eagle Amsterdam — Leather & Fetish Bar",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "background_color": "#000000",
-  "theme_color": "#FF0000",
+  "theme_color": "#000000",
   "orientation": "portrait",
   "categories": ["entertainment", "social"],
   "icons": [
