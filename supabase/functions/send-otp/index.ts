@@ -29,9 +29,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Generate 4-digit code
     const code = Math.floor(1000 + Math.random() * 9000).toString();
-    console.log(`[OTP] Generated code for ${email}: ${code}`);
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -46,14 +44,12 @@ Deno.serve(async (req) => {
     });
 
     if (insertError) {
-      console.error("[OTP] DB insert error:", insertError);
       return new Response(
         JSON.stringify({ success: false, error: "Failed to store verification code" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // === Send email via SMTP ===
     const SMTP_HOST = Deno.env.get("SMTP_HOST");
     const SMTP_PORT = Deno.env.get("SMTP_PORT") || "465";
     const SMTP_USER = Deno.env.get("SMTP_USER");
@@ -118,14 +114,11 @@ Deno.serve(async (req) => {
       html: htmlBody,
     });
 
-    console.log("[OTP] Email sent successfully");
-
     return new Response(
       JSON.stringify({ success: true }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error: any) {
-    console.error("[OTP] Error:", error);
     return new Response(
       JSON.stringify({ success: false, error: error.message || "Failed to send code" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }

@@ -24,7 +24,6 @@ Deno.serve(async (req) => {
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Find valid OTP
     const { data: otpRecord, error: fetchError } = await supabase
       .from("otp_codes")
       .select("*")
@@ -37,52 +36,25 @@ Deno.serve(async (req) => {
       .single();
 
     if (fetchError || !otpRecord) {
-      console.log("[VERIFY] Invalid or expired code for:", email);
       return new Response(
         JSON.stringify({ success: false, error: "Invalid or expired code" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // Mark as verified
     await supabase.from("otp_codes").update({ verified: true }).eq("id", otpRecord.id);
 
-    // Sign up or sign in via Supabase Auth (using admin API to auto-confirm)
     const { data: existingUsers } = await supabase.auth.admin.listUsers();
     const existingUser = existingUsers?.users?.find(
       (u) => u.email?.toLowerCase() === email.toLowerCase()
     );
 
     let userId: string;
-    let token: string;
 
     if (existingUser) {
-      // Existing user - generate magic link token
       userId = existingUser.id;
-
-      // Update name in profile if needed
-      await supabase
-        .from("profiles")
-        .update({ name: otpRecord.name })
-        .eq("id", userId);
-
-      // Generate session via admin
-      const { data: sessionData, error: sessionError } = await supabase.auth.admin.generateLink({
-        type: "magiclink",
-        email: email.toLowerCase(),
-      });
-
-      if (sessionError) {
-        console.error("[VERIFY] Session generation error:", sessionError);
-        return new Response(
-          JSON.stringify({ success: false, error: "Failed to create session" }),
-          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-
-      token = sessionData.properties?.hashed_token || "";
+      await supabase.from("profiles").update({ name: otpRecord.name }).eq("id", userId);
     } else {
-      // New user - create account
       const tempPassword = crypto.randomUUID();
       const { data: newUser, error: createError } = await supabase.auth.admin.createUser({
         email: email.toLowerCase(),
@@ -92,7 +64,6 @@ Deno.serve(async (req) => {
       });
 
       if (createError) {
-        console.error("[VERIFY] User creation error:", createError);
         return new Response(
           JSON.stringify({ success: false, error: "Failed to create account" }),
           { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -100,9 +71,7 @@ Deno.serve(async (req) => {
       }
 
       userId = newUser.user.id;
-      token = "";
 
-      // Ensure profile exists (trigger may not have fired yet)
       await supabase.from("profiles").upsert({
         id: userId,
         name: otpRecord.name,
@@ -110,16 +79,13 @@ Deno.serve(async (req) => {
       }, { onConflict: "id" });
     }
 
-    // Sign in with OTP-verified email using admin
-    const { data: signInData, error: signInError } = await supabase.auth.admin.generateLink({
+    const { data: signInData } = await supabase.auth.admin.generateLink({
       type: "magiclink",
       email: email.toLowerCase(),
     });
 
-    // Clean up used OTP codes for this email
     await supabase.from("otp_codes").delete().eq("email", email.toLowerCase());
 
-    // Fetch member_number from profile
     const { data: profile } = await supabase
       .from("profiles")
       .select("member_number")
@@ -133,14 +99,12 @@ Deno.serve(async (req) => {
         email: email.toLowerCase(),
         name: otpRecord.name,
         member_number: profile?.member_number || "",
-        // Return the hashed_token so the client can exchange it for a session
         hashed_token: signInData?.properties?.hashed_token || "",
         verification_url: signInData?.properties?.action_link || "",
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
-    console.error("[VERIFY] Unexpected error:", error);
     return new Response(
       JSON.stringify({ success: false, error: error.message || "Verification failed" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }

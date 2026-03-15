@@ -85,7 +85,7 @@ const VipMemberPass = () => {
 
   const cardContent = (
     <div
-      className={`relative overflow-hidden bg-primary rounded-[2rem] ${
+      className={`relative overflow-hidden bg-primary rounded-none ${
         isFullscreen ? "w-full max-w-lg mx-auto" : "w-full"
       }`}
       style={{ aspectRatio: "1.586/1" }}
