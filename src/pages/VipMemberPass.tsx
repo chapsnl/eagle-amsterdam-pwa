@@ -1,9 +1,9 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Camera, Maximize2, Minimize2, User } from "lucide-react";
+import { Maximize2, Minimize2 } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/components/ui/sonner";
+
 import eagleLogo from "@/assets/eagle-logo-white.webp";
 
 interface VipSession {
@@ -21,8 +21,6 @@ const VipMemberPass = () => {
   const [memberNumber, setMemberNumber] = useState("");
   const [memberSince, setMemberSince] = useState("");
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [uploading, setUploading] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const stored = localStorage.getItem("vip_session");
@@ -77,44 +75,6 @@ const VipMemberPass = () => {
     }
   };
 
-  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !session) return;
-
-    if (!file.type.startsWith("image/")) {
-      toast.error("Please select an image file");
-      return;
-    }
-
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error("Image must be under 5MB");
-      return;
-    }
-
-    setUploading(true);
-    try {
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("userId", session.userId);
-
-      const { data, error } = await supabase.functions.invoke("upload-profile-image", {
-        body: formData,
-      });
-
-      if (error || !data?.success) {
-        throw new Error(data?.error || error?.message || "Upload failed");
-      }
-
-      setProfileImage(data.imageUrl);
-      toast.success("Photo updated");
-    } catch (err: any) {
-      console.error("[MemberPass] Upload error:", err);
-      toast.error(err.message || "Failed to upload photo");
-    } finally {
-      setUploading(false);
-    }
-  };
-
   const toggleFullscreen = () => {
     setIsFullscreen(!isFullscreen);
   };
@@ -130,43 +90,24 @@ const VipMemberPass = () => {
     >
       {/* Top bar: Logo + VIP label */}
       <div className="absolute top-0 left-0 right-0 flex items-center justify-between px-5 pt-4">
-        <img src={eagleLogo} alt="Eagle Amsterdam" className="h-6 w-auto opacity-90" />
+        <img src={eagleLogo} alt="Eagle Amsterdam" className="h-12 w-auto opacity-90" />
         <span className="text-primary-foreground/80 text-[10px] font-bold tracking-[0.25em] uppercase">
           VIP Member
         </span>
       </div>
 
-      {/* Photo area - left side */}
-      <div className="absolute left-5 top-14">
-        <div className="relative">
+      {/* Profile image (display only) */}
+      {profileImage && (
+        <div className="absolute left-5 top-[4.5rem]">
           <div className="w-16 h-16 bg-primary-foreground/10 border border-primary-foreground/20 overflow-hidden flex items-center justify-center">
-            {profileImage ? (
-              <img
-                src={profileImage}
-                alt="Profile"
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <User className="w-8 h-8 text-primary-foreground/40" />
-            )}
+            <img src={profileImage} alt="Profile" className="w-full h-full object-cover" />
           </div>
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            disabled={uploading}
-            className="absolute -bottom-1 -right-1 w-6 h-6 bg-primary-foreground text-primary flex items-center justify-center hover:opacity-90 transition-opacity"
-          >
-            {uploading ? (
-              <div className="w-3 h-3 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-            ) : (
-              <Camera className="w-3 h-3" />
-            )}
-          </button>
         </div>
-      </div>
+      )}
 
       {/* Name + Email + Member Since - left bottom area */}
       <div className="absolute left-5 bottom-4 space-y-0.5">
-        <p className="text-primary-foreground font-bold text-2xl tracking-wider truncate uppercase">
+        <p className="text-primary-foreground font-bold text-sm tracking-wider truncate uppercase">
           {session.name}
         </p>
         <p className="text-black text-sm truncate">
@@ -216,13 +157,6 @@ const VipMemberPass = () => {
 
   return (
     <>
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/*"
-        className="hidden"
-        onChange={handlePhotoUpload}
-      />
 
       {isFullscreen ? (
         <div className="fixed inset-0 z-50 bg-background flex flex-col items-center justify-center p-4">
