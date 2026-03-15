@@ -104,7 +104,7 @@ const PwaGate = ({ children }: { children: React.ReactNode }) => {
                   Tap the Share button
                 </p>
                 <p className="text-muted-foreground text-sm mt-1 flex items-center gap-1" style={{ letterSpacing: '-0.02em' }}>
-                  Look for the <Share className="inline w-5 h-5 text-primary" /> icon at the bottom of Safari
+                  Look for the <Share className="inline w-7 h-7 text-primary" /> icon at the bottom of Safari
                 </p>
               </div>
             </div>
