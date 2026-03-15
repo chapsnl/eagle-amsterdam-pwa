@@ -145,17 +145,17 @@ const Loyalty = () => {
 
       {/* Success Dialog */}
       <Dialog open={successOpen} onOpenChange={setSuccessOpen}>
-        <DialogContent className="max-w-[400px] w-[90%] rounded-none bg-primary border-primary p-6">
+        <DialogContent className="max-w-[400px] w-[90%] rounded-2xl bg-card border-border">
           <DialogHeader>
-            <DialogTitle className="text-primary-foreground text-xl flex items-center gap-2 tracking-[-0.05em]">
-              <CheckCircle className="w-5 h-5 text-primary-foreground" />
+            <DialogTitle className="text-foreground flex items-center gap-2 tracking-[-0.05em]">
+              <CheckCircle className="w-5 h-5 text-primary" />
               Success
             </DialogTitle>
-            <DialogDescription className="text-primary-foreground/90 text-base tracking-[-0.02em]">
+            <DialogDescription className="text-muted-foreground text-base tracking-[-0.02em]">
               {successMsg}
             </DialogDescription>
           </DialogHeader>
-          <Button variant="eagle-outline" className="w-full rounded-none border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary tracking-[-0.02em]" onClick={() => setSuccessOpen(false)}>
+          <Button variant="eagle" className="w-full tracking-[-0.02em]" onClick={() => setSuccessOpen(false)}>
             OK
           </Button>
         </DialogContent>
@@ -163,7 +163,7 @@ const Loyalty = () => {
 
       {/* Limit Reached Dialog */}
       <Dialog open={limitOpen} onOpenChange={setLimitOpen}>
-        <DialogContent className="max-w-[400px] w-[90%] rounded-none bg-primary border-primary p-6">
+        <DialogContent className="max-w-[400px] w-[90%] bg-primary border-primary">
           <DialogHeader>
             <DialogTitle className="text-primary-foreground text-xl tracking-[-0.05em]">
               Limit Reached
@@ -172,7 +172,7 @@ const Loyalty = () => {
               You have already scanned this week! Come back next week for your next loyalty stamp.
             </DialogDescription>
           </DialogHeader>
-          <Button variant="eagle-outline" className="w-full rounded-none border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary tracking-[-0.02em]" onClick={() => setLimitOpen(false)}>
+          <Button variant="eagle-outline" className="w-full border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary tracking-[-0.02em]" onClick={() => setLimitOpen(false)}>
             GOT IT
           </Button>
         </DialogContent>
@@ -180,10 +180,10 @@ const Loyalty = () => {
 
       {redeemSuccessOpen && (
         <div className={`fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm transition-opacity duration-300 ${redeemFading ? "opacity-0" : "opacity-100"}`}>
-          <div className={`max-w-[400px] w-[90%] rounded-none bg-primary border border-primary p-8 text-center transition-all duration-300 ${redeemFading ? "scale-95 opacity-0" : "animate-scale-in scale-100 opacity-100"}`}>
-            <CheckCircle className="w-12 h-12 text-primary-foreground mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-primary-foreground mb-2" style={{ letterSpacing: "-0.05em" }}>Reward Redeemed!</h2>
-            <p className="text-primary-foreground tracking-[-0.02em]">Your stamp card has been reset. Enjoy! 🍻</p>
+          <div className={`max-w-[400px] w-[90%] rounded-2xl bg-card border border-primary p-8 text-center shadow-[var(--shadow-red-intense)] transition-all duration-300 ${redeemFading ? "scale-95 opacity-0" : "animate-scale-in scale-100 opacity-100"}`}>
+            <CheckCircle className="w-12 h-12 text-primary mx-auto mb-4" />
+            <h2 className="text-2xl font-bold text-foreground mb-2" style={{ letterSpacing: "-0.05em" }}>Reward Redeemed!</h2>
+            <p className="text-foreground tracking-[-0.02em]">Your stamp card has been reset. Enjoy! 🍻</p>
           </div>
         </div>
       )}
