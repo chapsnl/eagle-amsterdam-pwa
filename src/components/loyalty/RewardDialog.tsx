@@ -24,7 +24,7 @@ const RewardDialog = memo(({ open, onOpenChange, onRedeem }: RewardDialogProps) 
       <div className="text-center">
         <Gift className="w-20 h-20 text-primary mx-auto my-4 animate-pulse-red" />
         <p className="text-foreground text-sm font-bold mb-2 tracking-[-0.02em]">
-          Collect 10 stamps to receive one free entry to an Eagle Amsterdam organized event.
+          Collect 9 stamps to receive one free entry to an Eagle Amsterdam organized event.
         </p>
       </div>
       <Button variant="eagle" size="lg" className="w-full tracking-[-0.02em]" onClick={onRedeem}>

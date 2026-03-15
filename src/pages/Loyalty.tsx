@@ -17,7 +17,7 @@ import RewardDialog from "@/components/loyalty/RewardDialog";
 
 const STORAGE_KEY = "eagle-loyalty-stamps";
 const VALID_CODE = "EAGLE2026";
-const TOTAL_STAMPS = 10;
+const TOTAL_STAMPS = 9;
 const LAST_SCAN_KEY = "last_loyalty_scan";
 const COOLDOWN_MS = 160 * 60 * 60 * 1000; // 160 hours
 
@@ -137,7 +137,7 @@ const Loyalty = () => {
           LOYALTY
         </h1>
         <p className="text-muted-foreground text-sm mb-6">
-          Collect {TOTAL_STAMPS} stamps to receive one free entry to an Eagle Amsterdam organized event.
+          Collect 9 stamps to receive one free entry to an Eagle Amsterdam organized event.
         </p>
       </div>
 

@@ -2,7 +2,7 @@ import { memo } from "react";
 import { Gift } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-const TOTAL_STAMPS = 10;
+const TOTAL_STAMPS = 9;
 
 interface StampCardProps {
   stamps: number;
@@ -18,7 +18,7 @@ const StampCard = memo(({ stamps, onRewardOpen }: StampCardProps) => {
         <Gift className="w-16 h-16 text-primary mx-auto mb-4 animate-pulse-red" />
         <h2 className="text-2xl text-foreground mb-2">CONGRATS!</h2>
         <p className="text-foreground text-sm mb-6">
-          <strong>Collect 10 stamps to receive one free entry to an Eagle Amsterdam organized event.</strong>
+          <strong>Collect 9 stamps to receive one free entry to an Eagle Amsterdam organized event.</strong>
         </p>
         <Button variant="eagle" size="lg" className="w-full text-base py-4" onClick={onRewardOpen}>
           <Gift className="w-5 h-5 mr-2" />
@@ -30,7 +30,7 @@ const StampCard = memo(({ stamps, onRewardOpen }: StampCardProps) => {
 
   return (
     <div className="rounded-2xl border border-border bg-card p-6">
-      <div className="grid grid-cols-3 gap-4 mb-2">
+      <div className="grid grid-cols-3 gap-3 mb-2">
         {Array.from({ length: TOTAL_STAMPS }).map((_, i) => {
           const filled = i < stamps;
           const isLast = i === TOTAL_STAMPS - 1;
@@ -38,7 +38,7 @@ const StampCard = memo(({ stamps, onRewardOpen }: StampCardProps) => {
             <div
               key={i}
               className={`aspect-square rounded-full flex items-center justify-center transition-all duration-300 ${
-                isLast ? "col-start-2" : ""
+                ""
               } ${
                 filled
                   ? "bg-primary text-primary-foreground shadow-[var(--shadow-red)]"
