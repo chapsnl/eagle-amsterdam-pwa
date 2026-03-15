@@ -46,28 +46,34 @@ const VipLogin = () => {
       const targetEmail = email.trim().toLowerCase();
 
       // Step 1: Sync OneSignal identity BEFORE sending OTP
+      let pushReady = false;
       try {
         const { setOneSignalExternalId } = await import("@/lib/onesignal");
-        console.log("[VIP Login] Step 1: Syncing OneSignal with email:", targetEmail);
+        console.log("[VIP Login] Step 1: Calling OneSignal.login() with email:", targetEmail);
         await setOneSignalExternalId(targetEmail);
 
-        // Step 2: Wait 750ms for OneSignal to fully register the device-to-email link
-        await new Promise((resolve) => setTimeout(resolve, 750));
+        // Step 2: Mandatory 2-second wait for OneSignal to fully register device-to-email link
+        console.log("[VIP Login] Step 2: Waiting 2s for OneSignal sync...");
+        await new Promise((resolve) => setTimeout(resolve, 2000));
 
-        // Debug: Check push subscription status
-        window.OneSignalDeferred = window.OneSignalDeferred || [];
-        window.OneSignalDeferred.push(async (OneSignal: any) => {
-          const pushId = OneSignal.User?.PushSubscription?.id;
-          console.log("[VIP Login] PushSubscription.id:", pushId);
-          if (!pushId) {
-            console.warn("[VIP Login] ⚠️ Push subscription ID is null — push will not be delivered");
-          }
+        // Step 3: Verify push subscription is active
+        await new Promise<void>((resolve) => {
+          window.OneSignalDeferred = window.OneSignalDeferred || [];
+          window.OneSignalDeferred.push(async (OneSignal: any) => {
+            const pushId = OneSignal.User?.PushSubscription?.id;
+            console.log("[VIP Login] PushSubscription.id:", pushId);
+            if (!pushId) {
+              console.warn("[VIP Login] ⚠️ Push subscription ID is null — push may not be delivered");
+            } else {
+              pushReady = true;
+            }
+            resolve();
+          });
         });
 
-        console.log("[VIP Login] Step 2: OneSignal sync complete for:", targetEmail);
+        console.log("[VIP Login] OneSignal sync complete. Push ready:", pushReady);
       } catch {
         console.warn("[VIP Login] OneSignal not available, skipping push sync");
-        setError("Push not initialized. Please refresh or check permissions.");
       }
 
       // Step 3: Only NOW send the OTP
