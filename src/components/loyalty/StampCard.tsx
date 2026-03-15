@@ -33,13 +33,10 @@ const StampCard = memo(({ stamps, onRewardOpen }: StampCardProps) => {
       <div className="grid grid-cols-3 gap-3 mb-2">
         {Array.from({ length: TOTAL_STAMPS }).map((_, i) => {
           const filled = i < stamps;
-          const isLast = i === TOTAL_STAMPS - 1;
           return (
             <div
               key={i}
               className={`aspect-square rounded-full flex items-center justify-center transition-all duration-300 ${
-                ""
-              } ${
                 filled
                   ? "bg-primary text-primary-foreground shadow-[var(--shadow-red)]"
                   : "bg-secondary text-muted-foreground border-2 border-border"

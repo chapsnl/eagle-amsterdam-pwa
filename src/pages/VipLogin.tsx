@@ -91,9 +91,8 @@ const VipLogin = () => {
       }
 
       // Store email for verify page
-      const loginEmail = email.trim().toLowerCase();
-      sessionStorage.setItem("vip_otp_email", loginEmail);
-      localStorage.setItem("vip_otp_pending", JSON.stringify({ email: loginEmail }));
+      sessionStorage.setItem("vip_otp_email", targetEmail);
+      localStorage.setItem("vip_otp_pending", JSON.stringify({ email: targetEmail }));
       navigate("/vip/verify");
     } catch (err: any) {
       setError(err.message || "Something went wrong. Please try again.");

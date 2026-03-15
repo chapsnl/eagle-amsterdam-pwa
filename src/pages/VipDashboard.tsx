@@ -91,8 +91,6 @@ const VipDashboard = () => {
             </button>
           ))}
         </div>
-        {/* Empty placeholder for the removed 4th button — keeps grid balanced */}
-        
       </div>
     </div>
   );
