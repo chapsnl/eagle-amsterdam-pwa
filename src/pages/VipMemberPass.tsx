@@ -130,7 +130,7 @@ const VipMemberPass = () => {
     >
       {/* Top bar: Logo + VIP label */}
       <div className="absolute top-0 left-0 right-0 flex items-center justify-between px-5 pt-4">
-        <img src={eagleLogo} alt="Eagle Amsterdam" className="h-6 w-auto opacity-90" />
+        <img src={eagleLogo} alt="Eagle Amsterdam" className="h-12 w-auto opacity-90" />
         <span className="text-primary-foreground/80 text-[10px] font-bold tracking-[0.25em] uppercase">
           VIP Member
         </span>
