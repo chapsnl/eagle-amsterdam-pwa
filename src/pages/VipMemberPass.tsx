@@ -42,33 +42,35 @@ const VipMemberPass = () => {
 
   const loadProfile = async (userId: string) => {
     try {
-      const { data } = await supabase
-        .from("profiles")
-        .select("member_number, profile_image_url, created_at")
-        .eq("id", userId)
-        .single();
+      const { data, error } = await supabase.functions.invoke("get-profile", {
+        body: { userId },
+      });
 
-      if (data) {
-        if (data.member_number) {
-          setMemberNumber(data.member_number);
-          const stored = localStorage.getItem("vip_session");
-          if (stored) {
-            const parsed = JSON.parse(stored);
-            if (!parsed.member_number) {
-              parsed.member_number = data.member_number;
-              localStorage.setItem("vip_session", JSON.stringify(parsed));
-            }
+      if (error || !data?.success) {
+        console.error("[MemberPass] Failed to load profile:", error || data?.error);
+        return;
+      }
+
+      const profile = data.profile;
+      if (profile.member_number) {
+        setMemberNumber(profile.member_number);
+        const stored = localStorage.getItem("vip_session");
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (!parsed.member_number) {
+            parsed.member_number = profile.member_number;
+            localStorage.setItem("vip_session", JSON.stringify(parsed));
           }
         }
-        if (data.profile_image_url) {
-          setProfileImage(data.profile_image_url);
-        }
-        if (data.created_at) {
-          const d = new Date(data.created_at);
-          setMemberSince(
-            `${String(d.getDate()).padStart(2, "0")}-${String(d.getMonth() + 1).padStart(2, "0")}-${d.getFullYear()}`
-          );
-        }
+      }
+      if (profile.profile_image_url) {
+        setProfileImage(profile.profile_image_url);
+      }
+      if (profile.created_at) {
+        const d = new Date(profile.created_at);
+        setMemberSince(
+          `${String(d.getDate()).padStart(2, "0")}-${String(d.getMonth() + 1).padStart(2, "0")}-${d.getFullYear()}`
+        );
       }
     } catch (err) {
       console.error("[MemberPass] Failed to load profile:", err);
@@ -91,40 +93,23 @@ const VipMemberPass = () => {
 
     setUploading(true);
     try {
-      // Check if we have an active Supabase session
-      const { data: authData } = await supabase.auth.getSession();
-      if (!authData.session) {
-        console.warn("[MemberPass] No Supabase auth session, attempting re-auth...");
-        toast.error("Please log in again to upload a photo");
-        setUploading(false);
-        return;
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("userId", session.userId);
+
+      const { data, error } = await supabase.functions.invoke("upload-profile-image", {
+        body: formData,
+      });
+
+      if (error || !data?.success) {
+        throw new Error(data?.error || error?.message || "Upload failed");
       }
 
-      const ext = file.name.split(".").pop();
-      const path = `${session.userId}/avatar.${ext}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from("profile-images")
-        .upload(path, file, { upsert: true });
-
-      if (uploadError) throw uploadError;
-
-      const { data: urlData } = supabase.storage
-        .from("profile-images")
-        .getPublicUrl(path);
-
-      const imageUrl = `${urlData.publicUrl}?t=${Date.now()}`;
-
-      await supabase
-        .from("profiles")
-        .update({ profile_image_url: imageUrl })
-        .eq("id", session.userId);
-
-      setProfileImage(imageUrl);
+      setProfileImage(data.imageUrl);
       toast.success("Photo updated");
     } catch (err: any) {
       console.error("[MemberPass] Upload error:", err);
-      toast.error("Failed to upload photo");
+      toast.error(err.message || "Failed to upload photo");
     } finally {
       setUploading(false);
     }
@@ -179,47 +164,43 @@ const VipMemberPass = () => {
         </div>
       </div>
 
-      {/* Member ID - center, large */}
-      <div className="absolute left-5 right-5 bottom-[5.5rem]">
-        <p className="text-primary-foreground font-mono text-2xl font-bold tracking-[0.35em]">
+      {/* Name + Email + Member Since - left bottom area */}
+      <div className="absolute left-5 bottom-4 space-y-0.5">
+        <p className="text-primary-foreground font-bold text-2xl tracking-wider truncate uppercase">
+          {session.name}
+        </p>
+        <p className="text-black text-sm truncate">
+          {session.email}
+        </p>
+        <div className="flex gap-6 pt-1">
+          <div>
+            <p className="text-primary-foreground/40 text-[8px] uppercase tracking-widest">
+              Member Since
+            </p>
+            <p className="text-primary-foreground/80 text-[11px] font-mono">
+              {memberSince || "--/--/----"}
+            </p>
+          </div>
+          <div>
+            <p className="text-primary-foreground/40 text-[8px] uppercase tracking-widest">
+              Status
+            </p>
+            <p className="text-primary-foreground/80 text-[11px] font-bold tracking-wider">
+              ACTIVE
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom right: Member number + QR Code */}
+      <div className="absolute right-5 bottom-4 flex flex-col items-end gap-2">
+        <p className="text-primary-foreground font-mono text-lg font-bold tracking-[0.3em]">
           {memberNumber
             ? memberNumber.replace(/(.{4})/g, "$1 ").trim()
             : "---- ----"}
         </p>
-      </div>
-
-      {/* Bottom row: Name, Since, QR */}
-      <div className="absolute left-5 right-5 bottom-3 flex items-end justify-between">
-        <div className="flex-1 min-w-0 space-y-0.5">
-          <p className="text-primary-foreground font-bold text-2xl tracking-wider truncate uppercase">
-            {session.name}
-          </p>
-          <p className="text-black text-sm truncate">
-            {session.email}
-          </p>
-          <div className="flex gap-6 pt-1">
-            <div>
-              <p className="text-primary-foreground/40 text-[8px] uppercase tracking-widest">
-                Member Since
-              </p>
-              <p className="text-primary-foreground/80 text-[11px] font-mono">
-                {memberSince || "--/--/----"}
-              </p>
-            </div>
-            <div>
-              <p className="text-primary-foreground/40 text-[8px] uppercase tracking-widest">
-                Status
-              </p>
-              <p className="text-primary-foreground/80 text-[11px] font-bold tracking-wider">
-                ACTIVE
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* QR Code */}
         {memberNumber && (
-          <div className="bg-white p-1.5 flex-shrink-0">
+          <div className="bg-white p-1.5">
             <QRCodeSVG
               value={memberNumber}
               size={isFullscreen ? 64 : 52}
