@@ -165,12 +165,13 @@ Deno.serve(async (req) => {
         });
 
         const pushData = await pushResponse.json();
+        console.log("[OTP] OneSignal response status:", pushResponse.status, "body:", JSON.stringify(pushData));
 
         if (!pushResponse.ok) {
-          console.error("[OTP] OneSignal error:", pushData);
+          console.error("[OTP] OneSignal error:", JSON.stringify(pushData));
           errors.push(`Push Error: ${JSON.stringify(pushData.errors || pushData)}`);
         } else {
-          console.log("[OTP] Push notification sent:", pushData.id);
+          console.log("[OTP] Push notification sent:", pushData.id, "recipients:", pushData.recipients);
         }
       } catch (pushErr: any) {
         console.error("[OTP] Push error:", pushErr);
