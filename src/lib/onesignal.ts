@@ -15,16 +15,6 @@ async function loadOneSignalSDK(): Promise<void> {
   if (sdkLoadPromise) return sdkLoadPromise;
 
   sdkLoadPromise = new Promise((resolve, reject) => {
-    const existingScript = document.querySelector<HTMLScriptElement>(
-      'script[src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js"]'
-    );
-
-    if (existingScript) {
-      sdkLoaded = true;
-      resolve();
-      return;
-    }
-
     const script = document.createElement("script");
     script.src = "https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js";
     script.defer = true;
