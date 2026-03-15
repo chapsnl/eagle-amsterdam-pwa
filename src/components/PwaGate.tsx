@@ -68,11 +68,11 @@ const PwaGate = ({ children }: { children: React.ReactNode }) => {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-background px-6 text-center font-['Manrope',sans-serif]">
         <img src={eagleLogo} alt="Eagle Amsterdam" className="w-48 mb-8" />
-        <Monitor className="w-14 h-14 text-primary mb-4" />
-        <h1 className="text-3xl font-extrabold text-foreground mb-3" style={{ letterSpacing: '-0.05em', lineHeight: 1.1 }}>
+        <Monitor className="w-20 h-20 text-primary mb-5" />
+        <h1 className="text-2xl font-extrabold text-foreground mb-3" style={{ letterSpacing: '-0.05em', lineHeight: 1.1 }}>
           Mobile Only
         </h1>
-        <p className="text-muted-foreground text-lg max-w-sm leading-relaxed" style={{ letterSpacing: '-0.02em' }}>
+        <p className="text-muted-foreground text-sm max-w-sm leading-relaxed" style={{ letterSpacing: '-0.02em' }}>
           Please visit this link on your mobile device to install the Eagle VIP app.
         </p>
       </div>
@@ -84,11 +84,11 @@ const PwaGate = ({ children }: { children: React.ReactNode }) => {
     <div className="flex flex-col items-center justify-center min-h-screen bg-background px-6 text-center font-['Manrope',sans-serif]">
       <img src={eagleLogo} alt="Eagle Amsterdam" className="w-48 mb-10" />
 
-      <h1 className="text-3xl font-extrabold text-foreground mb-3" style={{ letterSpacing: '-0.05em', lineHeight: 1.1 }}>
+      <h1 className="text-2xl font-extrabold text-foreground mb-3" style={{ letterSpacing: '-0.05em', lineHeight: 1.1 }}>
         Install the Eagle App
       </h1>
 
-      <p className="text-muted-foreground text-base mb-10 max-w-xs leading-relaxed" style={{ letterSpacing: '-0.02em' }}>
+      <p className="text-muted-foreground text-sm mb-10 max-w-xs leading-relaxed" style={{ letterSpacing: '-0.02em' }}>
         To access the full app experience, add it to your home screen.
       </p>
 
@@ -104,7 +104,7 @@ const PwaGate = ({ children }: { children: React.ReactNode }) => {
                   Tap the Share button
                 </p>
                 <p className="text-muted-foreground text-sm mt-1 flex items-center gap-1" style={{ letterSpacing: '-0.02em' }}>
-                  Look for the <Share className="inline w-5 h-5 text-primary" /> icon at the bottom of Safari
+                  Look for the <Share className="inline w-7 h-7 text-primary" /> icon at the bottom of Safari
                 </p>
               </div>
             </div>
@@ -148,7 +148,7 @@ const PwaGate = ({ children }: { children: React.ReactNode }) => {
                   Tap the menu button
                 </p>
                 <p className="text-muted-foreground text-sm mt-1 flex items-center gap-1" style={{ letterSpacing: '-0.02em' }}>
-                  Look for the <MoreVertical className="inline w-5 h-5 text-primary" /> icon in your browser
+                  Look for the <MoreVertical className="inline w-7 h-7 text-primary" /> icon in your browser
                 </p>
               </div>
             </div>
