@@ -194,7 +194,7 @@ const VipMemberPass = () => {
           <p className="text-primary-foreground font-bold text-sm tracking-wider truncate uppercase">
             {session.name}
           </p>
-          <p className="text-primary-foreground/60 text-[10px] truncate">
+          <p className="text-black text-sm truncate">
             {session.email}
           </p>
           <div className="flex gap-6 pt-1">
