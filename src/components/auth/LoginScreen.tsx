@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Crown, ArrowRight, Loader2 } from "lucide-react";
+import OtpSplitInput from "./OtpSplitInput";
 
 export default function LoginScreen() {
   const [step, setStep] = useState<"credentials" | "otp">("credentials");
@@ -54,7 +55,7 @@ export default function LoginScreen() {
   };
 
   const handleVerifyOtp = async () => {
-    if (otp.length !== 6) {
+    if (otp.replace(/\s/g, "").length !== 6) {
       setError("Voer de 6-cijferige code in.");
       return;
     }
@@ -69,7 +70,6 @@ export default function LoginScreen() {
         type: "email",
       });
       if (error) throw error;
-      // Auth state change will handle the redirect automatically
     } catch (e: any) {
       setError(e.message || "Ongeldige code. Probeer het opnieuw.");
     } finally {
@@ -138,34 +138,22 @@ export default function LoginScreen() {
                 <Loader2 className="w-5 h-5 animate-spin" />
               ) : (
                 <>
-                  VERZEND CODE
+                  SEND CODE
                   <ArrowRight className="w-5 h-5 ml-2" />
                 </>
               )}
             </Button>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-5">
             <p className="text-foreground text-sm">
               We hebben een 6-cijferige code gestuurd naar{" "}
               <strong>{email}</strong>
             </p>
 
             <div className="space-y-2">
-              <Label htmlFor="otp" className="text-foreground">
-                Verificatiecode
-              </Label>
-              <Input
-                id="otp"
-                value={otp}
-                onChange={(e) =>
-                  setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))
-                }
-                placeholder="000000"
-                maxLength={6}
-                inputMode="numeric"
-                className="rounded-none border-border bg-card text-foreground text-center text-2xl tracking-[0.5em] font-mono"
-              />
+              <Label className="text-foreground">Verificatiecode</Label>
+              <OtpSplitInput value={otp} onChange={setOtp} />
             </div>
 
             {error && (
@@ -182,7 +170,7 @@ export default function LoginScreen() {
               {loading ? (
                 <Loader2 className="w-5 h-5 animate-spin" />
               ) : (
-                "VERIFIEER"
+                "VERIFIEER CODE"
               )}
             </Button>
 
