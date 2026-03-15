@@ -74,9 +74,11 @@ const Loyalty = () => {
       });
       setScannerOpen(false);
     } else {
-      toast({ title: "Invalid code", description: "This QR code is not recognized.", variant: "destructive" });
+      setScannerOpen(false);
+      setInvalidOpen(true);
+      setTimeout(() => setInvalidOpen(false), 2000);
     }
-  }, [toast]);
+  }, []);
 
   const handlePermissionDenied = useCallback(() => setCameraBlocked(true), []);
 
