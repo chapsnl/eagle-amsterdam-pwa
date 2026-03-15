@@ -145,17 +145,17 @@ const Loyalty = () => {
 
       {/* Success Dialog */}
       <Dialog open={successOpen} onOpenChange={setSuccessOpen}>
-        <DialogContent className="max-w-[400px] w-[90%] rounded-2xl bg-card border-border">
+        <DialogContent className="max-w-[400px] w-[90%] rounded-none bg-primary border-primary p-6">
           <DialogHeader>
-            <DialogTitle className="text-foreground flex items-center gap-2 tracking-[-0.05em]">
-              <CheckCircle className="w-5 h-5 text-primary" />
+            <DialogTitle className="text-primary-foreground text-xl flex items-center gap-2 tracking-[-0.05em]">
+              <CheckCircle className="w-5 h-5 text-primary-foreground" />
               Success
             </DialogTitle>
-            <DialogDescription className="text-muted-foreground text-base tracking-[-0.02em]">
+            <DialogDescription className="text-primary-foreground/90 text-base tracking-[-0.02em]">
               {successMsg}
             </DialogDescription>
           </DialogHeader>
-          <Button variant="eagle" className="w-full tracking-[-0.02em]" onClick={() => setSuccessOpen(false)}>
+          <Button variant="eagle-outline" className="w-full rounded-none border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary tracking-[-0.02em]" onClick={() => setSuccessOpen(false)}>
             OK
           </Button>
         </DialogContent>
@@ -163,7 +163,7 @@ const Loyalty = () => {
 
       {/* Limit Reached Dialog */}
       <Dialog open={limitOpen} onOpenChange={setLimitOpen}>
-        <DialogContent className="max-w-[400px] w-[90%] bg-primary border-primary">
+        <DialogContent className="max-w-[400px] w-[90%] rounded-none bg-primary border-primary p-6">
           <DialogHeader>
             <DialogTitle className="text-primary-foreground text-xl tracking-[-0.05em]">
               Limit Reached
@@ -172,7 +172,7 @@ const Loyalty = () => {
               You have already scanned this week! Come back next week for your next loyalty stamp.
             </DialogDescription>
           </DialogHeader>
-          <Button variant="eagle-outline" className="w-full border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary tracking-[-0.02em]" onClick={() => setLimitOpen(false)}>
+          <Button variant="eagle-outline" className="w-full rounded-none border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary tracking-[-0.02em]" onClick={() => setLimitOpen(false)}>
             GOT IT
           </Button>
         </DialogContent>
