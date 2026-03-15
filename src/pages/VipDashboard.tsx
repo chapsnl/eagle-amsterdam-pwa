@@ -83,7 +83,7 @@ const VipDashboard = () => {
             >
               {disabled && (
                 <div className="absolute inset-0 pointer-events-none">
-                  <div className="absolute w-[141%] h-px bg-primary-foreground/25 origin-bottom-left rotate-[-45deg] bottom-0 left-0" style={{ transformOrigin: 'bottom left', transform: 'rotate(-45deg) translateY(-0.5px)', width: '141.4%' }} />
+                  <div className="absolute bg-primary-foreground/20 origin-bottom-left" style={{ width: '150%', height: '6px', bottom: 0, left: 0, transformOrigin: 'bottom left', transform: 'rotate(-45deg)' }} />
                 </div>
               )}
               <Icon className="w-10 h-10" />
