@@ -48,14 +48,18 @@ const VipLogin = () => {
 
       if (!granted) return;
 
+      setSyncingPush(true);
       try {
-        const ready = await waitForValidSubscriptionId(8000, 250);
+        const ready = await waitForValidSubscriptionId(10000, 250);
         setSubscriptionId(ready.subscriptionId);
       } catch {
         // Keep graceful fallback for browsers that need one extra interaction
+      } finally {
+        setSyncingPush(false);
       }
     } catch {
       // OneSignal may not be available
+      setSyncingPush(false);
     }
   };
 
