@@ -1,10 +1,10 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import { Home, Calendar, Newspaper, Ticket, Star, Mail } from "lucide-react";
+import { Home, Calendar, Newspaper, Ticket, Crown, Mail } from "lucide-react";
 
 const navItems = [
   { path: "/", label: "Home", icon: Home },
   { path: "/agenda", label: "Agenda", icon: Calendar },
-  { path: "/loyalty", label: "Loyalty", icon: Star },
+  { path: "/vip", label: "VIP", icon: Crown },
   { path: "/events", label: "Tickets", icon: Ticket },
   { path: "/news", label: "News", icon: Newspaper },
   { path: "/contact", label: "Contact", icon: Mail },

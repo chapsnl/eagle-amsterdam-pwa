@@ -55,6 +55,11 @@ const App = () => {
               <Route path="/events" element={<Events />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/loyalty" element={<Loyalty />} />
+              <Route path="/vip" element={<Vip />} />
+              <Route path="/vip/login" element={<VipLogin />} />
+              <Route path="/vip/verify" element={<VipVerify />} />
+              <Route path="/vip/dashboard" element={<VipDashboard />} />
+              <Route path="/vip/loyalty" element={<Loyalty />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>
