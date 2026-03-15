@@ -160,12 +160,21 @@ Deno.serve(async (req) => {
             : !!pushResult?.errors;
           const messageId = typeof pushResult?.id === "string" ? pushResult.id : "";
           const recipients = Number(pushResult?.recipients ?? 0);
+          const hasRecipient = Number.isFinite(recipients) && recipients > 0;
+          const accepted = pushResponse.ok && !hasErrors && messageId.length > 0;
 
-          if (pushResponse.ok && !hasErrors && messageId.length > 0) {
+          if (accepted && hasRecipient) {
             console.log(
-              `[OTP] Push accepted via ${targetType}. messageId=${messageId}, recipients=${Number.isNaN(recipients) ? "n/a" : recipients}`
+              `[OTP] Push delivered via ${targetType}. messageId=${messageId}, recipients=${recipients}`
             );
             return true;
+          }
+
+          if (accepted && !hasRecipient) {
+            console.warn(
+              `[OTP] Push accepted but zero recipients via ${targetType}. Trying fallback target.`
+            );
+            return false;
           }
 
           console.warn(`[OTP] Push via ${targetType} failed:`, {
