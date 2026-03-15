@@ -197,6 +197,18 @@ const VipVerify = () => {
             </p>
           </div>
 
+          {/* Hidden input to catch OS one-time-code auto-fill */}
+          <input
+            ref={hiddenRef}
+            type="text"
+            inputMode="numeric"
+            autoComplete="one-time-code"
+            onChange={handleHiddenChange}
+            className="absolute opacity-0 w-0 h-0 pointer-events-none"
+            tabIndex={-1}
+            aria-hidden="true"
+          />
+
           {/* 6-digit split input */}
           <div className="flex justify-center gap-3" onPaste={handlePaste}>
             {digits.map((digit, i) => (
@@ -211,7 +223,7 @@ const VipVerify = () => {
                 onChange={(e) => handleChange(i, e.target.value)}
                 onKeyDown={(e) => handleKeyDown(i, e)}
                 className="w-12 h-14 text-center text-2xl font-bold bg-secondary border-2 border-border text-foreground rounded-none focus:border-primary focus:outline-none transition-colors"
-                autoComplete="one-time-code"
+                autoComplete={i === 0 ? "one-time-code" : "off"}
               />
             ))}
           </div>
