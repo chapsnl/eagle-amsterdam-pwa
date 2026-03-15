@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Crown, ArrowRight, Bell } from "lucide-react";
+import { Crown, ArrowRight, Bell, CreditCard, Tag, IdCard, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -121,22 +121,29 @@ const VipLogin = () => {
     }
   };
 
+  const benefits = [
+    { icon: CreditCard, title: "Loyalty Card", desc: "Earn stamps & get rewarded" },
+    { icon: Tag, title: "Exclusive Deals", desc: "Members-only offers" },
+    { icon: IdCard, title: "Member Pass", desc: "Your digital VIP pass" },
+    { icon: Sparkles, title: "More Coming Soon", desc: "New perks added regularly" },
+  ];
+
   return (
     <div className="flex flex-col min-h-screen pb-24">
       <div className="flex-1 flex flex-col items-center justify-center px-4">
-        <div className="w-full max-w-[90%] mx-auto space-y-8">
+        <div className="w-full max-w-[90%] mx-auto space-y-6">
           {/* Header */}
-          <div className="text-center space-y-3">
-            <Crown className="w-12 h-12 text-primary mx-auto" />
-            <h1 className="text-3xl text-foreground">VIP MEMBERS</h1>
-            <p className="text-muted-foreground text-sm">
+          <div className="text-center space-y-2">
+            <Crown className="w-10 h-10 text-primary mx-auto" />
+            <h1 className="text-2xl text-foreground">VIP MEMBERS</h1>
+            <p className="text-muted-foreground text-xs">
               Enter your details to receive a verification code.
             </p>
           </div>
 
           {/* Form */}
-          <div className="space-y-4">
-            <div className="space-y-2">
+          <div className="space-y-3">
+            <div className="space-y-1.5">
               <Label htmlFor="name" className="text-foreground text-sm">Name</Label>
               <Input
                 id="name"
@@ -144,12 +151,12 @@ const VipLogin = () => {
                 placeholder="Your name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="bg-secondary border-border text-foreground rounded-none h-12"
+                className="bg-secondary border-border text-foreground rounded-none h-11"
                 maxLength={100}
               />
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               <Label htmlFor="email" className="text-foreground text-sm">Email</Label>
               <Input
                 id="email"
@@ -157,7 +164,7 @@ const VipLogin = () => {
                 placeholder="your@email.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="bg-secondary border-border text-foreground rounded-none h-12"
+                className="bg-secondary border-border text-foreground rounded-none h-11"
                 maxLength={255}
               />
             </div>
@@ -167,17 +174,17 @@ const VipLogin = () => {
               <button
                 type="button"
                 onClick={handleEnablePush}
-                className="w-full flex items-center gap-3 p-3 border border-border bg-secondary text-foreground text-sm rounded-none transition-colors hover:border-primary"
+                className="w-full flex items-center gap-3 p-2.5 border border-border bg-secondary text-foreground text-sm rounded-none transition-colors hover:border-primary"
               >
                 <Bell className="w-5 h-5 text-primary shrink-0" />
-                <span>Activate here Push Notifications to receive the Verification Code</span>
+                <span className="text-xs">Activate Push Notifications to receive the Verification Code</span>
               </button>
             )}
 
             {pushEnabled && (
-              <div className="flex items-center gap-3 p-3 border border-primary/30 bg-primary/10 text-foreground text-sm rounded-none">
+              <div className="flex items-center gap-3 p-2.5 border border-primary/30 bg-primary/10 text-foreground text-sm rounded-none">
                 <Bell className="w-5 h-5 text-primary shrink-0" />
-                <span>Push notifications enabled</span>
+                <span className="text-xs">Push notifications enabled</span>
               </div>
             )}
 
@@ -190,7 +197,7 @@ const VipLogin = () => {
             <Button
               variant="eagle"
               size="lg"
-              className="w-full h-14 text-lg rounded-none"
+              className="w-full h-12 text-lg rounded-none"
               onClick={handleSendCode}
               disabled={loading}
             >
@@ -203,6 +210,27 @@ const VipLogin = () => {
                 </>
               )}
             </Button>
+          </div>
+
+          {/* VIP Benefits */}
+          <div className="border-t border-border pt-4">
+            <p className="text-muted-foreground text-[10px] uppercase tracking-widest text-center mb-3">
+              Member Benefits
+            </p>
+            <div className="grid grid-cols-2 gap-2">
+              {benefits.map(({ icon: Icon, title, desc }) => (
+                <div
+                  key={title}
+                  className="flex items-start gap-2.5 p-2.5 bg-secondary/50 border border-border"
+                >
+                  <Icon className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+                  <div className="min-w-0">
+                    <p className="text-foreground text-xs font-semibold leading-tight">{title}</p>
+                    <p className="text-muted-foreground text-[10px] leading-tight mt-0.5">{desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
