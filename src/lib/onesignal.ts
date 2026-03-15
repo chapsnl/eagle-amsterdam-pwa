@@ -24,9 +24,8 @@ function loadOneSignalSDK(): Promise<void> {
 }
 
 /**
- * Silently initialises OneSignal and immediately requests
- * the native system permission prompt. No custom UI at all.
- * Uses a localStorage flag so subsequent loads don't re-prompt.
+ * Silently initialises OneSignal without requesting permissions.
+ * No custom UI at all — just background SDK setup.
  */
 export async function initOneSignalSilently() {
   await loadOneSignalSDK();
@@ -49,12 +48,28 @@ export async function initOneSignalSilently() {
         window.matchMedia("(display-mode: standalone)").matches;
       await OneSignal.User.addTag("device_type", isStandalone ? "pwa" : "browser");
 
-      // Request native permission if not yet prompted
-      if (!localStorage.getItem(INIT_FLAG)) {
+      resolve();
+    });
+  });
+}
+
+/**
+ * Requests the native system push permission prompt.
+ * Must be called from a user interaction (click/tap) for browser compliance.
+ */
+export async function requestPushPermission() {
+  await loadOneSignalSDK();
+
+  return new Promise<void>((resolve) => {
+    window.OneSignalDeferred = window.OneSignalDeferred || [];
+    window.OneSignalDeferred.push(async (OneSignal: any) => {
+      try {
         await OneSignal.Notifications.requestPermission();
         localStorage.setItem(INIT_FLAG, "true");
+        console.log("[OneSignal] Permission requested via user interaction");
+      } catch (err) {
+        console.warn("[OneSignal] Permission request failed:", err);
       }
-
       resolve();
     });
   });
