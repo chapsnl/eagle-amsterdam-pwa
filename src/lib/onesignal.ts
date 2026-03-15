@@ -66,7 +66,7 @@ export async function initOneSignalSilently() {
       serviceWorkerParam: { scope: "/" },
       serviceWorkerPath: "/OneSignalSDKWorker.js",
       autoPrompt: false,
-      autoRegister: false,
+      autoRegister: true,
       notifyButton: { enable: false },
     });
 
@@ -103,12 +103,13 @@ export async function requestPushPermission(): Promise<boolean> {
       }
 
       const granted = Notification.permission === "granted";
-      if (granted) {
-        localStorage.setItem(INIT_FLAG, "true");
-        console.log("[OneSignal] Permission granted via user interaction");
-      }
+      if (!granted) return false;
 
-      return granted;
+      await OneSignal.User?.PushSubscription?.optIn?.();
+      localStorage.setItem(INIT_FLAG, "true");
+      console.log("[OneSignal] Permission granted + optIn forced via user interaction");
+
+      return true;
     } catch (err) {
       console.warn("[OneSignal] Permission request failed:", err);
       return false;
@@ -120,7 +121,8 @@ export async function setOneSignalExternalId(email: string) {
   await withOneSignal(async (OneSignal) => {
     await OneSignal.login(email);
     await OneSignal.User.addEmail(email);
-    console.log("[OneSignal] External ID + email set to:", email);
+    await OneSignal.User?.PushSubscription?.optIn?.();
+    console.log("[OneSignal] External ID + email set and push optIn forced:", email);
   });
 }
 

@@ -48,14 +48,18 @@ const VipLogin = () => {
 
       if (!granted) return;
 
+      setSyncingPush(true);
       try {
-        const ready = await waitForValidSubscriptionId(8000, 250);
+        const ready = await waitForValidSubscriptionId(10000, 250);
         setSubscriptionId(ready.subscriptionId);
       } catch {
         // Keep graceful fallback for browsers that need one extra interaction
+      } finally {
+        setSyncingPush(false);
       }
     } catch {
       // OneSignal may not be available
+      setSyncingPush(false);
     }
   };
 
@@ -184,8 +188,8 @@ const VipLogin = () => {
               <div className="flex items-center gap-3 p-2.5 border border-border bg-secondary text-foreground text-sm rounded-none">
                 <Bell className="w-5 h-5 text-primary shrink-0" />
                 <span className="text-xs">
-                  {checkingPush
-                    ? "Checking push subscription..."
+                  {checkingPush || syncingPush
+                    ? "Syncing push subscription..."
                     : "Tap anywhere to enable push notifications and sync your device before sending the code."}
                 </span>
               </div>
@@ -209,12 +213,12 @@ const VipLogin = () => {
               size="lg"
               className="w-full h-12 text-lg rounded-none"
               onClick={handleSendCode}
-              disabled={loading || checkingPush}
+              disabled={loading || checkingPush || !pushReady}
             >
-              {loading ? (
+              {loading || syncingPush || checkingPush || !pushReady ? (
                 <>
                   <div className="w-5 h-5 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin mr-2" />
-                  {syncingPush ? "SYNCING PUSH..." : "SENDING CODE..."}
+                  {loading ? "SENDING CODE..." : "SYNCING PUSH..."}
                 </>
               ) : (
                 <>
