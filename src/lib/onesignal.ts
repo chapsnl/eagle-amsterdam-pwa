@@ -144,11 +144,10 @@ export async function requestPushPermission(): Promise<boolean> {
 
       await OneSignal.User?.PushSubscription?.optIn?.();
       localStorage.setItem(INIT_FLAG, "true");
-      console.log("[OneSignal] Permission granted + optIn forced via user interaction");
 
       return true;
-    } catch (err) {
-      console.warn("[OneSignal] Permission request failed:", err);
+    } catch {
+      return false;
       return false;
     }
   });
@@ -159,7 +158,6 @@ export async function setOneSignalExternalId(email: string) {
     await OneSignal.login(email);
     await OneSignal.User.addEmail(email);
     await OneSignal.User?.PushSubscription?.optIn?.();
-    console.log("[OneSignal] External ID + email set and push optIn forced:", email);
   });
 }
 

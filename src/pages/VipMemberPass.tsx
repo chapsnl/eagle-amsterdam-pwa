@@ -45,8 +45,7 @@ const VipMemberPass = () => {
       });
 
       if (error || !data?.success) {
-        console.error("[MemberPass] Failed to load profile:", error || data?.error);
-        // Stale session — clear and redirect to login
+        localStorage.removeItem("vip_session");
         localStorage.removeItem("vip_session");
         navigate("/vip/login");
         return;
@@ -73,8 +72,8 @@ const VipMemberPass = () => {
           `${String(d.getDate()).padStart(2, "0")}-${String(d.getMonth() + 1).padStart(2, "0")}-${d.getFullYear()}`
         );
       }
-    } catch (err) {
-      console.error("[MemberPass] Failed to load profile:", err);
+    } catch {
+      // Profile load failed silently
     }
   };
 
@@ -86,7 +85,7 @@ const VipMemberPass = () => {
 
   const cardContent = (
     <div
-      className={`relative overflow-hidden bg-primary rounded-[2rem] ${
+      className={`relative overflow-hidden bg-primary rounded-none ${
         isFullscreen ? "w-full max-w-lg mx-auto" : "w-full"
       }`}
       style={{ aspectRatio: "1.586/1" }}

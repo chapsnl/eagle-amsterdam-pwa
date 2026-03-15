@@ -171,7 +171,7 @@ const Loyalty = () => {
       <RewardDialog open={rewardOpen} onOpenChange={setRewardOpen} onRedeem={handleRedeem} />
 
       <Dialog open={successOpen} onOpenChange={setSuccessOpen}>
-        <DialogContent className="max-w-[400px] w-[90%] rounded-2xl bg-card border-border">
+        <DialogContent className="max-w-[400px] w-[90%] rounded-none bg-card border-border">
           <DialogHeader>
             <DialogTitle className="text-foreground flex items-center gap-2 tracking-[-0.05em]">
               <CheckCircle className="w-5 h-5 text-primary" />
@@ -220,7 +220,7 @@ const Loyalty = () => {
 
       {redeemSuccessOpen && (
         <div className={`fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm transition-opacity duration-300 ${redeemFading ? "opacity-0" : "opacity-100"}`}>
-          <div className={`max-w-[400px] w-[90%] rounded-2xl bg-card border border-primary p-8 text-center shadow-[var(--shadow-red-intense)] transition-all duration-300 ${redeemFading ? "scale-95 opacity-0" : "animate-scale-in scale-100 opacity-100"}`}>
+          <div className={`max-w-[400px] w-[90%] rounded-none bg-card border border-primary p-8 text-center shadow-[var(--shadow-red-intense)] transition-all duration-300 ${redeemFading ? "scale-95 opacity-0" : "animate-scale-in scale-100 opacity-100"}`}>
             <CheckCircle className="w-12 h-12 text-primary mx-auto mb-4" />
             <h2 className="text-2xl font-bold text-foreground mb-2" style={{ letterSpacing: "-0.05em" }}>Reward Redeemed!</h2>
             <p className="text-foreground tracking-[-0.02em]">Your stamp card has been reset. Enjoy! 🍻</p>
