@@ -42,21 +42,49 @@ const VipVerify = () => {
     inputRefs.current[0]?.focus();
   }, []);
 
-  const handleChange = useCallback((index: number, value: string) => {
-    // Only allow digits
-    const digit = value.replace(/\D/g, "").slice(-1);
+  // Hidden input catches OS auto-fill suggestions, then distributes digits
+  const hiddenRef = useRef<HTMLInputElement | null>(null);
 
+  const distributeCode = useCallback((code: string) => {
+    const cleaned = code.replace(/\D/g, "").slice(0, CODE_LENGTH);
+    if (!cleaned) return;
+    const newDigits = Array(CODE_LENGTH).fill("");
+    for (let i = 0; i < cleaned.length; i++) {
+      newDigits[i] = cleaned[i];
+    }
+    setDigits(newDigits);
+    const focusIndex = Math.min(cleaned.length, CODE_LENGTH - 1);
+    inputRefs.current[focusIndex]?.focus();
+  }, []);
+
+  const handleHiddenChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    if (val.length >= CODE_LENGTH) {
+      distributeCode(val);
+      // Clear hidden input after distributing
+      if (hiddenRef.current) hiddenRef.current.value = "";
+    }
+  }, [distributeCode]);
+
+  const handleChange = useCallback((index: number, value: string) => {
+    // If pasted/autofilled multi-digit value, distribute across boxes
+    const cleaned = value.replace(/\D/g, "");
+    if (cleaned.length > 1) {
+      distributeCode(cleaned);
+      return;
+    }
+
+    const digit = cleaned.slice(-1);
     setDigits((prev) => {
       const next = [...prev];
       next[index] = digit;
       return next;
     });
 
-    // Auto-advance
     if (digit && index < CODE_LENGTH - 1) {
       inputRefs.current[index + 1]?.focus();
     }
-  }, []);
+  }, [distributeCode]);
 
   const handleKeyDown = useCallback((index: number, e: React.KeyboardEvent) => {
     if (e.key === "Backspace" && !digits[index] && index > 0) {
@@ -66,18 +94,8 @@ const VipVerify = () => {
 
   const handlePaste = useCallback((e: React.ClipboardEvent) => {
     e.preventDefault();
-    const pasted = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, CODE_LENGTH);
-    if (!pasted) return;
-
-    const newDigits = Array(CODE_LENGTH).fill("");
-    for (let i = 0; i < pasted.length; i++) {
-      newDigits[i] = pasted[i];
-    }
-    setDigits(newDigits);
-
-    const focusIndex = Math.min(pasted.length, CODE_LENGTH - 1);
-    inputRefs.current[focusIndex]?.focus();
-  }, []);
+    distributeCode(e.clipboardData.getData("text"));
+  }, [distributeCode]);
 
   const handleVerify = async () => {
     const code = digits.join("");
