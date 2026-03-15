@@ -63,10 +63,10 @@ const Events = () => {
           return (
             <button
               key={`${ticket.name}-${i}`}
-              className="group relative flex flex-col items-center gap-3 rounded-lg border-2 border-border bg-secondary/50 py-6 px-4 text-foreground transition-all duration-300 hover:border-primary hover:bg-primary hover:text-primary-foreground"
+              className="group relative flex flex-col items-center gap-3 rounded-lg border-2 border-border bg-secondary/50 py-6 px-4 text-foreground transition-all duration-300 active:border-primary active:bg-primary active:text-primary-foreground"
               onClick={() => handleClick(ticket)}
             >
-              <Icon className="w-7 h-7 text-primary transition-all duration-300 group-hover:scale-110 group-hover:text-primary-foreground" />
+              <Icon className="w-7 h-7 text-primary transition-all duration-300 group-active:scale-110 group-active:text-primary-foreground" />
               <span className="font-display text-sm tracking-wider text-center leading-tight">
                 {ticket.name}
               </span>
