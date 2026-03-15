@@ -49,9 +49,18 @@ const Loyalty = () => {
 
   const handleScanResult = useCallback((decodedText: string) => {
     if (decodedText.trim().toUpperCase() === VALID_CODE) {
+      // Check 7-day cooldown
+      const lastScan = localStorage.getItem(LAST_SCAN_KEY);
+      if (lastScan && Date.now() - parseInt(lastScan, 10) < SEVEN_DAYS_MS) {
+        setScannerOpen(false);
+        setLimitOpen(true);
+        return;
+      }
+
+      localStorage.setItem(LAST_SCAN_KEY, Date.now().toString());
       setStamps((prev) => {
         const newCount = Math.min(prev + 1, TOTAL_STAMPS);
-        setSuccessMsg(`You now have ${newCount} of ${TOTAL_STAMPS} stamps.`);
+        setSuccessMsg("Loyalty scan successful! See you next week.");
         setSuccessOpen(true);
         return newCount;
       });
