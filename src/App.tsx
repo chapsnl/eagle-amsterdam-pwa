@@ -4,12 +4,12 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { AuthProvider } from "@/hooks/useAuth";
 
 import BottomNav from "@/components/BottomNav";
 import DevModeIndicator from "@/components/DevModeIndicator";
 import SmartInstallBanner from "@/components/SmartInstallBanner";
 import PushNotificationModal from "@/components/PushNotificationModal";
-
 
 // Lazy-loaded pages
 const Index = lazy(() => import("./pages/Index"));
@@ -17,6 +17,7 @@ const Agenda = lazy(() => import("./pages/Agenda"));
 const News = lazy(() => import("./pages/News"));
 const Events = lazy(() => import("./pages/Events"));
 const Contact = lazy(() => import("./pages/Contact"));
+const VIP = lazy(() => import("./pages/VIP"));
 const Loyalty = lazy(() => import("./pages/Loyalty"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
@@ -42,23 +43,25 @@ const App = () => {
         <Toaster />
         <Sonner />
         <DevModeIndicator />
-        <BrowserRouter>
-          <Suspense fallback={<PageLoader />}>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/agenda" element={<Agenda />} />
-              <Route path="/news" element={<News />} />
-              <Route path="/events" element={<Events />} />
-              <Route path="/contact" element={<Contact />} />
-              <Route path="/loyalty" element={<Loyalty />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </Suspense>
-          <SmartInstallBanner />
-          <PushNotificationModal />
-          
-          <BottomNav />
-        </BrowserRouter>
+        <AuthProvider>
+          <BrowserRouter>
+            <Suspense fallback={<PageLoader />}>
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/agenda" element={<Agenda />} />
+                <Route path="/news" element={<News />} />
+                <Route path="/events" element={<Events />} />
+                <Route path="/contact" element={<Contact />} />
+                <Route path="/vip" element={<VIP />} />
+                <Route path="/loyalty" element={<Loyalty />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </Suspense>
+            <SmartInstallBanner />
+            <PushNotificationModal />
+            <BottomNav />
+          </BrowserRouter>
+        </AuthProvider>
       </TooltipProvider>
     </QueryClientProvider>
   );
