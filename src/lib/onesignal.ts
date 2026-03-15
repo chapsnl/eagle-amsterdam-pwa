@@ -144,7 +144,6 @@ export async function requestPushPermission(): Promise<boolean> {
 
       await OneSignal.User?.PushSubscription?.optIn?.();
       localStorage.setItem(INIT_FLAG, "true");
-      console.log("[OneSignal] Permission granted + optIn forced via user interaction");
 
       return true;
     } catch (err) {
