@@ -188,8 +188,8 @@ const VipLogin = () => {
               <div className="flex items-center gap-3 p-2.5 border border-border bg-secondary text-foreground text-sm rounded-none">
                 <Bell className="w-5 h-5 text-primary shrink-0" />
                 <span className="text-xs">
-                  {checkingPush
-                    ? "Checking push subscription..."
+                  {checkingPush || syncingPush
+                    ? "Syncing push subscription..."
                     : "Tap anywhere to enable push notifications and sync your device before sending the code."}
                 </span>
               </div>
