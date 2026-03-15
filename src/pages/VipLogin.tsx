@@ -52,7 +52,6 @@ const VipLogin = () => {
       }
 
       console.log("[VIP Login] OTP sent successfully");
-      toast.success("Code sent! Check your email.");
 
       // Store email/name for verify page
       sessionStorage.setItem("vip_otp_email", email.trim().toLowerCase());
