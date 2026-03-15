@@ -121,7 +121,7 @@ const VipVerify = () => {
         // Try to verify OTP via Supabase Auth
         const { error: authError } = await supabase.auth.verifyOtp({
           email,
-          token: data.hashed_token,
+          token_hash: data.hashed_token,
           type: "magiclink",
         });
 
