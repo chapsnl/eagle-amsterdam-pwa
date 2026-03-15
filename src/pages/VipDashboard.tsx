@@ -75,12 +75,17 @@ const VipDashboard = () => {
               key={label}
               onClick={disabled ? undefined : onClick}
               disabled={disabled}
-              className={`aspect-square flex flex-col items-center justify-center gap-3 rounded-none border-0 transition-all duration-200 ${
+              className={`relative aspect-square flex flex-col items-center justify-center gap-3 rounded-none border-0 transition-all duration-200 overflow-hidden ${
                 disabled
-                  ? "bg-muted text-muted-foreground cursor-not-allowed opacity-50"
+                  ? "bg-primary/30 text-primary-foreground/40 cursor-not-allowed"
                   : "bg-primary text-primary-foreground active:scale-95 hover:opacity-90"
               }`}
             >
+              {disabled && (
+                <div className="absolute inset-0 pointer-events-none">
+                  <div className="absolute w-[141%] h-px bg-primary-foreground/25 origin-bottom-left rotate-[-45deg] bottom-0 left-0" style={{ transformOrigin: 'bottom left', transform: 'rotate(-45deg) translateY(-0.5px)', width: '141.4%' }} />
+                </div>
+              )}
               <Icon className="w-10 h-10" />
               <span className="text-sm font-bold tracking-wide">{label}</span>
             </button>
