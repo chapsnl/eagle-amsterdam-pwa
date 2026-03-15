@@ -5,10 +5,10 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
+import { useEffect } from "react";
 import BottomNav from "@/components/BottomNav";
 import DevModeIndicator from "@/components/DevModeIndicator";
 import SmartInstallBanner from "@/components/SmartInstallBanner";
-import PushNotificationModal from "@/components/PushNotificationModal";
 
 
 // Lazy-loaded pages
@@ -40,6 +40,12 @@ const PageLoader = () => (
 );
 
 const App = () => {
+  useEffect(() => {
+    import("@/lib/onesignal")
+      .then(({ initOneSignalSilently }) => initOneSignalSilently())
+      .catch(() => {/* OneSignal unavailable */});
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
@@ -64,8 +70,6 @@ const App = () => {
             </Routes>
           </Suspense>
           <SmartInstallBanner />
-          <PushNotificationModal />
-          
           <BottomNav />
         </BrowserRouter>
       </TooltipProvider>

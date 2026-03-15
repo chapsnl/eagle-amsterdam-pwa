@@ -5,6 +5,7 @@ declare global {
 }
 
 const APP_ID = "e5e608d0-1fad-4e9a-84ca-9812ac96a3a1";
+const INIT_FLAG = "eagle-onesignal-initialized";
 
 let sdkLoaded = false;
 
@@ -23,11 +24,11 @@ function loadOneSignalSDK(): Promise<void> {
 }
 
 /**
- * Loads the SDK, initialises OneSignal silently, then requests the native
- * system permission prompt. No custom slidedowns or bell widgets.
- * Called ONLY when the user clicks "ENTER" in the 18+ modal.
+ * Silently initialises OneSignal and immediately requests
+ * the native system permission prompt. No custom UI at all.
+ * Uses a localStorage flag so subsequent loads don't re-prompt.
  */
-export async function activateOneSignalPush() {
+export async function initOneSignalSilently() {
   await loadOneSignalSDK();
 
   return new Promise<void>((resolve) => {
@@ -48,8 +49,12 @@ export async function activateOneSignalPush() {
         window.matchMedia("(display-mode: standalone)").matches;
       await OneSignal.User.addTag("device_type", isStandalone ? "pwa" : "browser");
 
-      // Request the native system prompt (handles Android POST_NOTIFICATIONS automatically)
-      await OneSignal.Notifications.requestPermission();
+      // Request native permission if not yet prompted
+      if (!localStorage.getItem(INIT_FLAG)) {
+        await OneSignal.Notifications.requestPermission();
+        localStorage.setItem(INIT_FLAG, "true");
+      }
+
       resolve();
     });
   });
