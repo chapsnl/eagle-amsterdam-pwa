@@ -4,7 +4,7 @@ import { format } from "date-fns";
 import { useState } from "react";
 import EagleHtmlContent from "@/components/shared/EagleHtmlContent";
 import PullToRefresh from "@/components/shared/PullToRefresh";
-import FirstVisitLoader from "@/components/shared/FirstVisitLoader";
+import CardSkeletonList from "@/components/shared/CardSkeletonList";
 
 const News = () => {
   const { data: posts, isLoading, error, forceRefresh, isFetching, isPlaceholderData } = useEaglePosts();
