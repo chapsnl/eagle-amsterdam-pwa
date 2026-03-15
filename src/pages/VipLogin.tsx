@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Crown, ArrowRight } from "lucide-react";
+import { Crown, ArrowRight, Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,6 +12,19 @@ const VipLogin = () => {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [pushEnabled, setPushEnabled] = useState(
+    () => localStorage.getItem("eagle-onesignal-initialized") === "true"
+  );
+
+  const handleEnablePush = async () => {
+    try {
+      const { requestPushPermission } = await import("@/lib/onesignal");
+      await requestPushPermission();
+      setPushEnabled(true);
+    } catch {
+      // OneSignal may not be available
+    }
+  };
 
   const handleSendCode = async () => {
     setError("");
@@ -58,7 +71,6 @@ const VipLogin = () => {
         return;
       }
 
-      // Show SMTP error for debugging if present
       if (data.smtp_error) {
         console.warn("[VIP Login] SMTP warning:", data.smtp_error);
         setError(`Code generated but email failed: ${data.smtp_error}`);
@@ -68,7 +80,6 @@ const VipLogin = () => {
 
       console.log("[VIP Login] OTP sent successfully");
 
-      // Store email/name for verify page
       sessionStorage.setItem("vip_otp_email", email.trim().toLowerCase());
       sessionStorage.setItem("vip_otp_name", name.trim());
       navigate("/vip/verify");
@@ -120,6 +131,25 @@ const VipLogin = () => {
                 maxLength={255}
               />
             </div>
+
+            {/* Push notification opt-in */}
+            {!pushEnabled && (
+              <button
+                type="button"
+                onClick={handleEnablePush}
+                className="w-full flex items-center gap-3 p-3 border border-border bg-secondary text-foreground text-sm rounded-none transition-colors hover:border-primary"
+              >
+                <Bell className="w-5 h-5 text-primary shrink-0" />
+                <span>I want to receive my verification code via push notification</span>
+              </button>
+            )}
+
+            {pushEnabled && (
+              <div className="flex items-center gap-3 p-3 border border-primary/30 bg-primary/10 text-foreground text-sm rounded-none">
+                <Bell className="w-5 h-5 text-primary shrink-0" />
+                <span>Push notifications enabled</span>
+              </div>
+            )}
 
             {error && (
               <div className="bg-destructive/20 border border-destructive text-destructive-foreground text-sm p-3 rounded-none">
