@@ -24,17 +24,44 @@ Deno.serve(async (req) => {
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const { data: profile, error } = await supabase
+    // First try to get existing profile
+    let { data: profile, error } = await supabase
       .from("profiles")
       .select("member_number, profile_image_url, created_at, name, email")
       .eq("id", userId)
-      .single();
+      .maybeSingle();
 
-    if (error || !profile) {
-      return new Response(
-        JSON.stringify({ success: false, error: "Profile not found" }),
-        { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+    // If no profile found, check if user exists in auth and create profile
+    if (!profile) {
+      const { data: authUser } = await supabase.auth.admin.getUserById(userId);
+      
+      if (!authUser?.user) {
+        return new Response(
+          JSON.stringify({ success: false, error: "User not found" }),
+          { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      // Create the missing profile
+      const { data: newProfile, error: insertError } = await supabase
+        .from("profiles")
+        .insert({
+          id: userId,
+          name: authUser.user.user_metadata?.name || "",
+          email: authUser.user.email || "",
+        })
+        .select("member_number, profile_image_url, created_at, name, email")
+        .single();
+
+      if (insertError) {
+        console.error("[get-profile] Insert error:", insertError);
+        return new Response(
+          JSON.stringify({ success: false, error: "Failed to create profile" }),
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      profile = newProfile;
     }
 
     return new Response(
