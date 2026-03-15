@@ -93,13 +93,6 @@ const SmartInstallBanner = () => {
             )}
           </div>
 
-          <button
-            onClick={handleDismiss}
-            className="shrink-0 p-1 text-muted-foreground hover:text-foreground transition-colors"
-            aria-label="Dismiss"
-          >
-            <X className="w-4 h-4" />
-          </button>
         </div>
 
         {platform === "android" && (
