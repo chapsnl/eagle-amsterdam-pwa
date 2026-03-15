@@ -2,7 +2,7 @@ import { memo } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { QrCode, X, Camera } from "lucide-react";
-import QRScanner from "@/components/QRScanner";
+import QRScanner from "@/components/loyalty/QRScanner";
 
 interface ScannerDialogProps {
   open: boolean;

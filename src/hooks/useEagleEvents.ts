@@ -1,11 +1,10 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { isDevMode } from "@/lib/devMode";
-import { getCache, getCacheWithMeta, setCache, clearCache } from "@/lib/cache";
+import { getCacheWithMeta, setCache, clearCache } from "@/lib/cache";
 
 const TWENTY_FOUR_HOURS = 86_400_000;
-const ONE_HOUR = 3_600_000;
 const CACHE_KEY = "eagle-events-cache";
 const QUERY_KEY = ["eagle-events"];
 
@@ -27,14 +26,11 @@ interface FetchResponse {
   error?: string;
 }
 
+/**
+ * Always fetches from the API. Cache is used only for placeholderData
+ * so the UI is never blank while a background refresh happens.
+ */
 async function fetchEvents(): Promise<EagleEvent[]> {
-  const dev = isDevMode();
-
-  if (!dev) {
-    const cached = getCache<EagleEvent[]>(CACHE_KEY);
-    if (cached) return cached;
-  }
-
   const { data, error } = await supabase.functions.invoke<FetchResponse>(
     "fetch-eagle-events"
   );
@@ -42,20 +38,19 @@ async function fetchEvents(): Promise<EagleEvent[]> {
   if (error) throw new Error(error.message);
   if (!data?.success) throw new Error(data?.error || "Failed to fetch events");
 
-  if (!dev) setCache(CACHE_KEY, data.events);
+  if (!isDevMode()) setCache(CACHE_KEY, data.events);
   return data.events;
 }
 
 export function useEagleEvents() {
   const dev = isDevMode();
   const queryClient = useQueryClient();
-  const intervalRef = useRef<ReturnType<typeof setInterval>>();
 
-  // Provide stale data as initial/placeholder so the screen is never blank
-  const { data: staleData } = (() => {
-    if (dev) return { data: undefined };
-    const { data, isStale } = getCacheWithMeta<EagleEvent[]>(CACHE_KEY);
-    return isStale && data ? { data } : { data: undefined };
+  // Provide stale cached data as placeholder so the screen is never blank
+  const staleData = (() => {
+    if (dev) return undefined;
+    const { data } = getCacheWithMeta<EagleEvent[]>(CACHE_KEY);
+    return data ?? undefined;
   })();
 
   const query = useQuery({
@@ -65,24 +60,16 @@ export function useEagleEvents() {
     gcTime: dev ? 0 : TWENTY_FOUR_HOURS,
     retry: 2,
     placeholderData: staleData,
+    // Auto-refresh when app regains focus if data is stale (>24h)
+    refetchOnWindowFocus: true,
+    // Re-check on every mount (page navigation via lazy routes)
+    refetchOnMount: true,
   });
 
   const forceRefresh = useCallback(async () => {
     clearCache(CACHE_KEY);
     await queryClient.invalidateQueries({ queryKey: QUERY_KEY });
   }, [queryClient]);
-
-  // Hourly interval check – auto-refresh when cache expires while app is open
-  useEffect(() => {
-    if (dev) return;
-    intervalRef.current = setInterval(() => {
-      const fresh = getCache<EagleEvent[]>(CACHE_KEY);
-      if (!fresh) {
-        queryClient.invalidateQueries({ queryKey: QUERY_KEY });
-      }
-    }, ONE_HOUR);
-    return () => clearInterval(intervalRef.current);
-  }, [dev, queryClient]);
 
   return { ...query, forceRefresh };
 }
