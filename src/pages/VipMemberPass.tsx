@@ -191,7 +191,7 @@ const VipMemberPass = () => {
       {/* Bottom row: Name, Since, QR */}
       <div className="absolute left-5 right-5 bottom-3 flex items-end justify-between">
         <div className="flex-1 min-w-0 space-y-0.5">
-          <p className="text-primary-foreground font-bold text-sm tracking-wider truncate uppercase">
+          <p className="text-primary-foreground font-bold text-2xl tracking-wider truncate uppercase">
             {session.name}
           </p>
           <p className="text-black text-sm truncate">
