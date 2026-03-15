@@ -43,23 +43,38 @@ const VipLogin = () => {
     setLoading(true);
 
     try {
-      // Set OneSignal External User ID so the OTP push targets this user
       const targetEmail = email.trim().toLowerCase();
+
+      // Step 1: Sync OneSignal identity BEFORE sending OTP
       try {
         const { setOneSignalExternalId } = await import("@/lib/onesignal");
-        console.log("[VIP Login] Syncing OneSignal with email:", targetEmail);
+        console.log("[VIP Login] Step 1: Syncing OneSignal with email:", targetEmail);
         await setOneSignalExternalId(targetEmail);
-        // Wait for OneSignal to register the device-to-email link
-        await new Promise((resolve) => setTimeout(resolve, 500));
-        console.log("[VIP Login] OneSignal sync complete for:", targetEmail);
+
+        // Step 2: Wait 750ms for OneSignal to fully register the device-to-email link
+        await new Promise((resolve) => setTimeout(resolve, 750));
+
+        // Debug: Check push subscription status
+        window.OneSignalDeferred = window.OneSignalDeferred || [];
+        window.OneSignalDeferred.push(async (OneSignal: any) => {
+          const pushId = OneSignal.User?.PushSubscription?.id;
+          console.log("[VIP Login] PushSubscription.id:", pushId);
+          if (!pushId) {
+            console.warn("[VIP Login] ⚠️ Push subscription ID is null — push will not be delivered");
+          }
+        });
+
+        console.log("[VIP Login] Step 2: OneSignal sync complete for:", targetEmail);
       } catch {
         console.warn("[VIP Login] OneSignal not available, skipping push sync");
+        setError("Push not initialized. Please refresh or check permissions.");
       }
 
-      console.log("[VIP Login] Sending OTP to:", targetEmail);
+      // Step 3: Only NOW send the OTP
+      console.log("[VIP Login] Step 3: Sending OTP to:", targetEmail);
 
       const { data, error: fnError } = await supabase.functions.invoke("send-otp", {
-        body: { name: name.trim(), email: email.trim().toLowerCase() },
+        body: { name: name.trim(), email: targetEmail },
       });
 
       if (fnError) {
