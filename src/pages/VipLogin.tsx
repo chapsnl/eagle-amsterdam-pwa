@@ -114,7 +114,7 @@ const VipLogin = () => {
       syncedSubscriptionId = ready.subscriptionId;
 
       const proof = await getOneSignalPushState();
-      if (!proof.optedIn || !proof.subscriptionId) {
+      if (!proof.optedIn || !proof.subscriptionId || !proof.token || proof.permission !== "granted") {
         throw new Error("Push subscription is not fully active yet. Please try again.");
       }
 
