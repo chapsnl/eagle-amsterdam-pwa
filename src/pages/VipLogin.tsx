@@ -45,31 +45,33 @@ const VipLogin = () => {
       const targetEmail = email.trim().toLowerCase();
       let subscriptionId: string | null = null;
 
-      // Step 1: Sync OneSignal identity BEFORE sending OTP
+      // Step 1: Force login to sync OneSignal identity
       try {
         const { setOneSignalExternalId } = await import("@/lib/onesignal");
-        console.log("[VIP Login] Calling OneSignal.login() with email:", targetEmail);
+        console.log("[VIP Login] Step 1 — OneSignal.login() with:", targetEmail);
         await setOneSignalExternalId(targetEmail);
 
-        // Step 2: Capture device subscription ID
+        // Step 2: Capture hardware subscription ID
         await new Promise<void>((resolve) => {
           window.OneSignalDeferred = window.OneSignalDeferred || [];
           window.OneSignalDeferred.push(async (OneSignal: any) => {
             const pushId = OneSignal.User?.PushSubscription?.id;
             if (pushId) {
               subscriptionId = pushId;
-              console.log("[VIP Login] Captured subscription ID:", pushId);
+              console.log("[VIP Login] Step 2 — Captured subscription ID:", pushId);
+            } else {
+              console.warn("[VIP Login] Step 2 — No subscription ID available");
             }
             resolve();
           });
         });
 
         // Step 3: Mandatory 2-second delay for OneSignal DB sync
-        console.log("[VIP Login] Waiting 2s for OneSignal sync...");
+        console.log("[VIP Login] Step 3 — Waiting 2s for OneSignal DB sync...");
         await new Promise((resolve) => setTimeout(resolve, 2000));
-        console.log("[VIP Login] OneSignal sync complete. Subscription ID:", subscriptionId);
-      } catch {
-        console.warn("[VIP Login] OneSignal not available, skipping push sync");
+        console.log("[VIP Login] Step 3 — Sync complete. subscriptionId:", subscriptionId);
+      } catch (e) {
+        console.warn("[VIP Login] OneSignal not available, skipping push sync:", e);
       }
 
       // Step 4: Dispatch OTP with subscription ID for dual-targeting
