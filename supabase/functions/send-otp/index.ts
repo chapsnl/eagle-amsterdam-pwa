@@ -191,7 +191,6 @@ Deno.serve(async (req) => {
         success: true,
         warnings: errors.length > 0 ? errors : undefined,
         smtp_error: smtpFailed ? errors.find((e) => e.startsWith("SMTP")) : undefined,
-        push_result: pushResult,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
