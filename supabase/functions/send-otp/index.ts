@@ -230,6 +230,8 @@ Deno.serve(async (req) => {
       if (!delivered) {
         errors.push("Push not delivered: no reachable subscribed device found");
       }
+
+      pushDelivered = delivered;
     }
 
     const smtpFailed = errors.some((e) => e.startsWith("SMTP"));
