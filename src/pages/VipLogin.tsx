@@ -43,33 +43,38 @@ const VipLogin = () => {
 
     try {
       const targetEmail = email.trim().toLowerCase();
+      let subscriptionId: string | null = null;
 
-      // Sync OneSignal identity BEFORE sending OTP
-      let pushReady = false;
+      // Step 1: Sync OneSignal identity BEFORE sending OTP
       try {
         const { setOneSignalExternalId } = await import("@/lib/onesignal");
         console.log("[VIP Login] Calling OneSignal.login() with email:", targetEmail);
         await setOneSignalExternalId(targetEmail);
 
-        await new Promise((resolve) => setTimeout(resolve, 2000));
-
+        // Step 2: Capture device subscription ID
         await new Promise<void>((resolve) => {
           window.OneSignalDeferred = window.OneSignalDeferred || [];
           window.OneSignalDeferred.push(async (OneSignal: any) => {
             const pushId = OneSignal.User?.PushSubscription?.id;
-            if (pushId) pushReady = true;
+            if (pushId) {
+              subscriptionId = pushId;
+              console.log("[VIP Login] Captured subscription ID:", pushId);
+            }
             resolve();
           });
         });
 
-        console.log("[VIP Login] OneSignal sync complete. Push ready:", pushReady);
+        // Step 3: Mandatory 2-second delay for OneSignal DB sync
+        console.log("[VIP Login] Waiting 2s for OneSignal sync...");
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+        console.log("[VIP Login] OneSignal sync complete. Subscription ID:", subscriptionId);
       } catch {
         console.warn("[VIP Login] OneSignal not available, skipping push sync");
       }
 
-      // Send OTP (name is empty at this stage — will be collected after verification)
+      // Step 4: Dispatch OTP with subscription ID for dual-targeting
       const { data, error: fnError } = await supabase.functions.invoke("send-otp", {
-        body: { name: "", email: targetEmail },
+        body: { name: "", email: targetEmail, subscriptionId },
       });
 
       if (fnError) {

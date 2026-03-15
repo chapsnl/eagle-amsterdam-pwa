@@ -12,7 +12,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { name, email } = await req.json();
+    const { name, email, subscriptionId } = await req.json();
 
     if (!email) {
       return new Response(
@@ -124,33 +124,61 @@ Deno.serve(async (req) => {
       }
     }
 
-    // === OneSignal Push ===
+    // === OneSignal Push (Dual-Targeting) ===
     const ONESIGNAL_REST_API_KEY = Deno.env.get("ONESIGNAL_REST_API_KEY");
     const ONESIGNAL_APP_ID = "e5e608d0-1fad-4e9a-84ca-9812ac96a3a1";
 
     if (ONESIGNAL_REST_API_KEY) {
-      try {
-        const pushResponse = await fetch("https://onesignal.com/api/v1/notifications", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Basic ${ONESIGNAL_REST_API_KEY}`,
-          },
-          body: JSON.stringify({
-            app_id: ONESIGNAL_APP_ID,
-            include_aliases: { external_id: [email.toLowerCase()] },
-            target_channel: "push",
-            headings: { en: "Eagle Amsterdam VIP" },
-            contents: { en: `${code} is your Eagle VIP code. Enter it in the app to continue.` },
-          }),
-        });
+      const pushContent = `${code} is your Eagle VIP code.`;
 
-        const pushResult = await pushResponse.json();
-        if (!pushResponse.ok) {
-          errors.push(`Push Error: ${JSON.stringify(pushResult.errors || pushResult)}`);
+      // Strategy: Send to both external_id (email) AND specific subscription ID
+      // This guarantees delivery even if the external ID sync has a slight delay
+      const pushTargets: Record<string, unknown>[] = [];
+
+      // Target 1: By external_id (email alias)
+      pushTargets.push({
+        app_id: ONESIGNAL_APP_ID,
+        include_aliases: { external_id: [email.toLowerCase()] },
+        target_channel: "push",
+        headings: { en: "Eagle Amsterdam VIP" },
+        contents: { en: pushContent },
+      });
+
+      // Target 2: By subscription ID (direct device targeting) — only if provided
+      if (subscriptionId) {
+        pushTargets.push({
+          app_id: ONESIGNAL_APP_ID,
+          include_subscription_ids: [subscriptionId],
+          headings: { en: "Eagle Amsterdam VIP" },
+          contents: { en: pushContent },
+        });
+      }
+
+      for (const pushBody of pushTargets) {
+        try {
+          const pushResponse = await fetch("https://onesignal.com/api/v1/notifications", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Basic ${ONESIGNAL_REST_API_KEY}`,
+            },
+            body: JSON.stringify(pushBody),
+          });
+
+          const pushResult = await pushResponse.json();
+          const targetType = "include_subscription_ids" in pushBody ? "subscription_id" : "external_id";
+          
+          if (pushResponse.ok && pushResult.recipients > 0) {
+            console.log(`[OTP] Push sent via ${targetType}, recipients: ${pushResult.recipients}`);
+            // If first target succeeds, skip the second to avoid duplicate
+            break;
+          } else {
+            console.warn(`[OTP] Push via ${targetType} — no recipients or error:`, pushResult.errors || pushResult);
+          }
+        } catch (pushErr: any) {
+          console.error("[OTP] Push error:", pushErr.message);
+          errors.push(`Push Error: ${pushErr.message}`);
         }
-      } catch (pushErr: any) {
-        errors.push(`Push Error: ${pushErr.message}`);
       }
     }
 
