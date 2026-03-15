@@ -7,7 +7,7 @@ import PullToRefresh from "@/components/PullToRefresh";
 import CardSkeletonList from "@/components/shared/CardSkeletonList";
 
 const News = () => {
-  const { data: posts, isLoading, error, forceRefresh } = useEaglePosts();
+  const { data: posts, isLoading, error, forceRefresh, isFetching, isPlaceholderData } = useEaglePosts();
   const [expandedId, setExpandedId] = useState<number | null>(null);
 
   return (
