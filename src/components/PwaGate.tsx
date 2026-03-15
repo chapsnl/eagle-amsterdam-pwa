@@ -81,7 +81,7 @@ const PwaGate = ({ children }: { children: React.ReactNode }) => {
 
   // Mobile browser gate — iOS or Android
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-background px-6 text-center font-['Manrope',sans-serif]">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-background px-6 text-center font-['Manrope',sans-serif] mx-auto">
       <img src={eagleLogo} alt="Eagle Amsterdam" className="w-48 mb-10" />
 
       <h1 className="text-3xl font-extrabold text-foreground mb-3" style={{ letterSpacing: '-0.05em', lineHeight: 1.1 }}>
