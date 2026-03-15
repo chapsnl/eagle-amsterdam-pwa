@@ -7,12 +7,17 @@ import PullToRefresh from "@/components/PullToRefresh";
 import CardSkeletonList from "@/components/shared/CardSkeletonList";
 
 const News = () => {
-  const { data: posts, isLoading, error, forceRefresh } = useEaglePosts();
+  const { data: posts, isLoading, error, forceRefresh, isFetching, isPlaceholderData } = useEaglePosts();
   const [expandedId, setExpandedId] = useState<number | null>(null);
 
   return (
     <PullToRefresh onRefresh={forceRefresh}>
-      <div className="flex flex-col min-h-screen pb-20 pt-8 px-4 max-w-lg mx-auto">
+      <div className="flex flex-col min-h-screen pb-20 pt-8 px-4 max-w-lg mx-auto relative">
+        {isFetching && isPlaceholderData && (
+          <div className="fixed top-0 left-0 right-0 z-50 h-1 bg-primary/30 overflow-hidden">
+            <div className="h-full w-1/3 bg-primary animate-[slide_1s_ease-in-out_infinite]" />
+          </div>
+        )}
         <h1 className="text-4xl font-display tracking-wider text-foreground mb-6 flex items-center gap-3">
           <Newspaper className="w-7 h-7 text-primary" />
           NEWS
