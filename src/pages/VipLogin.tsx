@@ -145,7 +145,7 @@ const VipLogin = () => {
                 className="w-full flex items-center gap-3 p-3 border border-border bg-secondary text-foreground text-sm rounded-none transition-colors hover:border-primary"
               >
                 <Bell className="w-5 h-5 text-primary shrink-0" />
-                <span>I want to receive my verification code via push notification</span>
+                <span>Activate here Push Notifications to receive the Verification Code</span>
               </button>
             )}
 
