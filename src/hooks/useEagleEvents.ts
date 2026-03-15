@@ -1,10 +1,11 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useCallback } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { isDevMode } from "@/lib/devMode";
-import { getCache, setCache, clearCache } from "@/lib/cache";
+import { getCache, getCacheWithMeta, setCache, clearCache } from "@/lib/cache";
 
 const TWENTY_FOUR_HOURS = 86_400_000;
+const ONE_HOUR = 3_600_000;
 const CACHE_KEY = "eagle-events-cache";
 const QUERY_KEY = ["eagle-events"];
 
@@ -48,6 +49,14 @@ async function fetchEvents(): Promise<EagleEvent[]> {
 export function useEagleEvents() {
   const dev = isDevMode();
   const queryClient = useQueryClient();
+  const intervalRef = useRef<ReturnType<typeof setInterval>>();
+
+  // Provide stale data as initial/placeholder so the screen is never blank
+  const { data: staleData } = (() => {
+    if (dev) return { data: undefined };
+    const { data, isStale } = getCacheWithMeta<EagleEvent[]>(CACHE_KEY);
+    return isStale && data ? { data } : { data: undefined };
+  })();
 
   const query = useQuery({
     queryKey: QUERY_KEY,
@@ -55,12 +64,25 @@ export function useEagleEvents() {
     staleTime: dev ? 0 : TWENTY_FOUR_HOURS,
     gcTime: dev ? 0 : TWENTY_FOUR_HOURS,
     retry: 2,
+    placeholderData: staleData,
   });
 
   const forceRefresh = useCallback(async () => {
     clearCache(CACHE_KEY);
     await queryClient.invalidateQueries({ queryKey: QUERY_KEY });
   }, [queryClient]);
+
+  // Hourly interval check – auto-refresh when cache expires while app is open
+  useEffect(() => {
+    if (dev) return;
+    intervalRef.current = setInterval(() => {
+      const fresh = getCache<EagleEvent[]>(CACHE_KEY);
+      if (!fresh) {
+        queryClient.invalidateQueries({ queryKey: QUERY_KEY });
+      }
+    }, ONE_HOUR);
+    return () => clearInterval(intervalRef.current);
+  }, [dev, queryClient]);
 
   return { ...query, forceRefresh };
 }
