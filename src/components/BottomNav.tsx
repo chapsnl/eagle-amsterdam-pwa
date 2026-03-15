@@ -18,7 +18,8 @@ const BottomNav = () => {
     <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-border bg-eagle-dark/95 backdrop-blur-md pb-[env(safe-area-inset-bottom)]">
       <div className="flex items-center justify-around h-14 max-w-lg mx-auto px-4">
         {navItems.map(({ path, label, icon: Icon }) => {
-          const active = location.pathname === path;
+          const active = location.pathname === path || (path === "/vip" && location.pathname.startsWith("/vip"));
+          const isVip = path === "/vip";
           return (
             <button
               key={path}
@@ -26,7 +27,9 @@ const BottomNav = () => {
               className={`flex flex-col items-center gap-1 px-3 py-2 transition-colors duration-200 ${
                 active
                   ? "text-primary"
-                  : "text-muted-foreground hover:text-foreground"
+                  : isVip
+                    ? "text-muted-foreground hover:text-primary"
+                    : "text-muted-foreground hover:text-foreground"
               }`}
             >
               <Icon className="w-6 h-6" />
