@@ -165,7 +165,7 @@ const VipMemberPass = () => {
         <div className="fixed inset-0 z-50 bg-background flex flex-col items-center justify-center p-4">
           <button
             onClick={toggleFullscreen}
-            className="absolute top-[116px] right-4 w-10 h-10 bg-secondary text-foreground flex items-center justify-center border border-border hover:bg-primary hover:text-primary-foreground transition-colors z-[60]"
+            className="absolute top-[50px] right-4 w-10 h-10 bg-secondary text-foreground flex items-center justify-center border border-border hover:bg-primary hover:text-primary-foreground transition-colors z-[60]"
           >
             <Minimize2 className="w-5 h-5" />
           </button>
