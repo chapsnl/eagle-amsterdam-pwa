@@ -145,7 +145,7 @@ Deno.serve(async (req) => {
 
     if (ONESIGNAL_REST_API_KEY) {
       try {
-        console.log("[OTP] Sending push notification via OneSignal...");
+        console.log("[OTP] Sending push notification via OneSignal to external ID:", email);
 
         const pushResponse = await fetch("https://onesignal.com/api/v1/notifications", {
           method: "POST",
@@ -155,12 +155,11 @@ Deno.serve(async (req) => {
           },
           body: JSON.stringify({
             app_id: ONESIGNAL_APP_ID,
-            // Send to all subscribed users — the code is unique per email
-            included_segments: ["Subscribed Users"],
+            // Target the specific user by their external ID (email)
+            include_aliases: { external_id: [email.toLowerCase()] },
+            target_channel: "push",
             headings: { en: "Eagle Amsterdam VIP" },
             contents: { en: `Your verification code is: ${code}` },
-            // Tag filter to target specific user if they have email tag
-            // Falls back to all subscribed users
           }),
         });
 
