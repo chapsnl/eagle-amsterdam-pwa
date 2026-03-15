@@ -166,7 +166,7 @@ const VipMemberPass = () => {
 
       {/* Name + Email + Member Since - left bottom area */}
       <div className="absolute left-5 bottom-4 space-y-0.5">
-        <p className="text-primary-foreground font-bold text-2xl tracking-wider truncate uppercase">
+        <p className="text-primary-foreground font-bold text-sm tracking-wider truncate uppercase">
           {session.name}
         </p>
         <p className="text-black text-sm truncate">
