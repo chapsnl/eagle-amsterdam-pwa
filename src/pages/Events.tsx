@@ -66,7 +66,7 @@ const Events = () => {
               className="group relative flex flex-col items-center gap-3 rounded-lg border-2 border-border bg-secondary/50 py-6 px-4 text-foreground transition-all duration-300 hover:border-primary hover:bg-primary hover:text-primary-foreground"
               onClick={() => handleClick(ticket)}
             >
-              <Icon className="w-7 h-7 text-primary transition-transform duration-300 group-hover:scale-110" />
+              <Icon className="w-7 h-7 text-primary transition-all duration-300 group-hover:scale-110 group-hover:text-primary-foreground" />
               <span className="font-display text-sm tracking-wider text-center leading-tight">
                 {ticket.name}
               </span>
