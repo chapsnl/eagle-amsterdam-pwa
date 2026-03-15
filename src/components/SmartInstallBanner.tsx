@@ -76,18 +76,18 @@ const SmartInstallBanner = () => {
           </div>
 
           <div className="flex-1 min-w-0">
-            <p className="text-foreground font-semibold text-base">
-              Install Eagle Amsterdam
+            <p className="text-foreground font-semibold text-lg">
+              Install the Eagle APP
             </p>
             {platform === "ios" ? (
-              <p className="text-muted-foreground text-sm mt-1 leading-relaxed">
+              <p className="text-muted-foreground text-base mt-1 leading-relaxed">
                 Tap the{" "}
                 <Share className="inline w-4 h-4 text-primary -mt-0.5" />{" "}
                 share button, then select{" "}
                 <span className="text-foreground font-medium">"Add to Home Screen"</span>
               </p>
             ) : (
-              <p className="text-muted-foreground text-sm mt-1">
+              <p className="text-muted-foreground text-base mt-1">
                 Get the full app experience on your home screen.
               </p>
             )}
