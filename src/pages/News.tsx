@@ -2,8 +2,8 @@ import { Newspaper } from "lucide-react";
 import { useEaglePosts } from "@/hooks/useEaglePosts";
 import { format } from "date-fns";
 import { useState } from "react";
-import EagleHtmlContent from "@/components/EagleHtmlContent";
-import PullToRefresh from "@/components/PullToRefresh";
+import EagleHtmlContent from "@/components/shared/EagleHtmlContent";
+import PullToRefresh from "@/components/shared/PullToRefresh";
 import CardSkeletonList from "@/components/shared/CardSkeletonList";
 
 const News = () => {

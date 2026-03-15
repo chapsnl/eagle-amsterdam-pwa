@@ -1,11 +1,10 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { isDevMode } from "@/lib/devMode";
-import { getCache, getCacheWithMeta, setCache, clearCache } from "@/lib/cache";
+import { getCacheWithMeta, setCache, clearCache } from "@/lib/cache";
 
 const TWENTY_FOUR_HOURS = 86_400_000;
-const ONE_HOUR = 3_600_000;
 const CACHE_KEY = "eagle-posts-cache";
 const QUERY_KEY = ["eagle-posts"];
 
@@ -25,14 +24,11 @@ interface FetchResponse {
   error?: string;
 }
 
+/**
+ * Always fetches from the API. Cache is used only for placeholderData
+ * so the UI is never blank while a background refresh happens.
+ */
 async function fetchPosts(): Promise<EaglePost[]> {
-  const dev = isDevMode();
-
-  if (!dev) {
-    const cached = getCache<EaglePost[]>(CACHE_KEY);
-    if (cached) return cached;
-  }
-
   const { data, error } = await supabase.functions.invoke<FetchResponse>(
     "fetch-eagle-posts"
   );
@@ -40,19 +36,19 @@ async function fetchPosts(): Promise<EaglePost[]> {
   if (error) throw new Error(error.message);
   if (!data?.success) throw new Error(data?.error || "Failed to fetch posts");
 
-  if (!dev) setCache(CACHE_KEY, data.posts);
+  if (!isDevMode()) setCache(CACHE_KEY, data.posts);
   return data.posts;
 }
 
 export function useEaglePosts() {
   const dev = isDevMode();
   const queryClient = useQueryClient();
-  const intervalRef = useRef<ReturnType<typeof setInterval>>();
 
-  const { data: staleData } = (() => {
-    if (dev) return { data: undefined };
-    const { data, isStale } = getCacheWithMeta<EaglePost[]>(CACHE_KEY);
-    return isStale && data ? { data } : { data: undefined };
+  // Provide stale cached data as placeholder so the screen is never blank
+  const staleData = (() => {
+    if (dev) return undefined;
+    const { data } = getCacheWithMeta<EaglePost[]>(CACHE_KEY);
+    return data ?? undefined;
   })();
 
   const query = useQuery({
@@ -62,23 +58,16 @@ export function useEaglePosts() {
     gcTime: dev ? 0 : TWENTY_FOUR_HOURS,
     retry: 2,
     placeholderData: staleData,
+    // Auto-refresh when app regains focus if data is stale (>24h)
+    refetchOnWindowFocus: true,
+    // Re-check on every mount (page navigation via lazy routes)
+    refetchOnMount: true,
   });
 
   const forceRefresh = useCallback(async () => {
     clearCache(CACHE_KEY);
     await queryClient.invalidateQueries({ queryKey: QUERY_KEY });
   }, [queryClient]);
-
-  useEffect(() => {
-    if (dev) return;
-    intervalRef.current = setInterval(() => {
-      const fresh = getCache<EaglePost[]>(CACHE_KEY);
-      if (!fresh) {
-        queryClient.invalidateQueries({ queryKey: QUERY_KEY });
-      }
-    }, ONE_HOUR);
-    return () => clearInterval(intervalRef.current);
-  }, [dev, queryClient]);
 
   return { ...query, forceRefresh };
 }

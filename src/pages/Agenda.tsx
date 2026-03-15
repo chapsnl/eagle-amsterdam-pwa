@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Calendar } from "lucide-react";
 import { useEagleEvents } from "@/hooks/useEagleEvents";
-import PullToRefresh from "@/components/PullToRefresh";
+import PullToRefresh from "@/components/shared/PullToRefresh";
 import CardSkeletonList from "@/components/shared/CardSkeletonList";
 import EventCard from "@/components/agenda/EventCard";
 

@@ -1,7 +1,7 @@
 import { memo } from "react";
 import { Calendar, Clock } from "lucide-react";
 import { formatEventDate } from "@/lib/formatDate";
-import EagleHtmlContent from "@/components/EagleHtmlContent";
+import EagleHtmlContent from "@/components/shared/EagleHtmlContent";
 import type { EagleEvent } from "@/hooks/useEagleEvents";
 
 interface EventCardProps {
