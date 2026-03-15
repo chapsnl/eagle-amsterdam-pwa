@@ -68,11 +68,11 @@ const PwaGate = ({ children }: { children: React.ReactNode }) => {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-background px-6 text-center font-['Manrope',sans-serif]">
         <img src={eagleLogo} alt="Eagle Amsterdam" className="w-48 mb-8" />
-        <Monitor className="w-14 h-14 text-primary mb-4" />
-        <h1 className="text-3xl font-extrabold text-foreground mb-3" style={{ letterSpacing: '-0.05em', lineHeight: 1.1 }}>
+        <Monitor className="w-20 h-20 text-primary mb-5" />
+        <h1 className="text-2xl font-extrabold text-foreground mb-3" style={{ letterSpacing: '-0.05em', lineHeight: 1.1 }}>
           Mobile Only
         </h1>
-        <p className="text-muted-foreground text-lg max-w-sm leading-relaxed" style={{ letterSpacing: '-0.02em' }}>
+        <p className="text-muted-foreground text-sm max-w-sm leading-relaxed" style={{ letterSpacing: '-0.02em' }}>
           Please visit this link on your mobile device to install the Eagle VIP app.
         </p>
       </div>
