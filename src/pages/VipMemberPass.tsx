@@ -180,7 +180,7 @@ const VipMemberPass = () => {
       </div>
 
       {/* Member ID - center, large */}
-      <div className="absolute left-5 right-5 bottom-[4.5rem]">
+      <div className="absolute left-5 right-5 bottom-[5.5rem]">
         <p className="text-primary-foreground font-mono text-2xl font-bold tracking-[0.35em]">
           {memberNumber
             ? memberNumber.replace(/(.{4})/g, "$1 ").trim()
