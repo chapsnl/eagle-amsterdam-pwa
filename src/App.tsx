@@ -8,7 +8,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { useEffect } from "react";
 import BottomNav from "@/components/BottomNav";
 import DevModeIndicator from "@/components/DevModeIndicator";
-import SmartInstallBanner from "@/components/SmartInstallBanner";
+import PwaGate from "@/components/PwaGate";
 
 
 // Lazy-loaded pages
@@ -54,25 +54,26 @@ const App = () => {
         <Sonner />
         <DevModeIndicator />
         <BrowserRouter>
-          <Suspense fallback={<PageLoader />}>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/agenda" element={<Agenda />} />
-              <Route path="/news" element={<News />} />
-              <Route path="/events" element={<Events />} />
-              <Route path="/contact" element={<Contact />} />
-              <Route path="/loyalty" element={<Loyalty />} />
-              <Route path="/vip" element={<Vip />} />
-              <Route path="/vip/login" element={<VipLogin />} />
-              <Route path="/vip/verify" element={<VipVerify />} />
-              <Route path="/vip/dashboard" element={<VipDashboard />} />
-              <Route path="/vip/loyalty" element={<Loyalty />} />
-              <Route path="/vip/member-pass" element={<VipMemberPass />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </Suspense>
-          <SmartInstallBanner />
-          <BottomNav />
+          <PwaGate>
+            <Suspense fallback={<PageLoader />}>
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/agenda" element={<Agenda />} />
+                <Route path="/news" element={<News />} />
+                <Route path="/events" element={<Events />} />
+                <Route path="/contact" element={<Contact />} />
+                <Route path="/loyalty" element={<Loyalty />} />
+                <Route path="/vip" element={<Vip />} />
+                <Route path="/vip/login" element={<VipLogin />} />
+                <Route path="/vip/verify" element={<VipVerify />} />
+                <Route path="/vip/dashboard" element={<VipDashboard />} />
+                <Route path="/vip/loyalty" element={<Loyalty />} />
+                <Route path="/vip/member-pass" element={<VipMemberPass />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </Suspense>
+            <BottomNav />
+          </PwaGate>
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>
