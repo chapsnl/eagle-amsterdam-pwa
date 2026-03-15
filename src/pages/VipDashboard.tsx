@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Crown, Star, Tag, Newspaper } from "lucide-react";
+import { Crown, Star, Tag, Newspaper, IdCard } from "lucide-react";
 
 interface VipSession {
   userId: string;
