@@ -30,7 +30,7 @@ const StampCard = memo(({ stamps, onRewardOpen }: StampCardProps) => {
 
   return (
     <div className="rounded-2xl border border-border bg-card p-6">
-      <div className="grid grid-cols-3 gap-4 mb-2">
+      <div className="grid grid-cols-3 gap-3 mb-2">
         {Array.from({ length: TOTAL_STAMPS }).map((_, i) => {
           const filled = i < stamps;
           const isLast = i === TOTAL_STAMPS - 1;
