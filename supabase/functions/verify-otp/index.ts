@@ -101,6 +101,13 @@ Deno.serve(async (req) => {
 
       userId = newUser.user.id;
       token = "";
+
+      // Ensure profile exists (trigger may not have fired yet)
+      await supabase.from("profiles").upsert({
+        id: userId,
+        name: otpRecord.name,
+        email: email.toLowerCase(),
+      }, { onConflict: "id" });
     }
 
     // Sign in with OTP-verified email using admin
