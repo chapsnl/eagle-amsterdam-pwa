@@ -140,7 +140,7 @@
     display: block;
   }
 
-  .eagle-content-wrapper a, .prose a { color: #FF0000 !important; text-decoration: underline !important; font-weight: 700 !important; }
+  .eagle-content-wrapper a, .prose a { color: #b43227 !important; text-decoration: underline !important; font-weight: 700 !important; }
 
   .prose p:empty,
   .prose p > br:only-child,
