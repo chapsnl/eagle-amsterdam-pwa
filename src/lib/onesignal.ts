@@ -10,35 +10,68 @@ const INIT_FLAG = "eagle-onesignal-initialized";
 let sdkLoaded = false;
 let sdkLoadPromise: Promise<void> | null = null;
 
+const SDK_LOAD_TIMEOUT_MS = 8000;
+const SDK_READY_TIMEOUT_MS = 7000;
+
 async function loadOneSignalSDK(): Promise<void> {
   if (sdkLoaded) return;
-  if (sdkLoadPromise) return sdkLoadPromise;
 
-  sdkLoadPromise = new Promise((resolve, reject) => {
-    const script = document.createElement("script");
-    script.src = "https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js";
-    script.defer = true;
-    script.onload = () => {
-      sdkLoaded = true;
-      resolve();
-    };
-    script.onerror = () => reject(new Error("Failed to load OneSignal SDK"));
-    document.head.appendChild(script);
-  });
+  if (!sdkLoadPromise) {
+    sdkLoadPromise = new Promise((resolve, reject) => {
+      const script = document.createElement("script");
+      script.src = "https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js";
+      script.defer = true;
 
-  return sdkLoadPromise;
+      const timeoutId = window.setTimeout(() => {
+        reject(new Error("OneSignal SDK load timed out"));
+      }, SDK_LOAD_TIMEOUT_MS);
+
+      script.onload = () => {
+        window.clearTimeout(timeoutId);
+        sdkLoaded = true;
+        resolve();
+      };
+
+      script.onerror = () => {
+        window.clearTimeout(timeoutId);
+        reject(new Error("Failed to load OneSignal SDK"));
+      };
+
+      document.head.appendChild(script);
+    });
+  }
+
+  try {
+    await sdkLoadPromise;
+  } catch (error) {
+    sdkLoadPromise = null;
+    throw error;
+  }
 }
 
 async function withOneSignal<T>(handler: (OneSignal: any) => Promise<T>): Promise<T> {
   await loadOneSignalSDK();
 
   return new Promise<T>((resolve, reject) => {
+    let settled = false;
+    const timeoutId = window.setTimeout(() => {
+      if (settled) return;
+      settled = true;
+      reject(new Error("OneSignal init timed out. Please retry."));
+    }, SDK_READY_TIMEOUT_MS);
+
     window.OneSignalDeferred = window.OneSignalDeferred || [];
     window.OneSignalDeferred.push(async (OneSignal: any) => {
+      if (settled) return;
+
       try {
         const result = await handler(OneSignal);
+        settled = true;
+        window.clearTimeout(timeoutId);
         resolve(result);
       } catch (error) {
+        settled = true;
+        window.clearTimeout(timeoutId);
         reject(error);
       }
     });
