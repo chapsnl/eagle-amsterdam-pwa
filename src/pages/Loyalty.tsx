@@ -171,22 +171,38 @@ const Loyalty = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Limit Reached Dialog */}
-      <Dialog open={limitOpen} onOpenChange={setLimitOpen}>
-        <DialogContent className="max-w-[400px] w-[90%] bg-primary border-primary">
-          <DialogHeader>
-            <DialogTitle className="text-primary-foreground text-xl tracking-[-0.05em]">
+      {/* Invalid QR Code Popup */}
+      <AlertDialog open={invalidOpen} onOpenChange={setInvalidOpen}>
+        <AlertDialogContent className="bg-card border-border max-w-[calc(100vw-3rem)] sm:max-w-sm mx-auto">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="font-display tracking-wider text-foreground">
+              Invalid Code
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-muted-foreground">
+              This QR code is not recognized.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Limit Reached Popup */}
+      <AlertDialog open={limitOpen} onOpenChange={setLimitOpen}>
+        <AlertDialogContent className="bg-card border-border max-w-[calc(100vw-3rem)] sm:max-w-sm mx-auto">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="font-display tracking-wider text-foreground">
               Limit Reached
-            </DialogTitle>
-            <DialogDescription className="text-primary-foreground/90 text-base tracking-[-0.02em]">
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-muted-foreground">
               You have already scanned this week! Come back next week for your next loyalty stamp.
-            </DialogDescription>
-          </DialogHeader>
-          <Button variant="eagle-outline" className="w-full border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary tracking-[-0.02em]" onClick={() => setLimitOpen(false)}>
-            GOT IT
-          </Button>
-        </DialogContent>
-      </Dialog>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction className="bg-primary text-primary-foreground hover:bg-primary/90">
+              OK
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {redeemSuccessOpen && (
         <div className={`fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm transition-opacity duration-300 ${redeemFading ? "opacity-0" : "opacity-100"}`}>
