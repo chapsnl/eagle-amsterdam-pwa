@@ -38,8 +38,12 @@ const VipLogin = () => {
   }, [refreshPushState]);
 
   const handleFirstInteraction = async () => {
-    if (interactionTriggered.current) return;
+    if (interactionTriggered.current || syncingPush) return;
+
     interactionTriggered.current = true;
+    setSyncingPush(true);
+
+    let completed = false;
 
     try {
       const { requestPushPermission, waitForValidSubscriptionId } = await import("@/lib/onesignal");
@@ -48,18 +52,16 @@ const VipLogin = () => {
 
       if (!granted) return;
 
-      setSyncingPush(true);
-      try {
-        const ready = await waitForValidSubscriptionId(10000, 250);
-        setSubscriptionId(ready.subscriptionId);
-      } catch {
-        // Keep graceful fallback for browsers that need one extra interaction
-      } finally {
-        setSyncingPush(false);
-      }
+      const ready = await waitForValidSubscriptionId(10000, 250);
+      setSubscriptionId(ready.subscriptionId);
+      completed = true;
     } catch {
-      // OneSignal may not be available
+      // OneSignal may be blocked or slow; allow retry on next interaction
+    } finally {
       setSyncingPush(false);
+      if (!completed) {
+        interactionTriggered.current = false;
+      }
     }
   };
 
