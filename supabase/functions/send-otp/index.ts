@@ -140,11 +140,6 @@ Deno.serve(async (req) => {
     if (ONESIGNAL_REST_API_KEY) {
       const pushContent = `${code} is your Eagle VIP code.`;
       const normalizedEmail = email.toLowerCase();
-      const normalizedSubscriptionId =
-        typeof subscriptionId === "string" && subscriptionId.trim().length > 0
-          ? subscriptionId.trim()
-          : null;
-
       const sendPushToTarget = async (
         pushBody: Record<string, unknown>,
         targetType: "subscription_id" | "external_id"
