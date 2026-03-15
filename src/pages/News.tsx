@@ -4,7 +4,7 @@ import { format } from "date-fns";
 import { useState } from "react";
 import EagleHtmlContent from "@/components/shared/EagleHtmlContent";
 import PullToRefresh from "@/components/shared/PullToRefresh";
-import FirstVisitLoader from "@/components/shared/FirstVisitLoader";
+import CardSkeletonList from "@/components/shared/CardSkeletonList";
 
 const News = () => {
   const { data: posts, isLoading, error, forceRefresh, isFetching, isPlaceholderData } = useEaglePosts();
@@ -26,7 +26,7 @@ const News = () => {
           Latest news from Eagle Amsterdam.
         </p>
 
-        {isLoading && <FirstVisitLoader />}
+        {isLoading && <CardSkeletonList />}
 
         {error && (
           <div className="border border-destructive/50 rounded-lg p-4 bg-destructive/10 text-destructive">

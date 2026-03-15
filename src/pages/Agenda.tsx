@@ -2,8 +2,8 @@ import { useState } from "react";
 import { Calendar } from "lucide-react";
 import { useEagleEvents } from "@/hooks/useEagleEvents";
 import PullToRefresh from "@/components/shared/PullToRefresh";
+import CardSkeletonList from "@/components/shared/CardSkeletonList";
 import EventCard from "@/components/agenda/EventCard";
-import FirstVisitLoader from "@/components/shared/FirstVisitLoader";
 
 const Agenda = () => {
   const { data: events, isLoading, isError, error, forceRefresh, isFetching, isPlaceholderData } = useEagleEvents();
@@ -25,7 +25,7 @@ const Agenda = () => {
           Upcoming events at Eagle Amsterdam.
         </p>
 
-        {isLoading && <FirstVisitLoader />}
+        {isLoading && <CardSkeletonList />}
 
         {isError && (
           <div className="border border-destructive/50 rounded-lg p-4 bg-destructive/10 text-destructive">
