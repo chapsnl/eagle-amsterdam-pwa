@@ -33,7 +33,7 @@ const Loyalty = () => {
   const [redeemSuccessOpen, setRedeemSuccessOpen] = useState(false);
   const [redeemFading, setRedeemFading] = useState(false);
   const [cameraBlocked, setCameraBlocked] = useState(false);
-  const { toast } = useToast();
+  const [invalidOpen, setInvalidOpen] = useState(false);
 
   // Load from localStorage
   useEffect(() => {
