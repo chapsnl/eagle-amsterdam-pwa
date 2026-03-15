@@ -34,21 +34,25 @@ const VipDashboard = () => {
       label: "LOYALTY CARD",
       icon: Star,
       onClick: () => navigate("/vip/loyalty"),
+      disabled: false,
     },
     {
       label: "MEMBER DEALS",
       icon: Tag,
-      onClick: () => navigate("/vip/deals"),
+      onClick: undefined,
+      disabled: true,
     },
     {
       label: "PRIVATE NEWS",
       icon: Newspaper,
-      onClick: () => navigate("/vip/news"),
+      onClick: undefined,
+      disabled: true,
     },
     {
       label: "MEMBER PASS",
       icon: IdCard,
       onClick: () => navigate("/vip/member-pass"),
+      disabled: false,
     },
   ];
 
