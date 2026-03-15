@@ -145,7 +145,7 @@ Deno.serve(async (req) => {
 
     if (ONESIGNAL_REST_API_KEY) {
       try {
-        console.log("[OTP] Sending push notification via OneSignal to external ID:", email);
+        console.log("[OTP] Push request sent to OneSignal for external_id:", email.toLowerCase());
 
         const pushResponse = await fetch("https://onesignal.com/api/v1/notifications", {
           method: "POST",
