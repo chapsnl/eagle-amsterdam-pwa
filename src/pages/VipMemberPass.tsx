@@ -45,8 +45,7 @@ const VipMemberPass = () => {
       });
 
       if (error || !data?.success) {
-        console.error("[MemberPass] Failed to load profile:", error || data?.error);
-        // Stale session — clear and redirect to login
+        localStorage.removeItem("vip_session");
         localStorage.removeItem("vip_session");
         navigate("/vip/login");
         return;
