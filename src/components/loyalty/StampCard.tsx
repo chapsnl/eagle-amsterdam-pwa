@@ -2,7 +2,7 @@ import { memo } from "react";
 import { Gift } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-const TOTAL_STAMPS = 10;
+const TOTAL_STAMPS = 9;
 
 interface StampCardProps {
   stamps: number;
