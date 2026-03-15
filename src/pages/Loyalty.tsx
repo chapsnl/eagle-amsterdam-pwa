@@ -19,7 +19,7 @@ const STORAGE_KEY = "eagle-loyalty-stamps";
 const VALID_CODE = "EAGLE2026";
 const TOTAL_STAMPS = 10;
 const LAST_SCAN_KEY = "last_loyalty_scan";
-const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
+const COOLDOWN_MS = 160 * 60 * 60 * 1000; // 160 hours
 
 const Loyalty = () => {
   const [stamps, setStamps] = useState(0);
@@ -30,12 +30,12 @@ const Loyalty = () => {
   const [successOpen, setSuccessOpen] = useState(false);
   const [successMsg, setSuccessMsg] = useState("");
   const [limitOpen, setLimitOpen] = useState(false);
+  const [limitMsg, setLimitMsg] = useState("");
   const [redeemSuccessOpen, setRedeemSuccessOpen] = useState(false);
   const [redeemFading, setRedeemFading] = useState(false);
   const [cameraBlocked, setCameraBlocked] = useState(false);
   const [invalidOpen, setInvalidOpen] = useState(false);
 
-  // Load from localStorage
   useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
@@ -45,22 +45,28 @@ const Loyalty = () => {
     }
   }, []);
 
-  // Save to localStorage
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({ stamps, redeemed }));
   }, [stamps, redeemed]);
 
-  // Show reward dialog when 10 stamps reached
   useEffect(() => {
     if (stamps >= TOTAL_STAMPS && !redeemed) setRewardOpen(true);
   }, [stamps, redeemed]);
 
+  const getRemainingHours = useCallback((): number | null => {
+    const lastScan = localStorage.getItem(LAST_SCAN_KEY);
+    if (!lastScan) return null;
+    const elapsed = Date.now() - parseInt(lastScan, 10);
+    if (elapsed >= COOLDOWN_MS) return null;
+    return Math.ceil((COOLDOWN_MS - elapsed) / (60 * 60 * 1000));
+  }, []);
+
   const handleScanResult = useCallback((decodedText: string) => {
     if (decodedText.trim().toUpperCase() === VALID_CODE) {
-      // Check 7-day cooldown
-      const lastScan = localStorage.getItem(LAST_SCAN_KEY);
-      if (lastScan && Date.now() - parseInt(lastScan, 10) < SEVEN_DAYS_MS) {
+      const remaining = getRemainingHours();
+      if (remaining !== null) {
         setScannerOpen(false);
+        setLimitMsg(`Next stamp available in ${remaining} hour${remaining !== 1 ? "s" : ""}.`);
         setLimitOpen(true);
         return;
       }
@@ -78,12 +84,20 @@ const Loyalty = () => {
       setInvalidOpen(true);
       setTimeout(() => setInvalidOpen(false), 2000);
     }
-  }, []);
+  }, [getRemainingHours]);
 
   const handlePermissionDenied = useCallback(() => setCameraBlocked(true), []);
 
   const handleScannerOpen = useCallback(async () => {
     if (stamps >= TOTAL_STAMPS) { setRewardOpen(true); return; }
+
+    // Check cooldown before opening scanner
+    const remaining = getRemainingHours();
+    if (remaining !== null) {
+      setLimitMsg(`Next stamp available in ${remaining} hour${remaining !== 1 ? "s" : ""}.`);
+      setLimitOpen(true);
+      return;
+    }
 
     try {
       if (navigator.permissions?.query) {
@@ -95,7 +109,7 @@ const Loyalty = () => {
     setCameraBlocked(false);
     setScannerKey((k) => k + 1);
     setScannerOpen(true);
-  }, [stamps]);
+  }, [stamps, getRemainingHours]);
 
   const handleScannerClose = useCallback(() => setScannerOpen(false), []);
 
@@ -113,10 +127,10 @@ const Loyalty = () => {
   }, []);
 
   const isComplete = stamps >= TOTAL_STAMPS;
+  const remainingHours = getRemainingHours();
 
   return (
     <div className="flex flex-col min-h-screen pb-24">
-      {/* Header */}
       <div className="pt-8 px-4 max-w-lg mx-auto w-full">
         <h1 className="text-4xl font-display tracking-wider text-foreground mb-2 flex items-center gap-3">
           <Star className="w-7 h-7 text-primary" />
@@ -127,9 +141,14 @@ const Loyalty = () => {
         </p>
       </div>
 
-      {/* Stamp Grid */}
       <div className="px-4 max-w-[90%] mx-auto w-full">
         <StampCard stamps={stamps} onRewardOpen={() => setRewardOpen(true)} />
+
+        {remainingHours !== null && !isComplete && (
+          <p className="text-muted-foreground text-sm text-center mt-4">
+            Next stamp available in <strong className="text-foreground">{remainingHours} hour{remainingHours !== 1 ? "s" : ""}</strong>.
+          </p>
+        )}
 
         <Button variant="eagle" size="lg" className="w-full mt-6 text-base py-4" onClick={handleScannerOpen}>
           <QrCode className="w-5 h-5 mr-2" />
@@ -140,7 +159,6 @@ const Loyalty = () => {
         </p>
       </div>
 
-      {/* QR Scanner — component FULLY UNMOUNTED when closed */}
       <ScannerDialog
         open={scannerOpen}
         scannerKey={scannerKey}
@@ -150,10 +168,8 @@ const Loyalty = () => {
         onPermissionDenied={handlePermissionDenied}
       />
 
-      {/* Reward Dialog */}
       <RewardDialog open={rewardOpen} onOpenChange={setRewardOpen} onRedeem={handleRedeem} />
 
-      {/* Success Dialog */}
       <Dialog open={successOpen} onOpenChange={setSuccessOpen}>
         <DialogContent className="max-w-[400px] w-[90%] rounded-2xl bg-card border-border">
           <DialogHeader>
@@ -171,7 +187,6 @@ const Loyalty = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Invalid QR Code Popup */}
       <AlertDialog open={invalidOpen} onOpenChange={setInvalidOpen}>
         <AlertDialogContent className="bg-card border-border max-w-[calc(100vw-3rem)] sm:max-w-sm mx-auto">
           <AlertDialogHeader>
@@ -185,7 +200,6 @@ const Loyalty = () => {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Limit Reached Popup */}
       <AlertDialog open={limitOpen} onOpenChange={setLimitOpen}>
         <AlertDialogContent className="bg-card border-border max-w-[calc(100vw-3rem)] sm:max-w-sm mx-auto">
           <AlertDialogHeader>
@@ -193,7 +207,7 @@ const Loyalty = () => {
               Limit Reached
             </AlertDialogTitle>
             <AlertDialogDescription className="text-muted-foreground">
-              You have already scanned this week! Come back next week for your next loyalty stamp.
+              {limitMsg}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

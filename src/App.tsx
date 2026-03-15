@@ -10,7 +10,6 @@ import BottomNav from "@/components/BottomNav";
 import DevModeIndicator from "@/components/DevModeIndicator";
 import PwaGate from "@/components/PwaGate";
 
-
 // Lazy-loaded pages
 const Index = lazy(() => import("./pages/Index"));
 const Agenda = lazy(() => import("./pages/Agenda"));
@@ -23,6 +22,7 @@ const VipLogin = lazy(() => import("./pages/VipLogin"));
 const VipVerify = lazy(() => import("./pages/VipVerify"));
 const VipDashboard = lazy(() => import("./pages/VipDashboard"));
 const VipMemberPass = lazy(() => import("./pages/VipMemberPass"));
+const VipProfileSetup = lazy(() => import("./pages/VipProfileSetup"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient({
@@ -69,6 +69,7 @@ const App = () => {
                 <Route path="/vip/dashboard" element={<VipDashboard />} />
                 <Route path="/vip/loyalty" element={<Loyalty />} />
                 <Route path="/vip/member-pass" element={<VipMemberPass />} />
+                <Route path="/vip/profile-setup" element={<VipProfileSetup />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </Suspense>

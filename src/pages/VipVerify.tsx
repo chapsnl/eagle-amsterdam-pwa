@@ -1,11 +1,10 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { Crown, ShieldCheck } from "lucide-react";
+import { ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/components/ui/sonner";
 
-const CODE_LENGTH = 6;
+const CODE_LENGTH = 4;
 
 const VipVerify = () => {
   const navigate = useNavigate();
@@ -14,45 +13,35 @@ const VipVerify = () => {
   const [error, setError] = useState("");
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
-  // Restore from sessionStorage first, fallback to localStorage (survives notification clicks)
   const getLoginState = () => {
     const sEmail = sessionStorage.getItem("vip_otp_email");
-    const sName = sessionStorage.getItem("vip_otp_name");
-    if (sEmail) return { email: sEmail, name: sName || "" };
+    if (sEmail) return { email: sEmail };
     try {
       const pending = JSON.parse(localStorage.getItem("vip_otp_pending") || "{}");
       if (pending.email) {
-        // Re-hydrate sessionStorage
         sessionStorage.setItem("vip_otp_email", pending.email);
-        sessionStorage.setItem("vip_otp_name", pending.name || "");
-        return { email: pending.email, name: pending.name || "" };
+        return { email: pending.email };
       }
     } catch {}
-    return { email: "", name: "" };
+    return { email: "" };
   };
-  const { email, name } = getLoginState();
+  const { email } = getLoginState();
 
-  // Redirect if no email stored
   useEffect(() => {
     if (!email) navigate("/vip");
   }, [email, navigate]);
 
-  // Auto-focus first input
   useEffect(() => {
     inputRefs.current[0]?.focus();
   }, []);
 
   const handleChange = useCallback((index: number, value: string) => {
-    // Only allow digits
     const digit = value.replace(/\D/g, "").slice(-1);
-
     setDigits((prev) => {
       const next = [...prev];
       next[index] = digit;
       return next;
     });
-
-    // Auto-advance
     if (digit && index < CODE_LENGTH - 1) {
       inputRefs.current[index + 1]?.focus();
     }
@@ -68,21 +57,16 @@ const VipVerify = () => {
     e.preventDefault();
     const pasted = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, CODE_LENGTH);
     if (!pasted) return;
-
     const newDigits = Array(CODE_LENGTH).fill("");
-    for (let i = 0; i < pasted.length; i++) {
-      newDigits[i] = pasted[i];
-    }
+    for (let i = 0; i < pasted.length; i++) newDigits[i] = pasted[i];
     setDigits(newDigits);
-
-    const focusIndex = Math.min(pasted.length, CODE_LENGTH - 1);
-    inputRefs.current[focusIndex]?.focus();
+    inputRefs.current[Math.min(pasted.length, CODE_LENGTH - 1)]?.focus();
   }, []);
 
   const handleVerify = async () => {
     const code = digits.join("");
     if (code.length !== CODE_LENGTH) {
-      setError("Please enter the full 6-digit code.");
+      setError("Please enter the full 4-digit code.");
       return;
     }
 
@@ -90,35 +74,24 @@ const VipVerify = () => {
     setLoading(true);
 
     try {
-      console.log("[VIP Verify] Verifying code for:", email);
-
       const { data, error: fnError } = await supabase.functions.invoke("verify-otp", {
         body: { email, code },
       });
 
       if (fnError) {
-        console.error("[VIP Verify] Function error:", fnError);
         setError("You entered an invalid code, try again!");
         setLoading(false);
         return;
       }
 
       if (!data?.success) {
-        console.error("[VIP Verify] Failed:", data?.error);
         setError(data?.error || "Invalid or expired code.");
         setLoading(false);
         return;
       }
 
-      console.log("[VIP Verify] Code verified, exchanging for session...");
-
-      // Use the verification URL to sign in
+      // Try auth session
       if (data.verification_url) {
-        // Extract token from the action link
-        const url = new URL(data.verification_url);
-        const token_hash = url.searchParams.get("token") || url.hash?.replace("#", "");
-
-        // Try to verify OTP via Supabase Auth
         const { error: authError } = await supabase.auth.verifyOtp({
           email,
           token_hash: data.hashed_token,
@@ -126,42 +99,40 @@ const VipVerify = () => {
         });
 
         if (authError) {
-          console.warn("[VIP Verify] Magic link verify failed, trying direct sign in...", authError);
-
-          // Fallback: sign in with password (for newly created users)
-          // Store VIP session manually
           localStorage.setItem("vip_session", JSON.stringify({
             userId: data.userId,
             email: data.email,
-            name: data.name,
+            name: data.name || "",
             member_number: data.member_number || "",
             verified: true,
             timestamp: Date.now(),
           }));
         }
       } else {
-        // Store VIP session
         localStorage.setItem("vip_session", JSON.stringify({
           userId: data.userId,
           email: data.email,
-          name: data.name,
+          name: data.name || "",
           member_number: data.member_number || "",
           verified: true,
           timestamp: Date.now(),
         }));
       }
 
-      // Migrate loyalty stamps from localStorage to Supabase
+      // Migrate loyalty stamps
       await migrateLoyaltyStamps(data.userId, data.email);
 
-      // Clean up session & local storage
+      // Cleanup
       sessionStorage.removeItem("vip_otp_email");
-      sessionStorage.removeItem("vip_otp_name");
       localStorage.removeItem("vip_otp_pending");
 
-      navigate("/vip");
+      // If user has no name yet, redirect to profile setup
+      if (!data.name) {
+        navigate("/vip/profile-setup");
+      } else {
+        navigate("/vip");
+      }
     } catch (err: any) {
-      console.error("[VIP Verify] Unexpected error:", err);
       setError(err.message || "Something went wrong.");
     } finally {
       setLoading(false);
@@ -172,7 +143,6 @@ const VipVerify = () => {
     <div className="flex flex-col min-h-screen pb-24">
       <div className="flex-1 flex flex-col items-center justify-center px-4">
         <div className="w-full max-w-[90%] mx-auto space-y-8">
-          {/* Header */}
           <div className="text-center space-y-3">
             <ShieldCheck className="w-12 h-12 text-primary mx-auto" />
             <h1 className="text-3xl text-foreground">VERIFY CODE</h1>
@@ -181,8 +151,7 @@ const VipVerify = () => {
             </p>
           </div>
 
-          {/* 6-digit split input */}
-          <div className="flex justify-center gap-3" onPaste={handlePaste}>
+          <div className="flex justify-center gap-4" onPaste={handlePaste}>
             {digits.map((digit, i) => (
               <input
                 key={i}
@@ -194,7 +163,7 @@ const VipVerify = () => {
                 value={digit}
                 onChange={(e) => handleChange(i, e.target.value)}
                 onKeyDown={(e) => handleKeyDown(i, e)}
-                className="w-12 h-14 text-center text-2xl font-bold bg-secondary border-2 border-border text-foreground rounded-none focus:border-primary focus:outline-none transition-colors"
+                className="w-14 h-16 text-center text-3xl font-bold bg-secondary border-2 border-border text-foreground rounded-none focus:border-primary focus:outline-none transition-colors"
                 autoComplete="one-time-code"
               />
             ))}
@@ -232,11 +201,9 @@ async function migrateLoyaltyStamps(userId: string, email: string) {
   try {
     const saved = localStorage.getItem("eagle-loyalty-stamps");
     if (!saved) return;
-
     const { stamps = 0, redeemed = false } = JSON.parse(saved);
     const lastScan = localStorage.getItem("last_loyalty_scan");
 
-    // Check if user already has stamps in DB
     const { data: existing } = await supabase
       .from("loyalty_stamps")
       .select("id, stamps")
@@ -244,27 +211,18 @@ async function migrateLoyaltyStamps(userId: string, email: string) {
       .maybeSingle();
 
     if (existing) {
-      // Only update if local has more stamps
       if (stamps > existing.stamps) {
         await supabase
           .from("loyalty_stamps")
-          .update({
-            stamps,
-            redeemed,
-            last_scan_at: lastScan ? new Date(parseInt(lastScan)).toISOString() : null,
-          })
+          .update({ stamps, redeemed, last_scan_at: lastScan ? new Date(parseInt(lastScan)).toISOString() : null })
           .eq("user_id", userId);
       }
     } else {
       await supabase.from("loyalty_stamps").insert({
-        user_id: userId,
-        stamps,
-        redeemed,
+        user_id: userId, stamps, redeemed,
         last_scan_at: lastScan ? new Date(parseInt(lastScan)).toISOString() : null,
       });
     }
-
-    console.log("[VIP] Loyalty stamps migrated to database");
   } catch (err) {
     console.error("[VIP] Stamp migration error:", err);
   }
