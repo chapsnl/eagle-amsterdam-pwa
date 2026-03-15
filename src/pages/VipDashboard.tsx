@@ -26,12 +26,6 @@ const VipDashboard = () => {
     }
   }, [navigate]);
 
-  const handleLogout = async () => {
-    localStorage.removeItem("vip_session");
-    await supabase.auth.signOut();
-    toast.success("Signed out successfully.");
-    navigate("/vip/login");
-  };
 
   if (!session) return null;
 
