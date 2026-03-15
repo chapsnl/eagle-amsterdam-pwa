@@ -147,7 +147,7 @@ const VipVerify = () => {
             <ShieldCheck className="w-12 h-12 text-primary mx-auto" />
             <h1 className="text-3xl text-foreground">VERIFY CODE</h1>
             <p className="text-muted-foreground text-sm">
-              Enter the code sent to <strong className="text-foreground">{email}</strong>
+              We sent a code to <strong className="text-foreground">{email}</strong>. Check your inbox (and spam folder).
             </p>
           </div>
 
