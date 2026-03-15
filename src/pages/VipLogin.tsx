@@ -75,8 +75,9 @@ const VipLogin = () => {
       }
 
       // Step 4: Dispatch OTP with subscription ID for dual-targeting
+      console.log("[VIP Login] Step 4 — Dispatching OTP. email:", targetEmail, "subscriptionId:", subscriptionId);
       const { data, error: fnError } = await supabase.functions.invoke("send-otp", {
-        body: { name: "", email: targetEmail, subscriptionId },
+        body: { email: targetEmail, subscriptionId },
       });
 
       if (fnError) {

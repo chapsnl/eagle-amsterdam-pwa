@@ -26,7 +26,7 @@ const News = () => {
           Latest news from Eagle Amsterdam.
         </p>
 
-        {isLoading && <CardSkeletonList />}
+        {isLoading && <FirstVisitLoader />}
 
         {error && (
           <div className="border border-destructive/50 rounded-lg p-4 bg-destructive/10 text-destructive">

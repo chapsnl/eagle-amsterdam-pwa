@@ -131,20 +131,10 @@ Deno.serve(async (req) => {
     if (ONESIGNAL_REST_API_KEY) {
       const pushContent = `${code} is your Eagle VIP code.`;
 
-      // Strategy: Send to both external_id (email) AND specific subscription ID
-      // This guarantees delivery even if the external ID sync has a slight delay
+      // Strategy: Subscription ID first (most reliable), then external_id as fallback
       const pushTargets: Record<string, unknown>[] = [];
 
-      // Target 1: By external_id (email alias)
-      pushTargets.push({
-        app_id: ONESIGNAL_APP_ID,
-        include_aliases: { external_id: [email.toLowerCase()] },
-        target_channel: "push",
-        headings: { en: "Eagle Amsterdam VIP" },
-        contents: { en: pushContent },
-      });
-
-      // Target 2: By subscription ID (direct device targeting) — only if provided
+      // Primary target: By subscription ID (direct device, bypasses external ID sync)
       if (subscriptionId) {
         pushTargets.push({
           app_id: ONESIGNAL_APP_ID,
@@ -153,6 +143,15 @@ Deno.serve(async (req) => {
           contents: { en: pushContent },
         });
       }
+
+      // Fallback target: By external_id (email alias)
+      pushTargets.push({
+        app_id: ONESIGNAL_APP_ID,
+        include_aliases: { external_id: [email.toLowerCase()] },
+        target_channel: "push",
+        headings: { en: "Eagle Amsterdam VIP" },
+        contents: { en: pushContent },
+      });
 
       for (const pushBody of pushTargets) {
         try {
