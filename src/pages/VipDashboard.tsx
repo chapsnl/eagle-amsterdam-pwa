@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Crown, Star, Tag, Newspaper, LogOut } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/components/ui/sonner";
+import { Crown, Star, Tag, Newspaper } from "lucide-react";
 
 interface VipSession {
   userId: string;
@@ -28,12 +26,6 @@ const VipDashboard = () => {
     }
   }, [navigate]);
 
-  const handleLogout = async () => {
-    localStorage.removeItem("vip_session");
-    await supabase.auth.signOut();
-    toast.success("Signed out successfully.");
-    navigate("/vip/login");
-  };
 
   if (!session) return null;
 
@@ -46,17 +38,12 @@ const VipDashboard = () => {
     {
       label: "MEMBER DEALS",
       icon: Tag,
-      onClick: () => toast.info("Coming soon!"),
+      onClick: () => navigate("/vip/deals"),
     },
     {
       label: "PRIVATE NEWS",
       icon: Newspaper,
-      onClick: () => toast.info("Coming soon!"),
-    },
-    {
-      label: "LOGOUT",
-      icon: LogOut,
-      onClick: handleLogout,
+      onClick: () => navigate("/vip/news"),
     },
   ];
 
@@ -85,6 +72,8 @@ const VipDashboard = () => {
             </button>
           ))}
         </div>
+        {/* Empty placeholder for the removed 4th button — keeps grid balanced */}
+        
       </div>
     </div>
   );

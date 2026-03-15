@@ -141,7 +141,6 @@ const VipVerify = () => {
       sessionStorage.removeItem("vip_otp_email");
       sessionStorage.removeItem("vip_otp_name");
 
-      toast.success("Welcome to the VIP area!");
       navigate("/vip");
     } catch (err: any) {
       console.error("[VIP Verify] Unexpected error:", err);
