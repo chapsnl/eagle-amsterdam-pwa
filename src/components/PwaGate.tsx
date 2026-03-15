@@ -84,11 +84,11 @@ const PwaGate = ({ children }: { children: React.ReactNode }) => {
     <div className="flex flex-col items-center justify-center min-h-screen bg-background px-6 text-center font-['Manrope',sans-serif]">
       <img src={eagleLogo} alt="Eagle Amsterdam" className="w-48 mb-10" />
 
-      <h1 className="text-3xl font-extrabold text-foreground mb-3" style={{ letterSpacing: '-0.05em', lineHeight: 1.1 }}>
+      <h1 className="text-2xl font-extrabold text-foreground mb-3" style={{ letterSpacing: '-0.05em', lineHeight: 1.1 }}>
         Install the Eagle App
       </h1>
 
-      <p className="text-muted-foreground text-base mb-10 max-w-xs leading-relaxed" style={{ letterSpacing: '-0.02em' }}>
+      <p className="text-muted-foreground text-sm mb-10 max-w-xs leading-relaxed" style={{ letterSpacing: '-0.02em' }}>
         To access the full app experience, add it to your home screen.
       </p>
 
