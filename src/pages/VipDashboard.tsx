@@ -46,17 +46,12 @@ const VipDashboard = () => {
     {
       label: "MEMBER DEALS",
       icon: Tag,
-      onClick: () => toast.info("Coming soon!"),
+      onClick: () => navigate("/vip/deals"),
     },
     {
       label: "PRIVATE NEWS",
       icon: Newspaper,
-      onClick: () => toast.info("Coming soon!"),
-    },
-    {
-      label: "LOGOUT",
-      icon: LogOut,
-      onClick: handleLogout,
+      onClick: () => navigate("/vip/news"),
     },
   ];
 
