@@ -30,6 +30,14 @@ const VipLogin = () => {
     setLoading(true);
 
     try {
+      // Set OneSignal External User ID so the OTP push targets this user
+      try {
+        const { setOneSignalExternalId } = await import("@/lib/onesignal");
+        await setOneSignalExternalId(email.trim().toLowerCase());
+      } catch {
+        // OneSignal may not be available
+      }
+
       console.log("[VIP Login] Sending OTP to:", email);
 
       const { data, error: fnError } = await supabase.functions.invoke("send-otp", {
