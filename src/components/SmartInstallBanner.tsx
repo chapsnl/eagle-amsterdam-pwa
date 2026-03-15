@@ -69,7 +69,7 @@ const SmartInstallBanner = () => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-background/80 backdrop-blur-sm animate-fade-in">
-      <div className="max-w-lg mx-auto rounded-xl border border-border bg-background/95 backdrop-blur-md p-4 shadow-lg">
+      <div className="max-w-lg mx-auto rounded-xl border border-border bg-background/95 backdrop-blur-md p-4 shadow-lg font-['Manrope',sans-serif]">
         <div className="flex items-start gap-3">
           <div className="shrink-0 w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
             <Plus className="w-5 h-5 text-primary" />
