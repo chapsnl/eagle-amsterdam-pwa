@@ -21,8 +21,6 @@ const VipMemberPass = () => {
   const [memberNumber, setMemberNumber] = useState("");
   const [memberSince, setMemberSince] = useState("");
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [uploading, setUploading] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const stored = localStorage.getItem("vip_session");
