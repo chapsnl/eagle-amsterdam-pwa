@@ -66,7 +66,7 @@ export async function initOneSignalSilently() {
       serviceWorkerParam: { scope: "/" },
       serviceWorkerPath: "/OneSignalSDKWorker.js",
       autoPrompt: false,
-      autoRegister: false,
+      autoRegister: true,
       notifyButton: { enable: false },
     });
 
