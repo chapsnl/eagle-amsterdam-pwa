@@ -29,9 +29,18 @@ Deno.serve(async (req) => {
       );
     }
 
+    const normalizedSubscriptionId =
+      typeof subscriptionId === "string" && subscriptionId.trim().length > 0
+        ? subscriptionId.trim()
+        : null;
+
     // Generate 4-digit code
     const code = Math.floor(1000 + Math.random() * 9000).toString();
     console.log(`[OTP] Generated code for ${email}: ${code}`);
+    console.log("[OTP] Incoming push target payload:", {
+      hasSubscriptionId: !!normalizedSubscriptionId,
+      subscriptionId: normalizedSubscriptionId,
+    });
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
