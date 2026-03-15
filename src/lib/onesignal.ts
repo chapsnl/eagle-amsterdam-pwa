@@ -121,7 +121,8 @@ export async function setOneSignalExternalId(email: string) {
   await withOneSignal(async (OneSignal) => {
     await OneSignal.login(email);
     await OneSignal.User.addEmail(email);
-    console.log("[OneSignal] External ID + email set to:", email);
+    await OneSignal.User?.PushSubscription?.optIn?.();
+    console.log("[OneSignal] External ID + email set and push optIn forced:", email);
   });
 }
 
