@@ -213,12 +213,12 @@ const VipLogin = () => {
               size="lg"
               className="w-full h-12 text-lg rounded-none"
               onClick={handleSendCode}
-              disabled={loading || checkingPush}
+              disabled={loading || checkingPush || !pushReady}
             >
-              {loading ? (
+              {loading || syncingPush || checkingPush || !pushReady ? (
                 <>
                   <div className="w-5 h-5 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin mr-2" />
-                  {syncingPush ? "SYNCING PUSH..." : "SENDING CODE..."}
+                  {loading ? "SENDING CODE..." : "SYNCING PUSH..."}
                 </>
               ) : (
                 <>
