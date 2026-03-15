@@ -1,5 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import {
@@ -11,20 +10,20 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { QrCode, Star, CheckCircle, ArrowLeft } from "lucide-react";
+import { QrCode, Star, CheckCircle } from "lucide-react";
 import StampCard from "@/components/loyalty/StampCard";
 import ScannerDialog from "@/components/loyalty/ScannerDialog";
 import RewardDialog from "@/components/loyalty/RewardDialog";
-import { useAuth } from "@/hooks/useAuth";
-import { useLoyaltyStamps } from "@/hooks/useLoyaltyStamps";
 
+const STORAGE_KEY = "eagle-loyalty-stamps";
 const VALID_CODE = "EAGLE2026";
+const TOTAL_STAMPS = 10;
+const LAST_SCAN_KEY = "last_loyalty_scan";
+const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
 
 const Loyalty = () => {
-  const navigate = useNavigate();
-  const { user, loading: authLoading } = useAuth();
-  const { stamps, loading: stampsLoading, addStamp, resetCard, canScan, totalStamps } = useLoyaltyStamps();
-
+  const [stamps, setStamps] = useState(0);
+  const [redeemed, setRedeemed] = useState(false);
   const [scannerOpen, setScannerOpen] = useState(false);
   const [scannerKey, setScannerKey] = useState(0);
   const [rewardOpen, setRewardOpen] = useState(false);
@@ -36,43 +35,55 @@ const Loyalty = () => {
   const [cameraBlocked, setCameraBlocked] = useState(false);
   const [invalidOpen, setInvalidOpen] = useState(false);
 
-  // Redirect to VIP if not logged in
+  // Load from localStorage
   useEffect(() => {
-    if (!authLoading && !user) {
-      navigate("/vip", { replace: true });
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      const data = JSON.parse(saved);
+      setStamps(data.stamps || 0);
+      setRedeemed(data.redeemed || false);
     }
-  }, [authLoading, user, navigate]);
+  }, []);
+
+  // Save to localStorage
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ stamps, redeemed }));
+  }, [stamps, redeemed]);
 
   // Show reward dialog when 10 stamps reached
   useEffect(() => {
-    if (stamps >= totalStamps) setRewardOpen(true);
-  }, [stamps, totalStamps]);
+    if (stamps >= TOTAL_STAMPS && !redeemed) setRewardOpen(true);
+  }, [stamps, redeemed]);
 
-  const handleScanResult = useCallback(async (decodedText: string) => {
+  const handleScanResult = useCallback((decodedText: string) => {
     if (decodedText.trim().toUpperCase() === VALID_CODE) {
-      if (!canScan()) {
+      // Check 7-day cooldown
+      const lastScan = localStorage.getItem(LAST_SCAN_KEY);
+      if (lastScan && Date.now() - parseInt(lastScan, 10) < SEVEN_DAYS_MS) {
         setScannerOpen(false);
         setLimitOpen(true);
         return;
       }
 
-      const success = await addStamp();
-      if (success) {
+      localStorage.setItem(LAST_SCAN_KEY, Date.now().toString());
+      setStamps((prev) => {
+        const newCount = Math.min(prev + 1, TOTAL_STAMPS);
         setSuccessMsg("Loyalty scan successful! See you next week.");
         setSuccessOpen(true);
-      }
+        return newCount;
+      });
       setScannerOpen(false);
     } else {
       setScannerOpen(false);
       setInvalidOpen(true);
       setTimeout(() => setInvalidOpen(false), 2000);
     }
-  }, [addStamp, canScan]);
+  }, []);
 
   const handlePermissionDenied = useCallback(() => setCameraBlocked(true), []);
 
   const handleScannerOpen = useCallback(async () => {
-    if (stamps >= totalStamps) { setRewardOpen(true); return; }
+    if (stamps >= TOTAL_STAMPS) { setRewardOpen(true); return; }
 
     try {
       if (navigator.permissions?.query) {
@@ -84,12 +95,13 @@ const Loyalty = () => {
     setCameraBlocked(false);
     setScannerKey((k) => k + 1);
     setScannerOpen(true);
-  }, [stamps, totalStamps]);
+  }, [stamps]);
 
   const handleScannerClose = useCallback(() => setScannerOpen(false), []);
 
-  const handleRedeem = useCallback(async () => {
-    await resetCard();
+  const handleRedeem = useCallback(() => {
+    setStamps(0);
+    setRedeemed(false);
     setRewardOpen(false);
     setRedeemSuccessOpen(true);
     setRedeemFading(false);
@@ -98,36 +110,20 @@ const Loyalty = () => {
       setRedeemFading(true);
       setTimeout(() => { setRedeemSuccessOpen(false); setRedeemFading(false); }, 300);
     }, 1700);
-  }, [resetCard]);
+  }, []);
 
-  // Show loading while checking auth or loading stamps
-  if (authLoading || stampsLoading || !user) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-background">
-        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
-  }
-
-  const isComplete = stamps >= totalStamps;
+  const isComplete = stamps >= TOTAL_STAMPS;
 
   return (
     <div className="flex flex-col min-h-screen pb-24">
       {/* Header */}
       <div className="pt-8 px-4 max-w-lg mx-auto w-full">
-        <button
-          onClick={() => navigate("/vip")}
-          className="flex items-center gap-2 text-muted-foreground hover:text-foreground mb-4 transition-colors"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          <span className="text-sm">Terug naar VIP</span>
-        </button>
         <h1 className="text-4xl font-display tracking-wider text-foreground mb-2 flex items-center gap-3">
           <Star className="w-7 h-7 text-primary" />
           LOYALTY
         </h1>
         <p className="text-muted-foreground text-sm mb-6">
-          Collect {totalStamps} stamps to receive one free entry to an Eagle Amsterdam organized event.
+          Collect {TOTAL_STAMPS} stamps to receive one free entry to an Eagle Amsterdam organized event.
         </p>
       </div>
 
@@ -144,7 +140,7 @@ const Loyalty = () => {
         </p>
       </div>
 
-      {/* QR Scanner */}
+      {/* QR Scanner — component FULLY UNMOUNTED when closed */}
       <ScannerDialog
         open={scannerOpen}
         scannerKey={scannerKey}

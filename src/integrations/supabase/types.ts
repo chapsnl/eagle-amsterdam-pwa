@@ -14,54 +14,7 @@ export type Database = {
   }
   public: {
     Tables: {
-      loyalty_stamps: {
-        Row: {
-          created_at: string
-          id: string
-          last_scan_at: string | null
-          redeemed: boolean
-          stamps: number
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          last_scan_at?: string | null
-          redeemed?: boolean
-          stamps?: number
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          last_scan_at?: string | null
-          redeemed?: boolean
-          stamps?: number
-          user_id?: string
-        }
-        Relationships: []
-      }
-      profiles: {
-        Row: {
-          created_at: string
-          email: string
-          id: string
-          name: string
-        }
-        Insert: {
-          created_at?: string
-          email?: string
-          id: string
-          name?: string
-        }
-        Update: {
-          created_at?: string
-          email?: string
-          id?: string
-          name?: string
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Views: {
       [_ in never]: never
