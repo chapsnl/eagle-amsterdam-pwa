@@ -6,7 +6,7 @@ import CardSkeletonList from "@/components/shared/CardSkeletonList";
 import EventCard from "@/components/agenda/EventCard";
 
 const Agenda = () => {
-  const { data: events, isLoading, isError, error, forceRefresh } = useEagleEvents();
+  const { data: events, isLoading, isError, error, forceRefresh, isFetching, isPlaceholderData } = useEagleEvents();
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   return (
