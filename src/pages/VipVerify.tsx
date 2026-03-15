@@ -134,6 +134,7 @@ const VipVerify = () => {
             userId: data.userId,
             email: data.email,
             name: data.name,
+            member_number: data.member_number || "",
             verified: true,
             timestamp: Date.now(),
           }));
@@ -144,6 +145,7 @@ const VipVerify = () => {
           userId: data.userId,
           email: data.email,
           name: data.name,
+          member_number: data.member_number || "",
           verified: true,
           timestamp: Date.now(),
         }));
