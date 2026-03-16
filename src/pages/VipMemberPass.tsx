@@ -47,8 +47,8 @@ const VipMemberPass = () => {
       });
 
       if (error || !data?.success) {
-        localStorage.removeItem("vip_session");
-        navigate("/vip/login");
+        // Don't wipe session on transient errors — just skip profile enrichment
+        console.warn("[MemberPass] Profile load failed, keeping session:", error || data?.error);
         return;
       }
 
