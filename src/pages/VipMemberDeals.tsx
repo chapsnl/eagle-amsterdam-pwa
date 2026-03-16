@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Tag, Gift } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -37,6 +37,28 @@ const VipMemberDeals = () => {
     }
   }, [navigate]);
 
+  // Track loaded voucher IDs and redeem them all when leaving the page
+  const viewedVoucherIds = useRef<string[]>([]);
+  const viewedUserId = useRef<string | null>(null);
+
+  useEffect(() => {
+    return () => {
+      // On unmount, mark all viewed vouchers as redeemed
+      const ids = viewedVoucherIds.current;
+      const uid = viewedUserId.current;
+      if (ids.length > 0 && uid) {
+        ids.forEach((id) => {
+          supabase
+            .from("member_vouchers")
+            .update({ redeemed: true, redeemed_at: new Date().toISOString() })
+            .eq("id", id)
+            .eq("user_id", uid)
+            .then(() => {});
+        });
+      }
+    };
+  }, []);
+
   const loadVouchers = async (uid: string) => {
     try {
       const { data } = await supabase
@@ -46,6 +68,8 @@ const VipMemberDeals = () => {
         .eq("redeemed", false)
         .order("created_at", { ascending: false });
       setVouchers(data || []);
+      viewedVoucherIds.current = (data || []).map((v) => v.id);
+      viewedUserId.current = uid;
     } catch {
       // silently fail
     } finally {
