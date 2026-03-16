@@ -55,13 +55,12 @@ const VipMemberDeals = () => {
 
   const handleRedeem = async (voucher: Voucher) => {
     if (!userId) return;
-    const { error } = await supabase
-      .from("member_vouchers")
-      .update({ redeemed: true, redeemed_at: new Date().toISOString() })
-      .eq("id", voucher.id)
-      .eq("user_id", userId);
 
-    if (error) {
+    const { data, error } = await supabase.functions.invoke("redeem-voucher", {
+      body: { userId, voucherId: voucher.id },
+    });
+
+    if (error || !data?.success) {
       setWarning({ open: true, title: "Error", message: "Could not redeem voucher. Try again." });
       return;
     }
