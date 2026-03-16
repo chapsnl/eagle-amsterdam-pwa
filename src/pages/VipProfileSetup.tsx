@@ -64,7 +64,7 @@ const VipProfileSetup = () => {
                 placeholder=" "
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="bg-secondary border-border text-foreground rounded-xl h-14 pt-5 pb-2 px-4 peer"
+                className="bg-secondary border-2 border-border text-foreground rounded-xl h-14 pt-5 pb-2 px-4 peer"
                 maxLength={100}
                 autoFocus
               />
