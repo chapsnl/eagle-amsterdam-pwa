@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
+import { setOneSignalExternalId } from "@/lib/onesignal";
 
 const CODE_LENGTH = 4;
 
@@ -77,6 +78,9 @@ const VipVerify = () => {
       await migrateLoyaltyStamps(data.userId, data.email);
       sessionStorage.removeItem("vip_otp_email");
       localStorage.removeItem("vip_otp_pending");
+
+      // Send email to OneSignal
+      try { await setOneSignalExternalId(data.email); } catch {}
 
       if (!data.name) navigate("/vip/profile-setup");
       else navigate("/vip");
