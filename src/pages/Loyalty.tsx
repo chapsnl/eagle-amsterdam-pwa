@@ -127,7 +127,6 @@ const Loyalty = () => {
       const remaining = getRemainingHours();
       if (remaining !== null) {
         setScannerOpen(false);
-        setLimitMsg(`Next stamp available in ${remaining} hour${remaining !== 1 ? "s" : ""}.`);
         setLimitOpen(true);
         return;
       }
@@ -144,7 +143,6 @@ const Loyalty = () => {
     } else {
       setScannerOpen(false);
       setInvalidOpen(true);
-      setTimeout(() => setInvalidOpen(false), 2000);
     }
   }, [getRemainingHours]);
 
