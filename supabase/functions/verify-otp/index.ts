@@ -99,6 +99,7 @@ Deno.serve(async (req) => {
         email: email.toLowerCase(),
         name: otpRecord.name,
         member_number: profile?.member_number || "",
+        created_at: profile?.created_at || "",
         hashed_token: signInData?.properties?.hashed_token || "",
         verification_url: signInData?.properties?.action_link || "",
       }),
