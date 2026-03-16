@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Info, Star, Gift, Ticket, Crown, ShieldCheck } from "lucide-react";
+import { Info, Star, Gift, Crown, ShieldCheck } from "lucide-react";
 
 const VIP_INFO_SEEN_KEY = "eagle_vip_info_seen";
 
