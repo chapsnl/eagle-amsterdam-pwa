@@ -1,0 +1,1 @@
+ALTER TABLE profiles ALTER COLUMN total_stamps_earned SET DEFAULT 1;
