@@ -88,7 +88,7 @@ Deno.serve(async (req) => {
 
     const { data: profile } = await supabase
       .from("profiles")
-      .select("member_number")
+      .select("member_number, created_at")
       .eq("id", userId)
       .single();
 
