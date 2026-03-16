@@ -81,7 +81,7 @@ const VipInfo = () => {
                 <p className="text-white text-sm font-bold">Regular</p>
                 <p className="text-white/70 text-xs">Starting level</p>
               </div>
-              <span className="text-white text-xs font-semibold">0+ stamps</span>
+              <span className="text-white text-xs font-semibold">1–9 stamps</span>
             </div>
 
             {/* Cruiser */}
@@ -91,7 +91,7 @@ const VipInfo = () => {
                   <p className="text-white text-sm font-bold">Cruiser</p>
                   <p className="text-white/70 text-xs">Active member</p>
                 </div>
-                <span className="text-white text-xs font-semibold">27+ stamps</span>
+                <span className="text-white text-xs font-semibold">10–24 stamps</span>
               </div>
               <div className="mt-2 flex items-start gap-2">
                 <ShieldCheck className="w-4 h-4 text-white/80 mt-0.5 shrink-0" />
@@ -108,7 +108,7 @@ const VipInfo = () => {
                   <p className="text-white text-sm font-bold">Party Boy</p>
                   <p className="text-white/70 text-xs">Dedicated regular</p>
                 </div>
-                <span className="text-white text-xs font-semibold">36+ stamps</span>
+                <span className="text-white text-xs font-semibold">25–49 stamps</span>
               </div>
               <div className="mt-2 flex items-start gap-2">
                 <ShieldCheck className="w-4 h-4 text-white/80 mt-0.5 shrink-0" />

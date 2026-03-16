@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { calculateVipStatus } from "@/lib/vipStatus";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import {
@@ -81,6 +82,9 @@ const Loyalty = () => {
     return Math.ceil((COOLDOWN_MS - elapsed) / (60 * 60 * 1000));
   }, []);
 
+  const [levelUpMsg, setLevelUpMsg] = useState<string | null>(null);
+  const [levelUpFading, setLevelUpFading] = useState(false);
+
   const incrementTotalStamps = async () => {
     try {
       const sessionRaw = localStorage.getItem("vip_session");
@@ -88,14 +92,30 @@ const Loyalty = () => {
       const session = JSON.parse(sessionRaw);
       const { data } = await supabase
         .from("profiles")
-        .select("total_stamps_earned")
+        .select("total_stamps_earned, vip_status")
         .eq("id", session.userId)
         .maybeSingle();
       if (data) {
+        const newTotal = (data.total_stamps_earned || 0) + 1;
+        const oldStatus = data.vip_status || "Regular";
+        const newStatus = calculateVipStatus(newTotal);
+        const updates: Record<string, unknown> = { total_stamps_earned: newTotal };
+        if (newStatus !== oldStatus) {
+          updates.vip_status = newStatus;
+        }
         await supabase
           .from("profiles")
-          .update({ total_stamps_earned: (data.total_stamps_earned || 0) + 1 })
+          .update(updates)
           .eq("id", session.userId);
+        setTotalStampsEarned(newTotal);
+        if (newStatus !== oldStatus) {
+          setLevelUpMsg(`🎉 You've reached ${newStatus} status!`);
+          setLevelUpFading(false);
+          setTimeout(() => {
+            setLevelUpFading(true);
+            setTimeout(() => setLevelUpMsg(null), 400);
+          }, 3000);
+        }
       }
     } catch {
       // Silently fail
@@ -252,6 +272,14 @@ const Loyalty = () => {
             <CheckCircle className="w-12 h-12 text-primary mx-auto mb-4" />
             <h2 className="text-2xl font-bold text-foreground mb-2" style={{ letterSpacing: "-0.05em" }}>Reward Redeemed!</h2>
             <p className="text-foreground tracking-[-0.02em]">Your stamp card has been reset. Enjoy! 🍻</p>
+          </div>
+        </div>
+      )}
+
+      {levelUpMsg && (
+        <div className={`fixed top-20 left-1/2 -translate-x-1/2 z-50 transition-all duration-400 ${levelUpFading ? "opacity-0 -translate-y-4" : "opacity-100 translate-y-0"}`}>
+          <div className="bg-card border border-primary rounded-xl px-6 py-4 shadow-lg text-center">
+            <p className="text-foreground text-sm font-bold">{levelUpMsg}</p>
           </div>
         </div>
       )}
