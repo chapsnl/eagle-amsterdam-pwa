@@ -61,22 +61,8 @@ const VipInfo = () => {
             <h2 className="text-foreground text-base font-bold">Member Deals</h2>
           </div>
           <p className="text-muted-foreground text-sm leading-relaxed">
-            This section explains the buttons and sections found on the main Member Page. Vouchers for app users include:
+            Unlock Member Deals: Get automatic vouchers for free cloakroom, drinks, or event entry. Rewards are added every time your status levels up. Plus, we drop surprise vouchers for everyone! Check your Member Deals regularly so you don't miss out!
           </p>
-          <ul className="text-muted-foreground text-sm space-y-2 pl-1">
-            <li className="flex items-start gap-2">
-              <Ticket className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-              <span>Free access to selected events</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <Ticket className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-              <span>A welcome drink on your first visit</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <Ticket className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-              <span>A free wardrobe item</span>
-            </li>
-          </ul>
         </div>
 
         {/* Fast-Track & Priority Entry (combined) */}
