@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { Calendar, MapPin } from "lucide-react";
+import { Calendar, MapPin, Settings } from "lucide-react";
 const heroImage = "https://www.eagleamsterdam.com/wp-content/uploads/2025/12/Header-3b-copy.webp";
 import eagleLogo from "@/assets/eagle-logo-white.webp";
 
@@ -9,6 +9,15 @@ const Index = () => {
 
   return (
     <div className="flex flex-col min-h-screen pb-20">
+      {/* Settings gear */}
+      <button
+        onClick={() => navigate("/settings")}
+        className="fixed top-4 right-4 z-50 w-10 h-10 rounded-full bg-primary flex items-center justify-center shadow-lg hover:bg-primary/90 transition-colors"
+        aria-label="Settings"
+      >
+        <Settings className="w-5 h-5 text-primary-foreground" />
+      </button>
+
       {/* Hero Section */}
       <div className="relative h-[70vh] min-h-[480px] w-full overflow-hidden">
         <img
@@ -33,7 +42,7 @@ const Index = () => {
         </div>
       </div>
 
-      {/* Quick Actions — no bottom margin */}
+      {/* Quick Actions */}
       <div className="p-6 pb-0 flex flex-col gap-4 max-w-lg mx-auto w-full">
         <Button variant="eagle" size="lg" className="w-full" onClick={() => navigate("/agenda")}>
           <Calendar className="w-5 h-5 mr-2" />

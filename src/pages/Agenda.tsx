@@ -24,9 +24,6 @@ const Agenda = () => {
           <Calendar className="w-7 h-7 text-primary" />
           AGENDA
         </h1>
-        <p className="text-muted-foreground text-sm mb-6">
-          Upcoming events at Eagle Amsterdam.
-        </p>
 
         {showFirstVisitLoader && <FirstVisitLoader />}
 

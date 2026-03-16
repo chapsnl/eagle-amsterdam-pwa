@@ -25,9 +25,6 @@ const News = () => {
           <Newspaper className="w-7 h-7 text-primary" />
           NEWS
         </h1>
-        <p className="text-muted-foreground text-sm mb-6">
-          Latest news from Eagle Amsterdam.
-        </p>
 
         {showFirstVisitLoader && <FirstVisitLoader />}
 

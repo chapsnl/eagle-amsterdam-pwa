@@ -24,6 +24,7 @@ const VipDashboard = lazy(() => import("./pages/VipDashboard"));
 const VipMemberPass = lazy(() => import("./pages/VipMemberPass"));
 const VipProfileSetup = lazy(() => import("./pages/VipProfileSetup"));
 const VipInfo = lazy(() => import("./pages/VipInfo"));
+const Settings = lazy(() => import("./pages/Settings"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient({
@@ -72,6 +73,7 @@ const App = () => {
                 <Route path="/vip/member-pass" element={<VipMemberPass />} />
                 <Route path="/vip/profile-setup" element={<VipProfileSetup />} />
                 <Route path="/vip/info" element={<VipInfo />} />
+                <Route path="/settings" element={<Settings />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </Suspense>
