@@ -53,7 +53,7 @@ const VipVerify = () => {
 
   const handleVerify = async () => {
     const code = digits.join("");
-    if (code.length !== CODE_LENGTH) { setError("Please enter the full 4-digit code."); return; }
+    if (code.length !== CODE_LENGTH) { setError("Please enter the full 6-digit code."); return; }
     setError("");
     setLoading(true);
 
