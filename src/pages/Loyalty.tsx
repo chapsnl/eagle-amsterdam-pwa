@@ -22,7 +22,6 @@ const Loyalty = () => {
   const [redeemFading, setRedeemFading] = useState(false);
   const [cameraBlocked, setCameraBlocked] = useState(false);
   const [invalidOpen, setInvalidOpen] = useState(false);
-  const [authRequiredOpen, setAuthRequiredOpen] = useState(false);
   const [totalStampsEarned, setTotalStampsEarned] = useState<number>(0);
   const [loading, setLoading] = useState(true);
 
@@ -70,11 +69,7 @@ const Loyalty = () => {
       });
 
       if (error) {
-        if (error.message?.toLowerCase().includes("unauthorized")) {
-          setAuthRequiredOpen(true);
-        } else {
-          setInvalidOpen(true);
-        }
+        setInvalidOpen(true);
         return;
       }
 
@@ -85,8 +80,6 @@ const Loyalty = () => {
           setLimitOpen(true);
         } else if (data?.error === "card_full") {
           setRewardOpen(true);
-        } else if (data?.error === "Unauthorized") {
-          setAuthRequiredOpen(true);
         } else {
           setInvalidOpen(true);
         }
@@ -108,7 +101,7 @@ const Loyalty = () => {
         }, 3000);
       }
     } catch {
-      setAuthRequiredOpen(true);
+      setInvalidOpen(true);
     }
   }, []);
 
@@ -222,13 +215,6 @@ const Loyalty = () => {
         title="Limit Reached"
         message="This code can only be scanned once a week. Try again next week!"
         onClose={() => setLimitOpen(false)}
-      />
-
-      <WarningDialog
-        open={authRequiredOpen}
-        title="Sign In Required"
-        message="Please log in to your VIP account again before scanning for a token."
-        onClose={() => setAuthRequiredOpen(false)}
       />
 
       {redeemSuccessOpen && (

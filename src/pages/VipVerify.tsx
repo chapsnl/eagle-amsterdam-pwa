@@ -62,27 +62,18 @@ const VipVerify = () => {
       if (fnError) { setError("You entered an invalid code, try again!"); setLoading(false); return; }
       if (!data?.success) { setError(data?.error || "Invalid or expired code."); setLoading(false); return; }
 
-      if (data.hashed_token) {
-        const { error: authError } = await supabase.auth.verifyOtp({
-          email,
-          token_hash: data.hashed_token,
-          type: "email",
-        });
-
+      if (data.verification_url) {
+        const { error: authError } = await supabase.auth.verifyOtp({ email, token_hash: data.hashed_token, type: "magiclink" });
         if (authError) {
-          setError("We couldn't complete sign-in. Please request a new code and try again.");
-          return;
+          localStorage.setItem("vip_session", JSON.stringify({
+            userId: data.userId, email: data.email, name: data.name || "", member_number: data.member_number || "", verified: true, timestamp: Date.now(),
+          }));
         }
+      } else {
+        localStorage.setItem("vip_session", JSON.stringify({
+          userId: data.userId, email: data.email, name: data.name || "", member_number: data.member_number || "", verified: true, timestamp: Date.now(),
+        }));
       }
-
-      localStorage.setItem("vip_session", JSON.stringify({
-        userId: data.userId,
-        email: data.email,
-        name: data.name || "",
-        member_number: data.member_number || "",
-        verified: true,
-        timestamp: Date.now(),
-      }));
 
       sessionStorage.removeItem("vip_otp_email");
       localStorage.removeItem("vip_otp_pending");
