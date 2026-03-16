@@ -71,7 +71,7 @@ const VipVerify = () => {
         }
       } else {
         localStorage.setItem("vip_session", JSON.stringify({
-          userId: data.userId, email: data.email, name: data.name || "", member_number: data.member_number || "", verified: true, timestamp: Date.now(),
+          userId: data.userId, email: data.email, name: data.name || "", member_number: data.member_number || "", created_at: data.created_at || "", verified: true, timestamp: Date.now(),
         }));
       }
 
