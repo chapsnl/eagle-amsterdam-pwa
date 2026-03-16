@@ -5,7 +5,8 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const VALID_CODE = "EAGLE2026";
+const VALID_CODE = Deno.env.get("LOYALTY_QR_CODE") ?? "";
+if (!VALID_CODE) throw new Error("Missing LOYALTY_QR_CODE secret");
 const COOLDOWN_MS = 160 * 60 * 60 * 1000; // 160 hours
 const TOTAL_STAMPS = 9;
 
