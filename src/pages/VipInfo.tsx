@@ -81,7 +81,7 @@ const VipInfo = () => {
                 <p className="text-white text-sm font-bold">Regular</p>
                 <p className="text-white/70 text-xs">Starting level</p>
               </div>
-              <span className="text-white text-xs font-semibold">0+ stamps</span>
+              <span className="text-white text-xs font-semibold">1–9 stamps</span>
             </div>
 
             {/* Cruiser */}
