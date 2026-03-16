@@ -18,7 +18,7 @@ const StampCard = memo(({ stamps, onRewardOpen }: StampCardProps) => {
         <Gift className="w-16 h-16 text-primary mx-auto mb-4 animate-pulse-red" />
         <h2 className="text-2xl text-foreground mb-2">CONGRATS!</h2>
         <p className="text-foreground text-sm mb-6">
-          <strong>Collect 9 stamps to receive one free entry to an Eagle Amsterdam organized event.</strong>
+          <strong>Collect 9 tokens to receive one free entry to an Eagle Amsterdam organized event.</strong>
         </p>
         <Button variant="eagle" size="lg" className="w-full text-base py-4" onClick={onRewardOpen}>
           <Gift className="w-5 h-5 mr-2" />
@@ -54,7 +54,7 @@ const StampCard = memo(({ stamps, onRewardOpen }: StampCardProps) => {
         })}
       </div>
       <p className="text-center text-muted-foreground text-sm mt-4">
-        {stamps} / {TOTAL_STAMPS} stamps collected
+        {stamps} / {TOTAL_STAMPS} tokens collected
       </p>
     </div>
   );

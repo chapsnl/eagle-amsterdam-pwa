@@ -40,15 +40,15 @@ const VipInfo = () => {
             <h2 className="text-foreground text-base font-bold">Loyalty Program</h2>
           </div>
           <p className="text-muted-foreground text-sm leading-relaxed">
-            As a VIP member, you save points for <strong className="text-foreground">free access</strong> to major Eagle Amsterdam events such as <strong className="text-foreground">NcAdam</strong>, <strong className="text-foreground">Horsemen & Knights</strong>, and <strong className="text-foreground">Cum Hunks</strong>.
+            As a VIP member, you collect tokens for <strong className="text-foreground">free access</strong> to major Eagle Amsterdam events such as <strong className="text-foreground">NcAdam</strong>, <strong className="text-foreground">Horsemen & Knights</strong>, and <strong className="text-foreground">Cum Hunks</strong>.
           </p>
           <p className="text-muted-foreground text-sm leading-relaxed">
-            Collect <strong className="text-foreground">9 stamps</strong> to receive one free entry to an Eagle organized event.
+            Collect <strong className="text-foreground">9 tokens</strong> to receive one free entry to an Eagle organized event.
           </p>
           {showBonus && (
             <div className="bg-primary/10 border border-primary rounded-lg p-4">
               <p className="text-foreground text-sm font-bold leading-snug">
-                Since you've joined, you've received 1 stamp as a gift! Scan your second stamp during an event — only 7 more to go!
+                Since you've joined, you've received 1 token as a gift! Scan your second token during an event — only 7 more to go!
               </p>
             </div>
           )}
@@ -72,7 +72,7 @@ const VipInfo = () => {
             <h2 className="text-foreground text-base font-bold">VIP Status Levels</h2>
           </div>
           <p className="text-muted-foreground text-sm leading-relaxed">
-            Your status level increases based on your total stamps earned:
+            Your status level increases based on your total tokens earned:
           </p>
           <div className="space-y-2">
             {/* Regular */}
@@ -81,7 +81,7 @@ const VipInfo = () => {
                 <p className="text-white text-sm font-bold">Regular</p>
                 <p className="text-white/70 text-xs">Starting level</p>
               </div>
-              <span className="text-white text-xs font-semibold">1–9 stamps</span>
+              <span className="text-white text-xs font-semibold">1–9 tokens</span>
             </div>
 
             {/* Cruiser */}
@@ -91,7 +91,7 @@ const VipInfo = () => {
                   <p className="text-white text-sm font-bold">Cruiser</p>
                   <p className="text-white/70 text-xs">Active member</p>
                 </div>
-                <span className="text-white text-xs font-semibold">10–24 stamps</span>
+                <span className="text-white text-xs font-semibold">10–24 tokens</span>
               </div>
               <div className="mt-2 flex items-start gap-2">
                 <ShieldCheck className="w-4 h-4 text-white/80 mt-0.5 shrink-0" />
@@ -108,7 +108,7 @@ const VipInfo = () => {
                   <p className="text-white text-sm font-bold">Party Boy</p>
                   <p className="text-white/70 text-xs">Dedicated regular</p>
                 </div>
-                <span className="text-white text-xs font-semibold">25–49 stamps</span>
+                <span className="text-white text-xs font-semibold">25–49 tokens</span>
               </div>
               <div className="mt-2 flex items-start gap-2">
                 <ShieldCheck className="w-4 h-4 text-white/80 mt-0.5 shrink-0" />
@@ -125,7 +125,7 @@ const VipInfo = () => {
                   <p className="text-white text-sm font-bold">Slut</p>
                   <p className="text-white/70 text-xs">Ultimate VIP</p>
                 </div>
-                <span className="text-white text-xs font-semibold">50+ stamps</span>
+                <span className="text-white text-xs font-semibold">50+ tokens</span>
               </div>
               <div className="mt-2 flex items-start gap-2">
                 <ShieldCheck className="w-4 h-4 text-white/80 mt-0.5 shrink-0" />

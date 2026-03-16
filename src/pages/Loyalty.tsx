@@ -211,7 +211,7 @@ const Loyalty = () => {
           LOYALTY
         </h1>
         <p className="text-muted-foreground text-sm mb-6">
-          Collect 9 stamps to receive one free entry to an Eagle Amsterdam organized event.
+          Collect 9 tokens to receive one free entry to an Eagle Amsterdam organized event.
         </p>
       </div>
 
@@ -222,14 +222,14 @@ const Loyalty = () => {
 
         <Button variant="eagle" size="lg" className="w-full mt-6 text-base py-4" onClick={handleScannerOpen}>
           <QrCode className="w-5 h-5 mr-2" />
-          {isComplete ? "View reward" : "Scan for stamp"}
+          {isComplete ? "View reward" : "Scan for token"}
         </Button>
         <p className="text-muted-foreground text-xs text-center mt-3 tracking-[-0.02em] leading-snug italic">
           *Not valid for events by Ready2Kink, Horse Fair or other external event organizers.
         </p>
 
         <div className="mt-6 rounded-xl bg-card border border-border p-4 text-center">
-          <p className="text-muted-foreground text-xs uppercase tracking-widest mb-1">Your total number of stamps collected</p>
+          <p className="text-muted-foreground text-xs uppercase tracking-widest mb-1">Lifetime Token Balance</p>
           <p className="text-3xl font-bold text-primary">{totalStampsEarned}</p>
         </div>
       </div>
