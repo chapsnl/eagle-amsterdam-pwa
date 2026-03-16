@@ -57,7 +57,7 @@ const VipMemberDeals = () => {
     if (!userId) return;
 
     const { data, error } = await supabase.functions.invoke("redeem-voucher", {
-      body: { voucherId: voucher.id },
+      body: { userId, voucherId: voucher.id },
     });
 
     if (error || !data?.success) {

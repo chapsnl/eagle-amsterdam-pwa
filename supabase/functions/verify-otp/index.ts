@@ -5,8 +5,6 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const MAX_ATTEMPTS = 5;
-
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -26,11 +24,11 @@ Deno.serve(async (req) => {
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Get the latest OTP for this email (not yet verified, not expired)
     const { data: otpRecord, error: fetchError } = await supabase
       .from("otp_codes")
       .select("*")
       .eq("email", email.toLowerCase())
+      .eq("code", code)
       .eq("verified", false)
       .gt("expires_at", new Date().toISOString())
       .order("created_at", { ascending: false })
@@ -44,37 +42,6 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Check attempt limit
-    if (otpRecord.attempts >= MAX_ATTEMPTS) {
-      // Delete the OTP to force requesting a new one
-      await supabase.from("otp_codes").delete().eq("id", otpRecord.id);
-      return new Response(
-        JSON.stringify({ success: false, error: "Too many attempts. Please request a new code." }),
-        { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    // Check if code matches
-    if (otpRecord.code !== code) {
-      // Increment attempt counter
-      await supabase
-        .from("otp_codes")
-        .update({ attempts: otpRecord.attempts + 1 })
-        .eq("id", otpRecord.id);
-
-      const remaining = MAX_ATTEMPTS - (otpRecord.attempts + 1);
-      return new Response(
-        JSON.stringify({
-          success: false,
-          error: remaining > 0
-            ? `Invalid code. ${remaining} attempt${remaining === 1 ? "" : "s"} remaining.`
-            : "Too many attempts. Please request a new code.",
-        }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    // Code is correct - mark as verified
     await supabase.from("otp_codes").update({ verified: true }).eq("id", otpRecord.id);
 
     const { data: existingUsers } = await supabase.auth.admin.listUsers();

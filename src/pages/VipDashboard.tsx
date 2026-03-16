@@ -36,7 +36,9 @@ const VipDashboard = () => {
 
   const loadStatus = async (userId: string) => {
     try {
-      const { data } = await supabase.functions.invoke("get-profile", {});
+      const { data } = await supabase.functions.invoke("get-profile", {
+        body: { userId },
+      });
       if (data?.success && data.profile) {
         const totalStamps = data.profile.total_stamps_earned || 0;
         const status = calculateVipStatus(totalStamps);

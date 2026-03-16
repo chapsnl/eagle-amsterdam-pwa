@@ -23,15 +23,3 @@ verify_jwt = false
 
 [functions.get-profile]
 verify_jwt = false
-
-[functions.grant-welcome-voucher]
-verify_jwt = false
-
-[functions.redeem-voucher]
-verify_jwt = false
-
-[functions.scan-loyalty-token]
-verify_jwt = false
-
-[functions.redeem-loyalty-reward]
-verify_jwt = false

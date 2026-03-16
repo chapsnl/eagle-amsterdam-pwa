@@ -24,8 +24,10 @@ const VipProfileSetup = () => {
 
       await supabase.from("profiles").update({ name: name.trim() }).eq("id", session.userId);
 
-      // Grant a free welcome voucher + loyalty token
-      await supabase.functions.invoke("grant-welcome-voucher", {});
+      // Grant a free welcome voucher
+      await supabase.functions.invoke("grant-welcome-voucher", {
+        body: { userId: session.userId },
+      });
 
       session.name = name.trim();
       localStorage.setItem("vip_session", JSON.stringify(session));
