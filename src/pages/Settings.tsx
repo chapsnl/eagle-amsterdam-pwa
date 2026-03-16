@@ -31,7 +31,7 @@ const Settings = () => {
         const parsed = JSON.parse(stored);
         if (parsed.verified && parsed.userId) {
           setIsLoggedIn(true);
-          loadProfile(parsed.userId);
+          loadProfile(parsed.userId, parsed.name || "");
           return;
         }
       } catch {}
