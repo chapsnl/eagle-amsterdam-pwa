@@ -125,7 +125,7 @@ const VipInfo = () => {
                   <p className="text-white text-sm font-bold">Slut</p>
                   <p className="text-white/70 text-xs">Ultimate VIP</p>
                 </div>
-                <span className="text-white text-xs font-semibold">50+ stamps</span>
+                <span className="text-white text-xs font-semibold">50+ tokens</span>
               </div>
               <div className="mt-2 flex items-start gap-2">
                 <ShieldCheck className="w-4 h-4 text-white/80 mt-0.5 shrink-0" />
