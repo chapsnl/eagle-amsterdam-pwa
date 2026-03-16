@@ -11,12 +11,9 @@ interface VoucherCardProps {
 
 const VoucherCard = ({ title, description, expiresAt, redeemed, onRedeem }: VoucherCardProps) => {
   return (
-    <div className="space-y-3">
-      {/* Credit-card style voucher */}
+    <div className="space-y-2">
       <div
-        className={`relative w-full rounded-xl p-5 overflow-hidden ${
-          redeemed ? "opacity-50" : ""
-        }`}
+        className={`relative w-full rounded-xl p-5 overflow-hidden ${redeemed ? "opacity-50" : ""}`}
         style={{
           background: "linear-gradient(135deg, hsl(5 64% 43%), hsl(5 64% 33%))",
           aspectRatio: "1.586",
@@ -28,20 +25,23 @@ const VoucherCard = ({ title, description, expiresAt, redeemed, onRedeem }: Vouc
         }} />
 
         <div className="relative z-10 flex flex-col justify-between h-full">
-          {/* Top row: blinking gift icon */}
+          {/* Top row */}
           <div className="flex items-start justify-between">
-            <div className="w-12 h-12 rounded-full bg-primary-foreground/10 flex items-center justify-center animate-[pulse_1.2s_ease-in-out_infinite]" style={{ backgroundColor: "hsl(5 64% 30%)" }}>
-              <Gift className="w-6 h-6 text-primary-foreground" />
+            <div>
+              {expiresAt && !redeemed && (
+                <span className="text-primary-foreground/60 text-[10px] tracking-wide">
+                  EXP {new Date(expiresAt).toLocaleDateString()}
+                </span>
+              )}
             </div>
-            {expiresAt && !redeemed && (
-              <span className="text-primary-foreground/60 text-[10px] tracking-wide">
-                EXP {new Date(expiresAt).toLocaleDateString()}
-              </span>
-            )}
+            {/* Large blinking gift icon on the right */}
+            <div className="w-16 h-16 rounded-full flex items-center justify-center animate-[pulse_1.2s_ease-in-out_infinite]" style={{ backgroundColor: "hsl(5 64% 30%)" }}>
+              <Gift className="w-9 h-9 text-primary-foreground" />
+            </div>
           </div>
 
-          {/* Title */}
-          <div className="flex-1 flex flex-col justify-center py-2">
+          {/* Title & description */}
+          <div className="flex-1 flex flex-col justify-center py-1">
             <h3 className="text-primary-foreground text-xl font-extrabold tracking-[-0.05em] leading-tight uppercase">
               {title}
             </h3>
@@ -52,34 +52,31 @@ const VoucherCard = ({ title, description, expiresAt, redeemed, onRedeem }: Vouc
             )}
           </div>
 
-          {/* Bottom row */}
+          {/* Bottom row with redeem button inside the card */}
           <div className="flex items-end justify-between">
             <span className="text-primary-foreground/40 text-[10px] font-bold tracking-widest uppercase">
-              Eagle Amsterdam
+              {redeemed ? "Redeemed" : "Eagle Amsterdam"}
             </span>
-            <span className="text-primary-foreground/40 text-[10px] font-bold tracking-widest uppercase">
-              {redeemed ? "Redeemed" : "Gift Voucher"}
-            </span>
+            {!redeemed && onRedeem && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="border-primary-foreground/40 text-primary-foreground bg-transparent hover:bg-primary-foreground/10 text-xs tracking-[-0.02em] font-bold"
+                onClick={onRedeem}
+              >
+                <Gift className="w-3.5 h-3.5 mr-1.5" />
+                REDEEM
+              </Button>
+            )}
           </div>
         </div>
       </div>
 
-      {/* Redeem button & warning — only for active vouchers */}
+      {/* Warning text below — only for active vouchers */}
       {!redeemed && onRedeem && (
-        <>
-          <Button
-            variant="eagle"
-            size="lg"
-            className="w-full tracking-[-0.02em]"
-            onClick={onRedeem}
-          >
-            <Gift className="w-5 h-5 mr-2" />
-            REDEEM GIFT CARD
-          </Button>
-          <p className="text-primary/80 text-xs text-center tracking-[-0.02em] italic font-semibold">
-            ⚠️ Do not press redeem — the bartender will do that for you. You may lose your voucher.
-          </p>
-        </>
+        <p className="text-foreground text-xs text-center tracking-[-0.02em]">
+          Do not press redeem — the bartender will do that for you. You may lose your voucher.
+        </p>
       )}
     </div>
   );
