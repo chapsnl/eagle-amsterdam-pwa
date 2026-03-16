@@ -29,6 +29,10 @@ const VipProfileSetup = () => {
         body: { userId: session.userId },
       });
 
+      // Initialize loyalty card in localStorage with 1 free token
+      localStorage.setItem("eagle-loyalty-stamps", JSON.stringify({ stamps: 1, redeemed: false }));
+      localStorage.setItem("eagle-lifetime-stamps", "1");
+
       // Preserve created_at in session
       session.name = name.trim();
       localStorage.setItem("vip_session", JSON.stringify(session));
@@ -60,7 +64,7 @@ const VipProfileSetup = () => {
                 placeholder=" "
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="bg-secondary border-border text-foreground rounded-xl h-14 pt-5 pb-2 px-4 peer"
+                className="bg-secondary border-2 border-border text-foreground rounded-xl h-14 pt-5 pb-2 px-4 peer"
                 maxLength={100}
                 autoFocus
               />

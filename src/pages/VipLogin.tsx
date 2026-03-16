@@ -65,7 +65,7 @@ const VipLogin = () => {
                 placeholder=" "
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="bg-secondary border-border text-foreground rounded-xl h-14 pt-5 pb-2 px-4 peer"
+                className="bg-secondary border-2 border-border text-foreground rounded-xl h-14 pt-5 pb-2 px-4 peer"
                 maxLength={255}
               />
               <Label
