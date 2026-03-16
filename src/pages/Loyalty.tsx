@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { calculateVipStatus } from "@/lib/vipStatus";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import {
