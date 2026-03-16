@@ -194,9 +194,10 @@ const Loyalty = () => {
         <StampCard stamps={stamps} onRewardOpen={() => setRewardOpen(true)} />
 
         {totalStampsEarned !== null && (
-          <p className="text-muted-foreground text-sm text-center mt-3">
-            Total stamps earned in the past: <strong className="text-foreground">{totalStampsEarned}</strong>
-          </p>
+          <div className="mt-6 rounded-xl bg-card border border-border p-4 text-center">
+            <p className="text-muted-foreground text-xs uppercase tracking-widest mb-1">Your total number of stamps collected</p>
+            <p className="text-3xl font-bold text-primary">{totalStampsEarned}</p>
+          </div>
         )}
 
 
