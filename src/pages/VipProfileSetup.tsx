@@ -29,6 +29,7 @@ const VipProfileSetup = () => {
         body: { userId: session.userId },
       });
 
+      // Preserve created_at in session
       session.name = name.trim();
       localStorage.setItem("vip_session", JSON.stringify(session));
       navigate("/vip/dashboard");
