@@ -42,9 +42,7 @@ const Settings = () => {
 
   const loadProfile = async (userId: string, sessionName?: string) => {
     try {
-      const { data } = await supabase.functions.invoke("get-profile", {
-        body: { userId },
-      });
+      const { data } = await supabase.functions.invoke("get-profile", {});
       if (data?.success && data.profile) {
         const p = data.profile;
         // Use session name (from signup) as fallback if profile name is empty
