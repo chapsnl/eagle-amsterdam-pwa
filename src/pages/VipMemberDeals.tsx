@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Tag, Gift, CheckCircle } from "lucide-react";
+import { Tag, Gift } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import VoucherCard from "@/components/loyalty/VoucherCard";
+import WarningDialog from "@/components/shared/WarningDialog";
 
 interface Voucher {
   id: string;
@@ -17,6 +19,8 @@ const VipMemberDeals = () => {
   const navigate = useNavigate();
   const [vouchers, setVouchers] = useState<Voucher[]>([]);
   const [loading, setLoading] = useState(true);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [warning, setWarning] = useState({ open: false, title: "", message: "" });
 
   useEffect(() => {
     const stored = localStorage.getItem("vip_session");
@@ -26,18 +30,19 @@ const VipMemberDeals = () => {
     }
     try {
       const parsed = JSON.parse(stored);
+      setUserId(parsed.userId);
       loadVouchers(parsed.userId);
     } catch {
       navigate("/vip/login");
     }
   }, [navigate]);
 
-  const loadVouchers = async (userId: string) => {
+  const loadVouchers = async (uid: string) => {
     try {
       const { data } = await supabase
         .from("member_vouchers")
         .select("*")
-        .eq("user_id", userId)
+        .eq("user_id", uid)
         .order("created_at", { ascending: false });
       setVouchers(data || []);
     } catch {
@@ -45,6 +50,26 @@ const VipMemberDeals = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleRedeem = async (voucher: Voucher) => {
+    if (!userId) return;
+    const { error } = await supabase
+      .from("member_vouchers")
+      .update({ redeemed: true, redeemed_at: new Date().toISOString() })
+      .eq("id", voucher.id)
+      .eq("user_id", userId);
+
+    if (error) {
+      setWarning({ open: true, title: "Error", message: "Could not redeem voucher. Try again." });
+      return;
+    }
+
+    setVouchers((prev) =>
+      prev.map((v) =>
+        v.id === voucher.id ? { ...v, redeemed: true, redeemed_at: new Date().toISOString() } : v
+      )
+    );
   };
 
   const activeVouchers = vouchers.filter((v) => !v.redeemed);
@@ -56,8 +81,8 @@ const VipMemberDeals = () => {
         {/* Header */}
         <div className="text-center space-y-2">
           <Tag className="w-10 h-10 text-primary mx-auto" />
-          <h1 className="text-2xl text-foreground">MEMBER DEALS</h1>
-          <p className="text-muted-foreground text-xs">
+          <h1 className="text-2xl text-foreground tracking-[-0.05em] font-extrabold">MEMBER DEALS</h1>
+          <p className="text-muted-foreground text-xs tracking-[-0.02em]">
             Your exclusive vouchers and rewards
           </p>
         </div>
@@ -75,56 +100,44 @@ const VipMemberDeals = () => {
           </div>
         ) : (
           <>
-            {/* Active vouchers */}
             {activeVouchers.length > 0 && (
-              <div className="space-y-3">
-                <h2 className="text-foreground text-sm font-bold">Available</h2>
+              <div className="space-y-6">
+                <h2 className="text-foreground text-sm font-bold tracking-[-0.03em]">Available</h2>
                 {activeVouchers.map((v) => (
-                  <div
+                  <VoucherCard
                     key={v.id}
-                    className="bg-card border border-primary/30 rounded-xl p-4 space-y-1"
-                  >
-                    <div className="flex items-center gap-2">
-                      <Gift className="w-4 h-4 text-primary shrink-0" />
-                      <p className="text-foreground text-sm font-bold">{v.title}</p>
-                    </div>
-                    {v.description && (
-                      <p className="text-muted-foreground text-xs leading-relaxed pl-6">
-                        {v.description}
-                      </p>
-                    )}
-                    {v.expires_at && (
-                      <p className="text-muted-foreground/60 text-[10px] pl-6">
-                        Expires: {new Date(v.expires_at).toLocaleDateString()}
-                      </p>
-                    )}
-                  </div>
+                    title={v.title}
+                    description={v.description}
+                    expiresAt={v.expires_at}
+                    onRedeem={() => handleRedeem(v)}
+                  />
                 ))}
               </div>
             )}
 
-            {/* Redeemed vouchers */}
             {redeemedVouchers.length > 0 && (
-              <div className="space-y-3">
-                <h2 className="text-muted-foreground text-sm font-bold">Redeemed</h2>
+              <div className="space-y-6">
+                <h2 className="text-muted-foreground text-sm font-bold tracking-[-0.03em]">Redeemed</h2>
                 {redeemedVouchers.map((v) => (
-                  <div
+                  <VoucherCard
                     key={v.id}
-                    className="bg-card border border-border rounded-xl p-4 opacity-50 space-y-1"
-                  >
-                    <div className="flex items-center gap-2">
-                      <CheckCircle className="w-4 h-4 text-muted-foreground shrink-0" />
-                      <p className="text-muted-foreground text-sm font-bold line-through">
-                        {v.title}
-                      </p>
-                    </div>
-                  </div>
+                    title={v.title}
+                    description={v.description}
+                    redeemed
+                  />
                 ))}
               </div>
             )}
           </>
         )}
       </div>
+
+      <WarningDialog
+        open={warning.open}
+        title={warning.title}
+        message={warning.message}
+        onClose={() => setWarning({ open: false, title: "", message: "" })}
+      />
     </div>
   );
 };
