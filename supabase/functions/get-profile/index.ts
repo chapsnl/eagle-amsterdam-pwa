@@ -50,7 +50,7 @@ Deno.serve(async (req) => {
           name: authUser.user.user_metadata?.name || "",
           email: authUser.user.email || "",
         })
-        .select("member_number, profile_image_url, created_at, name, email")
+        .select("member_number, profile_image_url, created_at, name, email, total_stamps_earned, vip_status")
         .single();
 
       if (insertError) {
