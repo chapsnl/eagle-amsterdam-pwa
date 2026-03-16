@@ -70,7 +70,11 @@ const Loyalty = () => {
       });
 
       if (error) {
-        setInvalidOpen(true);
+        if (error.message?.toLowerCase().includes("unauthorized")) {
+          setAuthRequiredOpen(true);
+        } else {
+          setInvalidOpen(true);
+        }
         return;
       }
 
@@ -81,6 +85,8 @@ const Loyalty = () => {
           setLimitOpen(true);
         } else if (data?.error === "card_full") {
           setRewardOpen(true);
+        } else if (data?.error === "Unauthorized") {
+          setAuthRequiredOpen(true);
         } else {
           setInvalidOpen(true);
         }
