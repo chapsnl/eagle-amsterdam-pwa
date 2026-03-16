@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { setOneSignalExternalId } from "@/lib/onesignal";
 
-const CODE_LENGTH = 4;
+const CODE_LENGTH = 6;
 
 const VipVerify = () => {
   const navigate = useNavigate();
