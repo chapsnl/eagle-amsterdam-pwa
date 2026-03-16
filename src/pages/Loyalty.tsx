@@ -37,6 +37,7 @@ const Loyalty = () => {
   const [redeemFading, setRedeemFading] = useState(false);
   const [cameraBlocked, setCameraBlocked] = useState(false);
   const [invalidOpen, setInvalidOpen] = useState(false);
+  const [totalStampsEarned, setTotalStampsEarned] = useState<number | null>(null);
 
   useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
@@ -45,6 +46,23 @@ const Loyalty = () => {
       setStamps(data.stamps || 0);
       setRedeemed(data.redeemed || false);
     }
+  }, []);
+
+  useEffect(() => {
+    const loadTotalStamps = async () => {
+      try {
+        const sessionRaw = localStorage.getItem("vip_session");
+        if (!sessionRaw) return;
+        const session = JSON.parse(sessionRaw);
+        const { data } = await supabase
+          .from("profiles")
+          .select("total_stamps_earned")
+          .eq("id", session.userId)
+          .maybeSingle();
+        if (data) setTotalStampsEarned(data.total_stamps_earned || 0);
+      } catch {}
+    };
+    loadTotalStamps();
   }, []);
 
   useEffect(() => {
@@ -164,6 +182,12 @@ const Loyalty = () => {
 
       <div className="px-4 max-w-[90%] mx-auto w-full">
         <StampCard stamps={stamps} onRewardOpen={() => setRewardOpen(true)} />
+
+        {totalStampsEarned !== null && (
+          <p className="text-muted-foreground text-sm text-center mt-3">
+            Total stamps earned in the past: <strong className="text-foreground">{totalStampsEarned}</strong>
+          </p>
+        )}
 
         {remainingHours !== null && !isComplete && (
           <p className="text-muted-foreground text-sm text-center mt-4">

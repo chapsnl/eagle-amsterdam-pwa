@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Info, Star, Gift, Crown, ShieldCheck } from "lucide-react";
+import { Info, Star, Gift, ShieldCheck } from "lucide-react";
 
 const VIP_INFO_SEEN_KEY = "eagle_vip_info_seen";
 
@@ -65,35 +65,6 @@ const VipInfo = () => {
           </p>
         </div>
 
-        {/* Fast-Track & Priority Entry (combined) */}
-        <div className="bg-card border border-border rounded-xl p-5 space-y-3">
-          <div className="flex items-center gap-2">
-            <Crown className="w-5 h-5 text-primary" />
-            <h2 className="text-foreground text-base font-bold">Fast-Track & Priority Entry</h2>
-          </div>
-          <p className="text-muted-foreground text-sm leading-relaxed">
-            Your VIP Member Pass gives you exclusive fast-track and priority access during major events:
-          </p>
-          <ul className="text-muted-foreground text-sm space-y-2 pl-1">
-            <li className="flex items-start gap-2">
-              <span className="text-primary font-bold">→</span>
-              <span><strong className="text-foreground">World Pride</strong> — no waiting, guaranteed entry</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-primary font-bold">→</span>
-              <span><strong className="text-foreground">All Prides</strong> — skip the line</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-primary font-bold">→</span>
-              <span><strong className="text-foreground">Kings Night</strong> — priority entry</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-primary font-bold">→</span>
-              <span><strong className="text-foreground">Other large-scale city events</strong> — fast-track access</span>
-            </li>
-          </ul>
-        </div>
-
         {/* Status Levels */}
         <div className="bg-card border border-border rounded-xl p-5 space-y-3">
           <div className="flex items-center gap-2">
@@ -120,12 +91,12 @@ const VipInfo = () => {
                   <p className="text-white text-sm font-bold">Cruiser</p>
                   <p className="text-white/70 text-xs">Active member</p>
                 </div>
-                <span className="text-white text-xs font-semibold">27+ stamps or 15 weekly visits</span>
+                <span className="text-white text-xs font-semibold">27+ stamps</span>
               </div>
               <div className="mt-2 flex items-start gap-2">
                 <ShieldCheck className="w-4 h-4 text-white/80 mt-0.5 shrink-0" />
                 <p className="text-white/80 text-xs leading-relaxed">
-                  Grants Fast-Track access. Your Member Pass turns <strong className="text-white">Green</strong>.
+                  Grants Fast-Lane access. Your Member Pass turns <strong className="text-white">Green</strong>.
                 </p>
               </div>
             </div>
@@ -142,7 +113,7 @@ const VipInfo = () => {
               <div className="mt-2 flex items-start gap-2">
                 <ShieldCheck className="w-4 h-4 text-white/80 mt-0.5 shrink-0" />
                 <p className="text-white/80 text-xs leading-relaxed">
-                  Grants Fast-Track access. Your Member Pass turns <strong className="text-white">Blue</strong>.
+                  Priority access and guaranteed entry during Pride events without waiting and Fast-Lane access. Your Member Pass turns <strong className="text-white">Blue</strong>.
                 </p>
               </div>
             </div>
@@ -159,7 +130,7 @@ const VipInfo = () => {
               <div className="mt-2 flex items-start gap-2">
                 <ShieldCheck className="w-4 h-4 text-white/80 mt-0.5 shrink-0" />
                 <p className="text-white/80 text-xs leading-relaxed">
-                  Your Member Pass turns <strong className="text-white">Dark Grey with a Red border</strong>. Benefits: Free access during All Prides and Kings Night, Free Coat Check at all times, and permanent Priority/Fast-Track access.
+                  Your Member Pass turns <strong className="text-white">Dark Grey</strong>. You get free access during All Prides and Kings Night, Free Coat Check at all times and always priority and Fast-Lane access.
                 </p>
               </div>
             </div>

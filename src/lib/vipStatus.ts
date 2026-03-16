@@ -3,12 +3,9 @@ export type VipStatusLevel = "Regular" | "Cruiser" | "Party Boy" | "Slut";
 const APP_OPENS_KEY = "eagle_app_opens";
 
 export function calculateVipStatus(totalStampsEarned: number): VipStatusLevel {
-  // Check app opens per week
-  const weeklyOpens = getWeeklyAppOpens();
-
   if (totalStampsEarned >= 50) return "Slut";
   if (totalStampsEarned >= 36) return "Party Boy";
-  if (totalStampsEarned >= 27 || weeklyOpens >= 15) return "Cruiser";
+  if (totalStampsEarned >= 27) return "Cruiser";
   return "Regular";
 }
 
