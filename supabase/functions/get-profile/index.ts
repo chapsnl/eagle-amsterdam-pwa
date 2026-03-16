@@ -24,7 +24,6 @@ Deno.serve(async (req) => {
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // First try to get existing profile
     let { data: profile, error } = await supabase
       .from("profiles")
       .select("member_number, profile_image_url, created_at, name, email, total_stamps_earned, vip_status")
@@ -64,8 +63,20 @@ Deno.serve(async (req) => {
       profile = newProfile;
     }
 
+    const { data: loyalty } = await supabase
+      .from("loyalty_stamps")
+      .select("stamps, redeemed")
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    const enrichedProfile = {
+      ...profile,
+      current_stamps: loyalty?.stamps ?? ((profile?.total_stamps_earned ?? 0) > 0 ? 1 : 0),
+      current_redeemed: loyalty?.redeemed ?? false,
+    };
+
     return new Response(
-      JSON.stringify({ success: true, profile }),
+      JSON.stringify({ success: true, profile: enrichedProfile }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
