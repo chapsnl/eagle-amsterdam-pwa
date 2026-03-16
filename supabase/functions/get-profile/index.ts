@@ -11,30 +11,46 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { userId } = await req.json();
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-    if (!userId) {
+    // Verify JWT
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
       return new Response(
-        JSON.stringify({ success: false, error: "userId is required" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        JSON.stringify({ success: false, error: "Unauthorized" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    const anonClient = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } },
+    });
 
-    // First try to get existing profile
-    let { data: profile, error } = await supabase
+    const token = authHeader.replace("Bearer ", "");
+    const { data: claimsData, error: claimsError } = await anonClient.auth.getClaims(token);
+    if (claimsError || !claimsData?.claims) {
+      return new Response(
+        JSON.stringify({ success: false, error: "Unauthorized" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const userId = claimsData.claims.sub;
+
+    // Use service role for data access
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    let { data: profile } = await supabase
       .from("profiles")
       .select("member_number, profile_image_url, created_at, name, email, total_stamps_earned, vip_status")
       .eq("id", userId)
       .maybeSingle();
 
-    // If no profile found, check if user exists in auth and create profile
     if (!profile) {
       const { data: authUser } = await supabase.auth.admin.getUserById(userId);
-      
+
       if (!authUser?.user) {
         return new Response(
           JSON.stringify({ success: false, error: "User not found" }),
@@ -42,7 +58,6 @@ Deno.serve(async (req) => {
         );
       }
 
-      // Create the missing profile
       const { data: newProfile, error: insertError } = await supabase
         .from("profiles")
         .insert({

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { setOneSignalExternalId } from "@/lib/onesignal";
 
-const CODE_LENGTH = 4;
+const CODE_LENGTH = 6;
 
 const VipVerify = () => {
   const navigate = useNavigate();
@@ -53,7 +53,7 @@ const VipVerify = () => {
 
   const handleVerify = async () => {
     const code = digits.join("");
-    if (code.length !== CODE_LENGTH) { setError("Please enter the full 4-digit code."); return; }
+    if (code.length !== CODE_LENGTH) { setError("Please enter the full 6-digit code."); return; }
     setError("");
     setLoading(true);
 
@@ -99,11 +99,11 @@ const VipVerify = () => {
             <ShieldCheck className="w-12 h-12 text-primary mx-auto" />
             <h1 className="text-3xl text-foreground">VERIFY CODE</h1>
             <p className="text-muted-foreground text-sm">
-              We sent a code to <strong className="text-foreground">{email}</strong>. Check your inbox (and spam folder).
+              We sent a 6-digit code to <strong className="text-foreground">{email}</strong>. Check your inbox (and spam folder).
             </p>
           </div>
 
-          <div className="flex justify-center gap-4" onPaste={handlePaste}>
+          <div className="flex justify-center gap-2" onPaste={handlePaste}>
             {digits.map((digit, i) => (
               <input
                 key={i}
@@ -115,7 +115,7 @@ const VipVerify = () => {
                 value={digit}
                 onChange={(e) => handleChange(i, e.target.value)}
                 onKeyDown={(e) => handleKeyDown(i, e)}
-                className="w-14 h-16 text-center text-3xl font-bold bg-secondary border-2 border-border text-foreground rounded-xl focus:border-primary focus:outline-none transition-colors"
+                className="w-11 h-14 text-center text-2xl font-bold bg-secondary border-2 border-border text-foreground rounded-xl focus:border-primary focus:outline-none transition-colors"
                 autoComplete="one-time-code"
               />
             ))}

@@ -42,9 +42,7 @@ const VipMemberPass = () => {
 
   const loadProfile = async (userId: string) => {
     try {
-      const { data, error } = await supabase.functions.invoke("get-profile", {
-        body: { userId },
-      });
+      const { data, error } = await supabase.functions.invoke("get-profile", {});
 
       if (error || !data?.success) {
         localStorage.removeItem("vip_session");
