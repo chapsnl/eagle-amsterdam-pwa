@@ -208,8 +208,9 @@ const Contact = () => {
         </div>
       </div>
 
-      <div className="mt-2 mb-4">
-        <h2 className="font-display text-2xl tracking-wider text-foreground mb-4">
+      <div className="border border-border rounded-lg p-6 bg-card neon-border mb-4">
+        <h2 className="font-display text-2xl tracking-wider text-foreground mb-4 flex items-center gap-2">
+          <Mail className="w-5 h-5 text-primary" />
           SEND US A MESSAGE
         </h2>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
