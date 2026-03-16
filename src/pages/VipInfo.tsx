@@ -72,7 +72,7 @@ const VipInfo = () => {
             <h2 className="text-foreground text-base font-bold">VIP Status Levels</h2>
           </div>
           <p className="text-muted-foreground text-sm leading-relaxed">
-            Your status level increases based on your total stamps earned:
+            Your status level increases based on your total tokens earned:
           </p>
           <div className="space-y-2">
             {/* Regular */}
