@@ -211,7 +211,7 @@ const Loyalty = () => {
           LOYALTY
         </h1>
         <p className="text-muted-foreground text-sm mb-6">
-          Collect 9 stamps to receive one free entry to an Eagle Amsterdam organized event.
+          Collect 9 tokens to receive one free entry to an Eagle Amsterdam organized event.
         </p>
       </div>
 
