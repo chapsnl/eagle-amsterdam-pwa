@@ -224,6 +224,13 @@ const Loyalty = () => {
         onClose={() => setLimitOpen(false)}
       />
 
+      <WarningDialog
+        open={authRequiredOpen}
+        title="Sign In Required"
+        message="Please log in to your VIP account again before scanning for a token."
+        onClose={() => setAuthRequiredOpen(false)}
+      />
+
       {redeemSuccessOpen && (
         <div className={`fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm transition-opacity duration-300 ${redeemFading ? "opacity-0" : "opacity-100"}`}>
           <div className={`max-w-[400px] w-[90%] rounded-xl bg-card border border-primary p-8 text-center shadow-[var(--shadow-red-intense)] transition-all duration-300 ${redeemFading ? "scale-95 opacity-0" : "animate-scale-in scale-100 opacity-100"}`}>
