@@ -240,14 +240,14 @@ const Loyalty = () => {
       <WarningDialog
         open={invalidOpen}
         title="Invalid Code"
-        message="This QR code is not recognized."
+        message="This QR code is not valid."
         onClose={() => setInvalidOpen(false)}
       />
 
       <WarningDialog
         open={limitOpen}
         title="Limit Reached"
-        message={limitMsg}
+        message="This code can only be scanned once a week. Try again next week!"
         onClose={() => setLimitOpen(false)}
       />
 

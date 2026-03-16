@@ -1,4 +1,4 @@
-import { AlertTriangle } from "lucide-react";
+import { useState, useEffect } from "react";
 
 interface WarningDialogProps {
   open: boolean;
