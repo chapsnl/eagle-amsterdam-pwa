@@ -22,6 +22,7 @@ const STORAGE_KEY = "eagle-loyalty-stamps";
 const VALID_CODE = "EAGLE2026";
 const TOTAL_STAMPS = 9;
 const LAST_SCAN_KEY = "last_loyalty_scan";
+const LIFETIME_STAMPS_KEY = "eagle-lifetime-stamps";
 const COOLDOWN_MS = 160 * 60 * 60 * 1000; // 160 hours
 
 const Loyalty = () => {
@@ -51,15 +52,27 @@ const Loyalty = () => {
   useEffect(() => {
     const loadTotalStamps = async () => {
       try {
+        const cachedTotal = localStorage.getItem(LIFETIME_STAMPS_KEY);
+        if (cachedTotal !== null) {
+          const parsedTotal = Number(cachedTotal);
+          if (Number.isFinite(parsedTotal) && parsedTotal >= 0) {
+            setTotalStampsEarned(parsedTotal);
+          }
+        }
+
         const sessionRaw = localStorage.getItem("vip_session");
         if (!sessionRaw) return;
+
         const session = JSON.parse(sessionRaw);
-        const { data } = await supabase
-          .from("profiles")
-          .select("total_stamps_earned")
-          .eq("id", session.userId)
-          .maybeSingle();
-        if (data) setTotalStampsEarned(data.total_stamps_earned ?? 0);
+        const { data } = await supabase.functions.invoke("get-profile", {
+          body: { userId: session.userId },
+        });
+
+        if (data?.success && data.profile) {
+          const lifetimeTotal = data.profile.total_stamps_earned ?? 0;
+          setTotalStampsEarned(lifetimeTotal);
+          localStorage.setItem(LIFETIME_STAMPS_KEY, String(lifetimeTotal));
+        }
       } catch {}
     };
     loadTotalStamps();
@@ -85,36 +98,48 @@ const Loyalty = () => {
   const [levelUpFading, setLevelUpFading] = useState(false);
 
   const incrementTotalStamps = async () => {
+    const optimisticTotal = totalStampsEarned + 1;
+    setTotalStampsEarned(optimisticTotal);
+    localStorage.setItem(LIFETIME_STAMPS_KEY, String(optimisticTotal));
+
     try {
       const sessionRaw = localStorage.getItem("vip_session");
       if (!sessionRaw) return;
+
       const session = JSON.parse(sessionRaw);
-      const { data } = await supabase
+      const { data } = await supabase.functions.invoke("get-profile", {
+        body: { userId: session.userId },
+      });
+
+      const currentTotal = data?.success && data.profile
+        ? data.profile.total_stamps_earned ?? 0
+        : optimisticTotal - 1;
+      const oldStatus = data?.success && data.profile
+        ? data.profile.vip_status || "Regular"
+        : calculateVipStatus(currentTotal);
+      const newTotal = currentTotal + 1;
+      const newStatus = calculateVipStatus(newTotal);
+      const updates: Record<string, unknown> = { total_stamps_earned: newTotal };
+
+      if (newStatus !== oldStatus) {
+        updates.vip_status = newStatus;
+      }
+
+      await supabase
         .from("profiles")
-        .select("total_stamps_earned, vip_status")
-        .eq("id", session.userId)
-        .maybeSingle();
-      if (data) {
-        const newTotal = (data.total_stamps_earned || 0) + 1;
-        const oldStatus = data.vip_status || "Regular";
-        const newStatus = calculateVipStatus(newTotal);
-        const updates: Record<string, unknown> = { total_stamps_earned: newTotal };
-        if (newStatus !== oldStatus) {
-          updates.vip_status = newStatus;
-        }
-        await supabase
-          .from("profiles")
-          .update(updates)
-          .eq("id", session.userId);
-        setTotalStampsEarned(newTotal);
-        if (newStatus !== oldStatus) {
-          setLevelUpMsg(`🎉 You've reached ${newStatus} status!`);
-          setLevelUpFading(false);
-          setTimeout(() => {
-            setLevelUpFading(true);
-            setTimeout(() => setLevelUpMsg(null), 400);
-          }, 3000);
-        }
+        .update(updates)
+        .eq("id", session.userId);
+
+      setTotalStampsEarned(newTotal);
+      localStorage.setItem(LIFETIME_STAMPS_KEY, String(newTotal));
+
+      if (newStatus !== oldStatus) {
+        setLevelUpMsg(`🎉 You've reached ${newStatus} status!`);
+        setLevelUpFading(false);
+        setTimeout(() => {
+          setLevelUpFading(true);
+          setTimeout(() => setLevelUpMsg(null), 400);
+        }, 3000);
       }
     } catch {
       // Silently fail

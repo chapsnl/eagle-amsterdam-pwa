@@ -41,6 +41,7 @@ const VipProfileSetup = () => {
       await supabase.from("profiles").update({ total_stamps_earned: 1 }).eq("id", session.userId);
 
       localStorage.setItem("eagle-loyalty-stamps", JSON.stringify({ stamps: 1, redeemed: false }));
+      localStorage.setItem("eagle-lifetime-stamps", "1");
 
       session.name = name.trim();
       localStorage.setItem("vip_session", JSON.stringify(session));
