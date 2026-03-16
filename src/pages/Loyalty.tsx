@@ -22,6 +22,7 @@ const Loyalty = () => {
   const [redeemFading, setRedeemFading] = useState(false);
   const [cameraBlocked, setCameraBlocked] = useState(false);
   const [invalidOpen, setInvalidOpen] = useState(false);
+  const [authRequiredOpen, setAuthRequiredOpen] = useState(false);
   const [totalStampsEarned, setTotalStampsEarned] = useState<number>(0);
   const [loading, setLoading] = useState(true);
 
