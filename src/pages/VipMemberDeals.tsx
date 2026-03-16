@@ -102,7 +102,6 @@ const VipMemberDeals = () => {
           <>
             {activeVouchers.length > 0 && (
               <div className="space-y-6">
-                <h2 className="text-foreground text-sm font-bold tracking-[-0.03em]">Available</h2>
                 {activeVouchers.map((v) => (
                   <VoucherCard
                     key={v.id}
