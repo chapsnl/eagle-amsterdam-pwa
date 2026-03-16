@@ -54,7 +54,7 @@ const StampCard = memo(({ stamps, onRewardOpen }: StampCardProps) => {
         })}
       </div>
       <p className="text-center text-muted-foreground text-sm mt-4">
-        {stamps} / {TOTAL_STAMPS} stamps collected
+        {stamps} / {TOTAL_STAMPS} tokens collected
       </p>
     </div>
   );
