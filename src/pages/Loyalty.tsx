@@ -210,9 +210,6 @@ const Loyalty = () => {
           <Star className="w-7 h-7 text-primary" />
           LOYALTY
         </h1>
-        <p className="text-muted-foreground text-sm mb-6">
-          Collect 9 tokens to receive one free entry to an Eagle Amsterdam organized event.
-        </p>
       </div>
 
       <div className="px-4 max-w-[90%] mx-auto w-full">

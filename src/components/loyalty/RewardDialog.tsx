@@ -23,9 +23,6 @@ const RewardDialog = memo(({ open, onOpenChange, onRedeem }: RewardDialogProps) 
       </DialogHeader>
       <div className="text-center">
         <Gift className="w-20 h-20 text-primary mx-auto my-4 animate-pulse-red" />
-        <p className="text-foreground text-sm font-bold mb-2 tracking-[-0.02em]">
-          Collect 9 tokens to receive one free entry to an Eagle Amsterdam organized event.
-        </p>
       </div>
       <Button variant="eagle" size="lg" className="w-full tracking-[-0.02em]" onClick={onRedeem}>
         <RotateCcw className="w-5 h-5 mr-2" />
