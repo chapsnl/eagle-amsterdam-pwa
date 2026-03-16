@@ -29,6 +29,10 @@ const VipProfileSetup = () => {
         body: { userId: session.userId },
       });
 
+      // Initialize loyalty card in localStorage with 1 free token
+      localStorage.setItem("eagle-loyalty-stamps", JSON.stringify({ stamps: 1, redeemed: false }));
+      localStorage.setItem("eagle-lifetime-stamps", "1");
+
       // Preserve created_at in session
       session.name = name.trim();
       localStorage.setItem("vip_session", JSON.stringify(session));
