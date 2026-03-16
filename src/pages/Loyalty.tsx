@@ -183,6 +183,12 @@ const Loyalty = () => {
       <div className="px-4 max-w-[90%] mx-auto w-full">
         <StampCard stamps={stamps} onRewardOpen={() => setRewardOpen(true)} />
 
+        {totalStampsEarned !== null && (
+          <p className="text-muted-foreground text-sm text-center mt-3">
+            Total stamps earned in the past: <strong className="text-foreground">{totalStampsEarned}</strong>
+          </p>
+        )}
+
         {remainingHours !== null && !isComplete && (
           <p className="text-muted-foreground text-sm text-center mt-4">
             Next stamp available in <strong className="text-foreground">{remainingHours} hour{remainingHours !== 1 ? "s" : ""}</strong>.
