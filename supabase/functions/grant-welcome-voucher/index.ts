@@ -30,7 +30,7 @@ Deno.serve(async (req) => {
       .from("member_vouchers")
       .select("id")
       .eq("user_id", userId)
-      .eq("title", "FREE HOT SHOT")
+      .eq("title", "FREE COAT CHECK")
       .limit(1);
 
     if (existing && existing.length > 0) {
