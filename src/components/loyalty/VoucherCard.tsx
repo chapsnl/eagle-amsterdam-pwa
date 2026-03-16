@@ -25,13 +25,24 @@ const VoucherCard = ({ title, description, expiresAt, redeemed, onRedeem }: Vouc
         }} />
 
         <div className="relative z-10 flex flex-col justify-between h-full">
-          {/* Top row */}
+          {/* Top row: redeem button left, gift icon right */}
           <div className="flex items-start justify-between">
             <div>
-              {expiresAt && !redeemed && (
-                <span className="text-primary-foreground/60 text-[10px] tracking-wide">
-                  EXP {new Date(expiresAt).toLocaleDateString()}
-                </span>
+              {!redeemed && onRedeem ? (
+                <Button
+                  size="sm"
+                  className="border border-background bg-[hsl(5_64%_30%)] text-primary-foreground hover:bg-[hsl(5_64%_25%)] text-xs tracking-[-0.02em] font-bold"
+                  onClick={onRedeem}
+                >
+                  <Gift className="w-3.5 h-3.5 mr-1.5" />
+                  REDEEM
+                </Button>
+              ) : (
+                expiresAt && !redeemed && (
+                  <span className="text-primary-foreground/60 text-[10px] tracking-wide">
+                    EXP {new Date(expiresAt).toLocaleDateString()}
+                  </span>
+                )
               )}
             </div>
             {/* Large blinking gift icon on the right */}
@@ -52,21 +63,15 @@ const VoucherCard = ({ title, description, expiresAt, redeemed, onRedeem }: Vouc
             )}
           </div>
 
-          {/* Bottom row with redeem button inside the card */}
+          {/* Bottom row */}
           <div className="flex items-end justify-between">
             <span className="text-primary-foreground/40 text-[10px] font-bold tracking-widest uppercase">
               {redeemed ? "Redeemed" : "Eagle Amsterdam"}
             </span>
-            {!redeemed && onRedeem && (
-              <Button
-                variant="outline"
-                size="sm"
-                className="border-primary-foreground/40 text-primary-foreground bg-transparent hover:bg-primary-foreground/10 text-xs tracking-[-0.02em] font-bold"
-                onClick={onRedeem}
-              >
-                <Gift className="w-3.5 h-3.5 mr-1.5" />
-                REDEEM
-              </Button>
+            {expiresAt && !redeemed && (
+              <span className="text-primary-foreground/60 text-[10px] tracking-wide">
+                EXP {new Date(expiresAt).toLocaleDateString()}
+              </span>
             )}
           </div>
         </div>
