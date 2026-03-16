@@ -75,7 +75,6 @@ const VipVerify = () => {
         }));
       }
 
-      await migrateLoyaltyStamps(data.userId, data.email);
       sessionStorage.removeItem("vip_otp_email");
       localStorage.removeItem("vip_otp_pending");
 
