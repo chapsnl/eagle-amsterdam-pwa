@@ -4,8 +4,8 @@ const APP_OPENS_KEY = "eagle_app_opens";
 
 export function calculateVipStatus(totalStampsEarned: number): VipStatusLevel {
   if (totalStampsEarned >= 50) return "Slut";
-  if (totalStampsEarned >= 36) return "Party Boy";
-  if (totalStampsEarned >= 27) return "Cruiser";
+  if (totalStampsEarned >= 25) return "Party Boy";
+  if (totalStampsEarned >= 10) return "Cruiser";
   return "Regular";
 }
 
