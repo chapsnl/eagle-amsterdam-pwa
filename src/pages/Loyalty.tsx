@@ -37,7 +37,7 @@ const Loyalty = () => {
   const [redeemFading, setRedeemFading] = useState(false);
   const [cameraBlocked, setCameraBlocked] = useState(false);
   const [invalidOpen, setInvalidOpen] = useState(false);
-  const [totalStampsEarned, setTotalStampsEarned] = useState<number | null>(null);
+  const [totalStampsEarned, setTotalStampsEarned] = useState<number>(0);
 
   useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
