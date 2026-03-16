@@ -42,31 +42,30 @@ const Loyalty = () => {
 
   useEffect(() => {
     const loadStamps = async () => {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        const data = JSON.parse(saved);
-        setStamps(data.stamps || 0);
-        setRedeemed(data.redeemed || false);
-      } else {
-        // No local data — sync from database for returning users
-        try {
-          const sessionRaw = localStorage.getItem("vip_session");
-          if (sessionRaw) {
-            const session = JSON.parse(sessionRaw);
-            const { data: row } = await supabase
-              .from("loyalty_stamps")
-              .select("stamps, redeemed")
-              .eq("user_id", session.userId)
-              .maybeSingle();
-            if (row) {
-              const dbStamps = row.stamps || 0;
-              setStamps(dbStamps);
-              setRedeemed(row.redeemed || false);
-              localStorage.setItem(STORAGE_KEY, JSON.stringify({ stamps: dbStamps, redeemed: row.redeemed || false }));
-            }
-          }
-        } catch {}
-      }
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          const data = JSON.parse(saved);
+          setStamps(data.stamps || 0);
+          setRedeemed(data.redeemed || false);
+        }
+
+        const sessionRaw = localStorage.getItem("vip_session");
+        if (!sessionRaw) return;
+
+        const session = JSON.parse(sessionRaw);
+        const { data } = await supabase.functions.invoke("get-profile", {
+          body: { userId: session.userId },
+        });
+
+        if (data?.success && data.profile) {
+          const syncedStamps = data.profile.current_stamps ?? 0;
+          const syncedRedeemed = data.profile.current_redeemed ?? false;
+          setStamps(syncedStamps);
+          setRedeemed(syncedRedeemed);
+          localStorage.setItem(STORAGE_KEY, JSON.stringify({ stamps: syncedStamps, redeemed: syncedRedeemed }));
+        }
+      } catch {}
     };
     loadStamps();
   }, []);

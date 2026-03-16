@@ -39,13 +39,13 @@ const VipMemberDeals = () => {
 
   const loadVouchers = async (uid: string) => {
     try {
-      const { data } = await supabase
-        .from("member_vouchers")
-        .select("*")
-        .eq("user_id", uid)
-        .eq("redeemed", false)
-        .order("created_at", { ascending: false });
-      setVouchers(data || []);
+      const { data, error } = await supabase.functions.invoke("get-member-vouchers", {
+        body: { userId: uid },
+      });
+
+      if (!error && data?.success) {
+        setVouchers(data.vouchers || []);
+      }
     } catch {
       // silently fail
     } finally {
