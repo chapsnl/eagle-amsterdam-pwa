@@ -103,7 +103,7 @@ const VipVerify = () => {
             </p>
           </div>
 
-          <div className="flex justify-center gap-4" onPaste={handlePaste}>
+          <div className="flex justify-center gap-2" onPaste={handlePaste}>
             {digits.map((digit, i) => (
               <input
                 key={i}
@@ -115,7 +115,7 @@ const VipVerify = () => {
                 value={digit}
                 onChange={(e) => handleChange(i, e.target.value)}
                 onKeyDown={(e) => handleKeyDown(i, e)}
-                className="w-14 h-16 text-center text-3xl font-bold bg-secondary border-2 border-border text-foreground rounded-xl focus:border-primary focus:outline-none transition-colors"
+                className="w-11 h-14 text-center text-2xl font-bold bg-secondary border-2 border-border text-foreground rounded-xl focus:border-primary focus:outline-none transition-colors"
                 autoComplete="one-time-code"
               />
             ))}
