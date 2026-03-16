@@ -12,6 +12,7 @@ interface VipSession {
   email: string;
   name: string;
   member_number?: string;
+  created_at?: string;
   verified: boolean;
 }
 
