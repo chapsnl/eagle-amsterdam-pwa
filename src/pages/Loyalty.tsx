@@ -149,12 +149,6 @@ const Loyalty = () => {
 
   const handleScannerOpen = useCallback(async () => {
     if (stamps >= TOTAL_STAMPS) { setRewardOpen(true); return; }
-    const remaining = getRemainingHours();
-    if (remaining !== null) {
-      setLimitMsg(`Next stamp available in ${remaining} hour${remaining !== 1 ? "s" : ""}.`);
-      setLimitOpen(true);
-      return;
-    }
 
     try {
       if (navigator.permissions?.query) {
@@ -166,7 +160,7 @@ const Loyalty = () => {
     setCameraBlocked(false);
     setScannerKey((k) => k + 1);
     setScannerOpen(true);
-  }, [stamps, getRemainingHours]);
+  }, [stamps]);
 
   const handleScannerClose = useCallback(() => setScannerOpen(false), []);
 
