@@ -112,19 +112,6 @@ const VipMemberDeals = () => {
               </div>
             )}
 
-            {redeemedVouchers.length > 0 && (
-              <div className="space-y-6">
-                <h2 className="text-muted-foreground text-sm font-bold tracking-[-0.03em]">Redeemed</h2>
-                {redeemedVouchers.map((v) => (
-                  <VoucherCard
-                    key={v.id}
-                    title={v.title}
-                    description={v.description}
-                    redeemed
-                  />
-                ))}
-              </div>
-            )}
           </>
         )}
       </div>
