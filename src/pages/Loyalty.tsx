@@ -59,7 +59,7 @@ const Loyalty = () => {
           .select("total_stamps_earned")
           .eq("id", session.userId)
           .maybeSingle();
-        if (data) setTotalStampsEarned(data.total_stamps_earned || 0);
+        if (data) setTotalStampsEarned(data.total_stamps_earned ?? 0);
       } catch {}
     };
     loadTotalStamps();
