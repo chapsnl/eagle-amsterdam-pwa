@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Crown, Star, Tag, Newspaper, IdCard } from "lucide-react";
+import { Crown, Star, Tag, Info, IdCard } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { calculateVipStatus, trackAppOpen, type VipStatusLevel } from "@/lib/vipStatus";
 
 interface VipSession {
   userId: string;
@@ -12,12 +14,16 @@ interface VipSession {
 const VipDashboard = () => {
   const navigate = useNavigate();
   const [session, setSession] = useState<VipSession | null>(null);
+  const [vipStatus, setVipStatus] = useState<VipStatusLevel>("Regular");
 
   useEffect(() => {
     const stored = localStorage.getItem("vip_session");
     if (stored) {
       try {
-        setSession(JSON.parse(stored));
+        const parsed = JSON.parse(stored);
+        setSession(parsed);
+        trackAppOpen();
+        loadStatus(parsed.userId);
       } catch {
         navigate("/vip/login");
       }
@@ -26,6 +32,28 @@ const VipDashboard = () => {
     }
   }, [navigate]);
 
+  const loadStatus = async (userId: string) => {
+    try {
+      const { data } = await supabase.functions.invoke("get-profile", {
+        body: { userId },
+      });
+      if (data?.success && data.profile) {
+        const totalStamps = data.profile.total_stamps_earned || 0;
+        const status = calculateVipStatus(totalStamps);
+        setVipStatus(status);
+
+        // Sync status to DB if changed
+        if (status !== data.profile.vip_status) {
+          await supabase
+            .from("profiles")
+            .update({ vip_status: status })
+            .eq("id", userId);
+        }
+      }
+    } catch {
+      // Status load failed silently
+    }
+  };
 
   if (!session) return null;
 
@@ -43,10 +71,10 @@ const VipDashboard = () => {
       disabled: true,
     },
     {
-      label: "PRIVATE NEWS",
-      icon: Newspaper,
-      onClick: undefined,
-      disabled: true,
+      label: "INFO",
+      icon: Info,
+      onClick: () => navigate("/vip/info"),
+      disabled: false,
     },
     {
       label: "MEMBER PASS",
@@ -66,6 +94,10 @@ const VipDashboard = () => {
           <p className="text-muted-foreground text-sm">
             Welcome back, <strong className="text-foreground">{session.name}</strong>
           </p>
+          <div className="inline-flex items-center gap-2 bg-secondary rounded-lg px-4 py-1.5 mt-2">
+            <Star className="w-3.5 h-3.5 text-primary" />
+            <span className="text-foreground text-xs font-bold tracking-wide">{vipStatus}</span>
+          </div>
         </div>
 
         {/* 4-button grid */}
@@ -75,17 +107,12 @@ const VipDashboard = () => {
               key={label}
               onClick={disabled ? undefined : onClick}
               disabled={disabled}
-              className={`relative aspect-square flex flex-col items-center justify-center gap-3 rounded-none border-0 transition-all duration-200 overflow-hidden ${
+              className={`aspect-square flex flex-col items-center justify-center gap-3 rounded-xl border-0 transition-all duration-200 ${
                 disabled
                   ? "bg-primary/30 text-primary-foreground/40 cursor-not-allowed"
                   : "bg-primary text-primary-foreground active:scale-95 hover:opacity-90"
               }`}
             >
-              {disabled && (
-                <div className="absolute inset-0 pointer-events-none">
-                  <div className="absolute bg-primary-foreground/20" style={{ width: '150%', height: '24px', top: '50%', left: '50%', transform: 'translate(-50%, -50%) rotate(-45deg)' }} />
-                </div>
-              )}
               <Icon className="w-10 h-10" />
               <span className="text-sm font-bold tracking-wide">{label}</span>
             </button>

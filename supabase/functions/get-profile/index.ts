@@ -27,7 +27,7 @@ Deno.serve(async (req) => {
     // First try to get existing profile
     let { data: profile, error } = await supabase
       .from("profiles")
-      .select("member_number, profile_image_url, created_at, name, email")
+      .select("member_number, profile_image_url, created_at, name, email, total_stamps_earned, vip_status")
       .eq("id", userId)
       .maybeSingle();
 
@@ -50,7 +50,7 @@ Deno.serve(async (req) => {
           name: authUser.user.user_metadata?.name || "",
           email: authUser.user.email || "",
         })
-        .select("member_number, profile_image_url, created_at, name, email")
+        .select("member_number, profile_image_url, created_at, name, email, total_stamps_earned, vip_status")
         .single();
 
       if (insertError) {

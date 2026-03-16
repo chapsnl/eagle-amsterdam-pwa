@@ -79,6 +79,8 @@ export type Database = {
           member_number: string | null
           name: string
           profile_image_url: string | null
+          total_stamps_earned: number
+          vip_status: string
         }
         Insert: {
           created_at?: string
@@ -87,6 +89,8 @@ export type Database = {
           member_number?: string | null
           name?: string
           profile_image_url?: string | null
+          total_stamps_earned?: number
+          vip_status?: string
         }
         Update: {
           created_at?: string
@@ -95,6 +99,8 @@ export type Database = {
           member_number?: string | null
           name?: string
           profile_image_url?: string | null
+          total_stamps_earned?: number
+          vip_status?: string
         }
         Relationships: []
       }

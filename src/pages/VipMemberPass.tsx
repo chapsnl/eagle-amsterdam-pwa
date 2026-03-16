@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Maximize2, Minimize2 } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { supabase } from "@/integrations/supabase/client";
+import { calculateVipStatus, type VipStatusLevel } from "@/lib/vipStatus";
 
 import eagleLogo from "@/assets/eagle-logo-white.webp";
 
@@ -20,6 +21,7 @@ const VipMemberPass = () => {
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [memberNumber, setMemberNumber] = useState("");
   const [memberSince, setMemberSince] = useState("");
+  const [vipStatus, setVipStatus] = useState<VipStatusLevel>("Regular");
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   useEffect(() => {
@@ -46,7 +48,6 @@ const VipMemberPass = () => {
 
       if (error || !data?.success) {
         localStorage.removeItem("vip_session");
-        localStorage.removeItem("vip_session");
         navigate("/vip/login");
         return;
       }
@@ -72,20 +73,23 @@ const VipMemberPass = () => {
           `${String(d.getDate()).padStart(2, "0")}-${String(d.getMonth() + 1).padStart(2, "0")}-${d.getFullYear()}`
         );
       }
+
+      // Calculate and display status
+      const totalStamps = profile.total_stamps_earned || 0;
+      const status = calculateVipStatus(totalStamps);
+      setVipStatus(status);
     } catch {
       // Profile load failed silently
     }
   };
 
-  const toggleFullscreen = () => {
-    setIsFullscreen(!isFullscreen);
-  };
+  const toggleFullscreen = () => setIsFullscreen(!isFullscreen);
 
   if (!session) return null;
 
   const cardContent = (
     <div
-      className={`relative overflow-hidden bg-primary rounded-none ${
+      className={`relative overflow-hidden bg-primary rounded-xl ${
         isFullscreen ? "w-full max-w-lg mx-auto" : "w-full"
       }`}
       style={{ aspectRatio: "1.586/1" }}
@@ -98,39 +102,29 @@ const VipMemberPass = () => {
         </span>
       </div>
 
-      {/* Profile image (display only) */}
+      {/* Profile image */}
       {profileImage && (
         <div className="absolute left-5 top-[4.5rem]">
-          <div className="w-16 h-16 bg-primary-foreground/10 border border-primary-foreground/20 overflow-hidden flex items-center justify-center">
+          <div className="w-16 h-16 bg-primary-foreground/10 border border-primary-foreground/20 rounded-lg overflow-hidden flex items-center justify-center">
             <img src={profileImage} alt="Profile" className="w-full h-full object-cover" />
           </div>
         </div>
       )}
 
-      {/* Name + Email + Member Since - left bottom area */}
+      {/* Name + Email + Member Since + Status */}
       <div className="absolute left-5 bottom-4 space-y-0.5">
         <p className="text-primary-foreground font-bold text-sm tracking-wider truncate uppercase">
           {session.name}
         </p>
-        <p className="text-black text-sm truncate">
-          {session.email}
-        </p>
-        <div className="flex gap-6 pt-1">
+        <p className="text-black text-sm truncate">{session.email}</p>
+        <div className="flex gap-4 pt-1">
           <div>
-            <p className="text-primary-foreground/40 text-[8px] uppercase tracking-widest">
-              Member Since
-            </p>
-            <p className="text-primary-foreground/80 text-[11px] font-mono">
-              {memberSince || "--/--/----"}
-            </p>
+            <p className="text-primary-foreground/40 text-[8px] uppercase tracking-widest">Member Since</p>
+            <p className="text-primary-foreground/80 text-[11px] font-mono">{memberSince || "--/--/----"}</p>
           </div>
           <div>
-            <p className="text-primary-foreground/40 text-[8px] uppercase tracking-widest">
-              Status
-            </p>
-            <p className="text-primary-foreground/80 text-[11px] font-bold tracking-wider">
-              ACTIVE
-            </p>
+            <p className="text-primary-foreground/40 text-[8px] uppercase tracking-widest">Status</p>
+            <p className="text-primary-foreground/80 text-[11px] font-bold tracking-wider">{vipStatus.toUpperCase()}</p>
           </div>
         </div>
       </div>
@@ -138,12 +132,10 @@ const VipMemberPass = () => {
       {/* Bottom right: Member number + QR Code */}
       <div className="absolute right-5 bottom-4 flex flex-col items-end gap-2">
         <p className="text-primary-foreground font-mono text-lg font-bold tracking-[0.3em]">
-          {memberNumber
-            ? memberNumber.replace(/(.{4})/g, "$1 ").trim()
-            : "---- ----"}
+          {memberNumber ? memberNumber.replace(/(.{4})/g, "$1 ").trim() : "---- ----"}
         </p>
         {memberNumber && (
-          <div className="bg-white p-1.5">
+          <div className="bg-white p-1.5 rounded-md">
             <QRCodeSVG
               value={memberNumber}
               size={isFullscreen ? 64 : 52}
@@ -159,12 +151,11 @@ const VipMemberPass = () => {
 
   return (
     <>
-
       {isFullscreen ? (
         <div className="fixed inset-0 z-50 bg-background flex flex-col items-center justify-center p-4">
           <button
             onClick={toggleFullscreen}
-            className="absolute top-[50px] right-4 w-10 h-10 bg-secondary text-foreground flex items-center justify-center border border-border hover:bg-primary hover:text-primary-foreground transition-colors z-[60]"
+            className="absolute top-[50px] right-4 w-10 h-10 bg-secondary text-foreground flex items-center justify-center rounded-lg border border-border hover:bg-primary hover:text-primary-foreground transition-colors z-[60]"
           >
             <Minimize2 className="w-5 h-5" />
           </button>
@@ -174,19 +165,15 @@ const VipMemberPass = () => {
         <div className="flex flex-col min-h-screen pb-24">
           <div className="pt-8 px-4 max-w-[90%] mx-auto w-full space-y-4">
             <div className="text-center space-y-2">
-              <h1 className="text-2xl text-foreground tracking-wider">
-                MEMBER PASS
-              </h1>
-              <p className="text-muted-foreground text-xs">
-                Your digital VIP membership card
-              </p>
+              <h1 className="text-2xl text-foreground tracking-wider">MEMBER PASS</h1>
+              <p className="text-muted-foreground text-xs">Your digital VIP membership card</p>
             </div>
 
             {cardContent}
 
             <button
               onClick={toggleFullscreen}
-              className="w-full h-12 bg-secondary text-foreground flex items-center justify-center gap-2 border border-border hover:bg-primary hover:text-primary-foreground transition-colors text-sm font-bold tracking-wider"
+              className="w-full h-12 bg-secondary text-foreground flex items-center justify-center gap-2 rounded-xl border border-border hover:bg-primary hover:text-primary-foreground transition-colors text-sm font-bold tracking-wider"
             >
               <Maximize2 className="w-4 h-4" />
               FULLSCREEN VIEW
