@@ -43,6 +43,7 @@ const VipMemberDeals = () => {
         .from("member_vouchers")
         .select("*")
         .eq("user_id", uid)
+        .eq("redeemed", false)
         .order("created_at", { ascending: false });
       setVouchers(data || []);
     } catch {
