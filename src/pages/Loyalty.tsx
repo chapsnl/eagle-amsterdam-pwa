@@ -275,6 +275,14 @@ const Loyalty = () => {
           </div>
         </div>
       )}
+
+      {levelUpMsg && (
+        <div className={`fixed top-20 left-1/2 -translate-x-1/2 z-50 transition-all duration-400 ${levelUpFading ? "opacity-0 -translate-y-4" : "opacity-100 translate-y-0"}`}>
+          <div className="bg-card border border-primary rounded-xl px-6 py-4 shadow-lg text-center">
+            <p className="text-foreground text-sm font-bold">{levelUpMsg}</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
