@@ -81,7 +81,7 @@ Deno.serve(async (req) => {
     if (uploadError) {
       console.error("[upload-profile-image] Upload error:", uploadError);
       return new Response(
-        JSON.stringify({ success: false, error: uploadError.message }),
+        JSON.stringify({ success: false, error: "Failed to upload image" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }

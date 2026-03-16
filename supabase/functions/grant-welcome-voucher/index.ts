@@ -93,7 +93,7 @@ Deno.serve(async (req) => {
   } catch (e) {
     console.error("[grant-welcome-voucher] Error:", e);
     return new Response(
-      JSON.stringify({ success: false, error: e.message }),
+      JSON.stringify({ success: false, error: "An unexpected error occurred" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }

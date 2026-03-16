@@ -86,7 +86,7 @@ Deno.serve(async (req) => {
   } catch (error) {
     console.error("[get-profile] Error:", error);
     return new Response(
-      JSON.stringify({ success: false, error: error.message || "Failed to fetch profile" }),
+      JSON.stringify({ success: false, error: "An unexpected error occurred" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
