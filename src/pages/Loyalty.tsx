@@ -199,11 +199,6 @@ const Loyalty = () => {
           </p>
         )}
 
-        {remainingHours !== null && !isComplete && (
-          <p className="text-muted-foreground text-sm text-center mt-4">
-            Next stamp available in <strong className="text-foreground">{remainingHours} hour{remainingHours !== 1 ? "s" : ""}</strong>.
-          </p>
-        )}
 
         <Button variant="eagle" size="lg" className="w-full mt-6 text-base py-4" onClick={handleScannerOpen}>
           <QrCode className="w-5 h-5 mr-2" />
