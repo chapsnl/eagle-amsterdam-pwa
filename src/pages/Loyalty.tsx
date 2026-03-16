@@ -229,7 +229,7 @@ const Loyalty = () => {
         </p>
 
         <div className="mt-6 rounded-xl bg-card border border-border p-4 text-center">
-          <p className="text-muted-foreground text-xs uppercase tracking-widest mb-1">Your total number of stamps collected</p>
+          <p className="text-muted-foreground text-xs uppercase tracking-widest mb-1">Lifetime Token Balance</p>
           <p className="text-3xl font-bold text-primary">{totalStampsEarned}</p>
         </div>
       </div>

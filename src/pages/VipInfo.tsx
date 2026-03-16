@@ -40,7 +40,7 @@ const VipInfo = () => {
             <h2 className="text-foreground text-base font-bold">Loyalty Program</h2>
           </div>
           <p className="text-muted-foreground text-sm leading-relaxed">
-            As a VIP member, you save points for <strong className="text-foreground">free access</strong> to major Eagle Amsterdam events such as <strong className="text-foreground">NcAdam</strong>, <strong className="text-foreground">Horsemen & Knights</strong>, and <strong className="text-foreground">Cum Hunks</strong>.
+            As a VIP member, you collect tokens for <strong className="text-foreground">free access</strong> to major Eagle Amsterdam events such as <strong className="text-foreground">NcAdam</strong>, <strong className="text-foreground">Horsemen & Knights</strong>, and <strong className="text-foreground">Cum Hunks</strong>.
           </p>
           <p className="text-muted-foreground text-sm leading-relaxed">
             Collect <strong className="text-foreground">9 tokens</strong> to receive one free entry to an Eagle organized event.

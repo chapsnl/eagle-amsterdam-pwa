@@ -61,7 +61,7 @@ const VipProfileSetup = () => {
           <div className="bg-primary/10 border border-primary rounded-xl p-5 text-center space-y-2">
             <Star className="w-10 h-10 text-primary mx-auto" fill="currentColor" />
             <p className="text-foreground text-sm font-bold leading-snug">
-              Congratulations, you got 1 loyalty stamp for free for signing up!
+              Congratulations, you got 1 loyalty token for free for signing up!
             </p>
           </div>
 

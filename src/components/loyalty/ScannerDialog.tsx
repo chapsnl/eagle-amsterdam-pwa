@@ -22,7 +22,7 @@ const ScannerDialog = memo(({ open, scannerKey, cameraBlocked, onClose, onScanRe
           Scan QR Code
         </DialogTitle>
         <DialogDescription className="text-muted-foreground tracking-[-0.02em]">
-          Point your camera at the Eagle QR code to collect a stamp.
+          Point your camera at the Eagle QR code to collect a token.
         </DialogDescription>
       </DialogHeader>
 
