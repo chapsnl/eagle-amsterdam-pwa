@@ -108,7 +108,7 @@ const Loyalty = () => {
         }, 3000);
       }
     } catch {
-      setInvalidOpen(true);
+      setAuthRequiredOpen(true);
     }
   }, []);
 
