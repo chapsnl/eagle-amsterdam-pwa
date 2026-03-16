@@ -87,12 +87,21 @@ const VipMemberPass = () => {
 
   if (!session) return null;
 
+  const statusColors: Record<VipStatusLevel, { bg: string; border?: string }> = {
+    Regular: { bg: "#b43227" },
+    Cruiser: { bg: "#1a5c2a" },
+    "Party Boy": { bg: "#1a3a6b" },
+    Slut: { bg: "#333333", border: "3px solid #b43227" },
+  };
+
+  const cardStyle = statusColors[vipStatus] || statusColors.Regular;
+
   const cardContent = (
     <div
-      className={`relative overflow-hidden bg-primary rounded-xl ${
+      className={`relative overflow-hidden rounded-xl ${
         isFullscreen ? "w-full max-w-lg mx-auto" : "w-full"
       }`}
-      style={{ aspectRatio: "1.586/1" }}
+      style={{ aspectRatio: "1.586/1", backgroundColor: cardStyle.bg, border: cardStyle.border || "none" }}
     >
       {/* Top bar: Logo + VIP label */}
       <div className="absolute top-0 left-0 right-0 flex items-center justify-between px-5 pt-4">
