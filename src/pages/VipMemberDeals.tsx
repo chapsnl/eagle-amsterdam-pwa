@@ -43,6 +43,7 @@ const VipMemberDeals = () => {
         .from("member_vouchers")
         .select("*")
         .eq("user_id", uid)
+        .eq("redeemed", false)
         .order("created_at", { ascending: false });
       setVouchers(data || []);
     } catch {
@@ -65,15 +66,12 @@ const VipMemberDeals = () => {
       return;
     }
 
-    setVouchers((prev) =>
-      prev.map((v) =>
-        v.id === voucher.id ? { ...v, redeemed: true, redeemed_at: new Date().toISOString() } : v
-      )
-    );
+    // Remove redeemed voucher from the list immediately
+    setVouchers((prev) => prev.filter((v) => v.id !== voucher.id));
   };
 
+  // Only show unredeemed vouchers
   const activeVouchers = vouchers.filter((v) => !v.redeemed);
-  const redeemedVouchers = vouchers.filter((v) => v.redeemed);
 
   return (
     <div className="flex flex-col min-h-screen pb-24">
@@ -114,19 +112,6 @@ const VipMemberDeals = () => {
               </div>
             )}
 
-            {redeemedVouchers.length > 0 && (
-              <div className="space-y-6">
-                <h2 className="text-muted-foreground text-sm font-bold tracking-[-0.03em]">Redeemed</h2>
-                {redeemedVouchers.map((v) => (
-                  <VoucherCard
-                    key={v.id}
-                    title={v.title}
-                    description={v.description}
-                    redeemed
-                  />
-                ))}
-              </div>
-            )}
           </>
         )}
       </div>
