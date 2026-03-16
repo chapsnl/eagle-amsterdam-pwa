@@ -52,15 +52,27 @@ const Loyalty = () => {
   useEffect(() => {
     const loadTotalStamps = async () => {
       try {
+        const cachedTotal = localStorage.getItem(LIFETIME_STAMPS_KEY);
+        if (cachedTotal !== null) {
+          const parsedTotal = Number(cachedTotal);
+          if (Number.isFinite(parsedTotal) && parsedTotal >= 0) {
+            setTotalStampsEarned(parsedTotal);
+          }
+        }
+
         const sessionRaw = localStorage.getItem("vip_session");
         if (!sessionRaw) return;
+
         const session = JSON.parse(sessionRaw);
-        const { data } = await supabase
-          .from("profiles")
-          .select("total_stamps_earned")
-          .eq("id", session.userId)
-          .maybeSingle();
-        if (data) setTotalStampsEarned(data.total_stamps_earned ?? 0);
+        const { data } = await supabase.functions.invoke("get-profile", {
+          body: { userId: session.userId },
+        });
+
+        if (data?.success && data.profile) {
+          const lifetimeTotal = data.profile.total_stamps_earned ?? 0;
+          setTotalStampsEarned(lifetimeTotal);
+          localStorage.setItem(LIFETIME_STAMPS_KEY, String(lifetimeTotal));
+        }
       } catch {}
     };
     loadTotalStamps();
