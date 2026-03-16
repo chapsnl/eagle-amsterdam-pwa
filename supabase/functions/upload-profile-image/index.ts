@@ -81,7 +81,7 @@ Deno.serve(async (req) => {
     if (uploadError) {
       console.error("[upload-profile-image] Upload error:", uploadError);
       return new Response(
-        JSON.stringify({ success: false, error: "Failed to upload image" }),
+        JSON.stringify({ success: false, error: uploadError.message }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -105,7 +105,7 @@ Deno.serve(async (req) => {
   } catch (error) {
     console.error("[upload-profile-image] Error:", error);
     return new Response(
-      JSON.stringify({ success: false, error: "An unexpected error occurred" }),
+      JSON.stringify({ success: false, error: error.message || "Upload failed" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }

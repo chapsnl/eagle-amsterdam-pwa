@@ -75,6 +75,7 @@ const VipVerify = () => {
         }));
       }
 
+      await migrateLoyaltyStamps(data.userId, data.email);
       sessionStorage.removeItem("vip_otp_email");
       localStorage.removeItem("vip_otp_pending");
 
@@ -147,5 +148,32 @@ const VipVerify = () => {
     </div>
   );
 };
+
+async function migrateLoyaltyStamps(userId: string, email: string) {
+  try {
+    const saved = localStorage.getItem("eagle-loyalty-stamps");
+    if (!saved) return;
+    const { stamps = 0, redeemed = false } = JSON.parse(saved);
+    const lastScan = localStorage.getItem("last_loyalty_scan");
+
+    const { data: existing } = await supabase
+      .from("loyalty_stamps").select("id, stamps").eq("user_id", userId).maybeSingle();
+
+    if (existing) {
+      if (stamps > existing.stamps) {
+        await supabase.from("loyalty_stamps")
+          .update({ stamps, redeemed, last_scan_at: lastScan ? new Date(parseInt(lastScan)).toISOString() : null })
+          .eq("user_id", userId);
+      }
+    } else {
+      await supabase.from("loyalty_stamps").insert({
+        user_id: userId, stamps, redeemed,
+        last_scan_at: lastScan ? new Date(parseInt(lastScan)).toISOString() : null,
+      });
+    }
+  } catch {
+    // Stamp migration failed silently
+  }
+}
 
 export default VipVerify;

@@ -41,6 +41,13 @@ const VipDashboard = () => {
         const totalStamps = data.profile.total_stamps_earned || 0;
         const status = calculateVipStatus(totalStamps);
         setVipStatus(status);
+
+        if (status !== data.profile.vip_status) {
+          await supabase
+            .from("profiles")
+            .update({ vip_status: status })
+            .eq("id", userId);
+        }
       }
     } catch {
       // Status load failed silently

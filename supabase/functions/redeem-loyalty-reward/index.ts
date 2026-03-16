@@ -62,7 +62,7 @@ Deno.serve(async (req) => {
   } catch (error) {
     console.error("[redeem-loyalty-reward] Error:", error);
     return new Response(
-      JSON.stringify({ success: false, error: "An unexpected error occurred" }),
+      JSON.stringify({ success: false, error: error.message || "Redeem failed" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }

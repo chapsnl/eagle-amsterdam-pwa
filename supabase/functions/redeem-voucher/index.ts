@@ -75,8 +75,7 @@ Deno.serve(async (req) => {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {
-    console.error("[redeem-voucher] Error:", e);
-    return new Response(JSON.stringify({ success: false, error: "An unexpected error occurred" }), {
+    return new Response(JSON.stringify({ success: false, error: e.message }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

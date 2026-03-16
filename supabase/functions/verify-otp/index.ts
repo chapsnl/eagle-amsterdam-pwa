@@ -138,9 +138,8 @@ Deno.serve(async (req) => {
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
-    console.error("[verify-otp] Error:", error);
     return new Response(
-      JSON.stringify({ success: false, error: "An unexpected error occurred" }),
+      JSON.stringify({ success: false, error: error.message || "Verification failed" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
