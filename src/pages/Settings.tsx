@@ -40,13 +40,18 @@ const Settings = () => {
     setLoading(false);
   }, []);
 
-  const loadProfile = async (userId: string) => {
+  const loadProfile = async (userId: string, sessionName?: string) => {
     try {
       const { data } = await supabase.functions.invoke("get-profile", {
         body: { userId },
       });
       if (data?.success && data.profile) {
-        setProfile(data.profile);
+        const p = data.profile;
+        // Use session name (from signup) as fallback if profile name is empty
+        if ((!p.name || p.name.trim() === "") && sessionName) {
+          p.name = sessionName;
+        }
+        setProfile(p);
       }
     } catch {} finally {
       setLoading(false);
