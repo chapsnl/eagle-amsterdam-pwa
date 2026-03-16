@@ -30,7 +30,7 @@ Deno.serve(async (req) => {
       .from("member_vouchers")
       .select("id")
       .eq("user_id", userId)
-      .eq("title", "FREE HOT SHOT")
+      .eq("title", "FREE COAT CHECK")
       .limit(1);
 
     if (existing && existing.length > 0) {
@@ -42,8 +42,8 @@ Deno.serve(async (req) => {
 
     const { error } = await supabase.from("member_vouchers").insert({
       user_id: userId,
-      title: "FREE HOT SHOT",
-      description: "Enjoy a complimentary Hot Shot at the bar. Welcome to the club!",
+      title: "FREE COAT CHECK",
+      description: "Enjoy a complimentary coat check on us. Welcome to the club!",
     });
 
     if (error) {
