@@ -15,6 +15,7 @@ const VipDashboard = () => {
   const navigate = useNavigate();
   const [session, setSession] = useState<VipSession | null>(null);
   const [vipStatus, setVipStatus] = useState<VipStatusLevel>("Regular");
+  const [hasActiveVouchers, setHasActiveVouchers] = useState(false);
 
   useEffect(() => {
     const stored = localStorage.getItem("vip_session");
@@ -24,6 +25,7 @@ const VipDashboard = () => {
         setSession(parsed);
         trackAppOpen();
         loadStatus(parsed.userId);
+        loadVoucherStatus(parsed.userId);
       } catch {
         navigate("/vip/login");
       }
@@ -42,7 +44,6 @@ const VipDashboard = () => {
         const status = calculateVipStatus(totalStamps);
         setVipStatus(status);
 
-        // Sync status to DB if changed
         if (status !== data.profile.vip_status) {
           await supabase
             .from("profiles")
@@ -55,7 +56,23 @@ const VipDashboard = () => {
     }
   };
 
+  const loadVoucherStatus = async (userId: string) => {
+    try {
+      const { data } = await supabase
+        .from("member_vouchers")
+        .select("id")
+        .eq("user_id", userId)
+        .eq("redeemed", false)
+        .limit(1);
+      setHasActiveVouchers(!!data && data.length > 0);
+    } catch {
+      // silently fail
+    }
+  };
+
   if (!session) return null;
+
+  const memberDealsDisabled = !hasActiveVouchers;
 
   const menuItems = [
     {
@@ -63,24 +80,28 @@ const VipDashboard = () => {
       icon: Star,
       onClick: () => navigate("/vip/loyalty"),
       disabled: false,
+      isDeal: false,
     },
     {
       label: "MEMBER DEALS",
       icon: Tag,
-      onClick: undefined,
-      disabled: true,
+      onClick: hasActiveVouchers ? () => navigate("/vip/member-deals") : undefined,
+      disabled: memberDealsDisabled,
+      isDeal: true,
     },
     {
       label: "INFO",
       icon: Info,
       onClick: () => navigate("/vip/info"),
       disabled: false,
+      isDeal: false,
     },
     {
       label: "MEMBER PASS",
       icon: IdCard,
       onClick: () => navigate("/vip/member-pass"),
       disabled: false,
+      isDeal: false,
     },
   ];
 
