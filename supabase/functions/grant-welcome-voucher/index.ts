@@ -54,6 +54,23 @@ Deno.serve(async (req) => {
       );
     }
 
+    // Grant 1 free loyalty token for sign-up
+    const { data: existingStamps } = await supabase
+      .from("loyalty_stamps")
+      .select("id")
+      .eq("user_id", userId)
+      .limit(1);
+
+    if (!existingStamps || existingStamps.length === 0) {
+      const { error: stampError } = await supabase.from("loyalty_stamps").insert({
+        user_id: userId,
+        stamps: 1,
+      });
+      if (stampError) {
+        console.error("[grant-welcome-voucher] Stamp insert error:", stampError);
+      }
+    }
+
     return new Response(
       JSON.stringify({ success: true }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
