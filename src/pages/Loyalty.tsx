@@ -14,6 +14,8 @@ import { QrCode, Star, CheckCircle } from "lucide-react";
 import StampCard from "@/components/loyalty/StampCard";
 import ScannerDialog from "@/components/loyalty/ScannerDialog";
 import RewardDialog from "@/components/loyalty/RewardDialog";
+import WarningDialog from "@/components/shared/WarningDialog";
+import { supabase } from "@/integrations/supabase/client";
 
 const STORAGE_KEY = "eagle-loyalty-stamps";
 const VALID_CODE = "EAGLE2026";
@@ -61,6 +63,27 @@ const Loyalty = () => {
     return Math.ceil((COOLDOWN_MS - elapsed) / (60 * 60 * 1000));
   }, []);
 
+  const incrementTotalStamps = async () => {
+    try {
+      const sessionRaw = localStorage.getItem("vip_session");
+      if (!sessionRaw) return;
+      const session = JSON.parse(sessionRaw);
+      const { data } = await supabase
+        .from("profiles")
+        .select("total_stamps_earned")
+        .eq("id", session.userId)
+        .maybeSingle();
+      if (data) {
+        await supabase
+          .from("profiles")
+          .update({ total_stamps_earned: (data.total_stamps_earned || 0) + 1 })
+          .eq("id", session.userId);
+      }
+    } catch {
+      // Silently fail
+    }
+  };
+
   const handleScanResult = useCallback((decodedText: string) => {
     if (decodedText.trim().toUpperCase() === VALID_CODE) {
       const remaining = getRemainingHours();
@@ -79,6 +102,7 @@ const Loyalty = () => {
         return newCount;
       });
       setScannerOpen(false);
+      incrementTotalStamps();
     } else {
       setScannerOpen(false);
       setInvalidOpen(true);
@@ -90,8 +114,6 @@ const Loyalty = () => {
 
   const handleScannerOpen = useCallback(async () => {
     if (stamps >= TOTAL_STAMPS) { setRewardOpen(true); return; }
-
-    // Check cooldown before opening scanner
     const remaining = getRemainingHours();
     if (remaining !== null) {
       setLimitMsg(`Next stamp available in ${remaining} hour${remaining !== 1 ? "s" : ""}.`);
@@ -104,7 +126,7 @@ const Loyalty = () => {
         const result = await navigator.permissions.query({ name: "camera" as PermissionName });
         if (result.state === "denied") { setCameraBlocked(true); setScannerOpen(true); return; }
       }
-    } catch { /* Permissions API not supported */ }
+    } catch {}
 
     setCameraBlocked(false);
     setScannerKey((k) => k + 1);
@@ -119,7 +141,6 @@ const Loyalty = () => {
     setRewardOpen(false);
     setRedeemSuccessOpen(true);
     setRedeemFading(false);
-
     setTimeout(() => {
       setRedeemFading(true);
       setTimeout(() => { setRedeemSuccessOpen(false); setRedeemFading(false); }, 300);
@@ -171,7 +192,7 @@ const Loyalty = () => {
       <RewardDialog open={rewardOpen} onOpenChange={setRewardOpen} onRedeem={handleRedeem} />
 
       <Dialog open={successOpen} onOpenChange={setSuccessOpen}>
-        <DialogContent className="max-w-[400px] w-[90%] rounded-none bg-card border-border">
+        <DialogContent className="max-w-[400px] w-[90%] rounded-xl bg-card border-border">
           <DialogHeader>
             <DialogTitle className="text-foreground flex items-center gap-2 tracking-[-0.05em]">
               <CheckCircle className="w-5 h-5 text-primary" />
@@ -187,40 +208,23 @@ const Loyalty = () => {
         </DialogContent>
       </Dialog>
 
-      <AlertDialog open={invalidOpen} onOpenChange={setInvalidOpen}>
-        <AlertDialogContent className="bg-card border-border max-w-[calc(100vw-3rem)] sm:max-w-sm mx-auto">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="font-display tracking-wider text-foreground">
-              Invalid Code
-            </AlertDialogTitle>
-            <AlertDialogDescription className="text-muted-foreground">
-              This QR code is not recognized.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-        </AlertDialogContent>
-      </AlertDialog>
+      <WarningDialog
+        open={invalidOpen}
+        title="Invalid Code"
+        message="This QR code is not recognized."
+        onClose={() => setInvalidOpen(false)}
+      />
 
-      <AlertDialog open={limitOpen} onOpenChange={setLimitOpen}>
-        <AlertDialogContent className="bg-card border-border max-w-[calc(100vw-3rem)] sm:max-w-sm mx-auto">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="font-display tracking-wider text-foreground">
-              Limit Reached
-            </AlertDialogTitle>
-            <AlertDialogDescription className="text-muted-foreground">
-              {limitMsg}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogAction className="bg-primary text-primary-foreground hover:bg-primary/90">
-              OK
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <WarningDialog
+        open={limitOpen}
+        title="Limit Reached"
+        message={limitMsg}
+        onClose={() => setLimitOpen(false)}
+      />
 
       {redeemSuccessOpen && (
         <div className={`fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm transition-opacity duration-300 ${redeemFading ? "opacity-0" : "opacity-100"}`}>
-          <div className={`max-w-[400px] w-[90%] rounded-none bg-card border border-primary p-8 text-center shadow-[var(--shadow-red-intense)] transition-all duration-300 ${redeemFading ? "scale-95 opacity-0" : "animate-scale-in scale-100 opacity-100"}`}>
+          <div className={`max-w-[400px] w-[90%] rounded-xl bg-card border border-primary p-8 text-center shadow-[var(--shadow-red-intense)] transition-all duration-300 ${redeemFading ? "scale-95 opacity-0" : "animate-scale-in scale-100 opacity-100"}`}>
             <CheckCircle className="w-12 h-12 text-primary mx-auto mb-4" />
             <h2 className="text-2xl font-bold text-foreground mb-2" style={{ letterSpacing: "-0.05em" }}>Reward Redeemed!</h2>
             <p className="text-foreground tracking-[-0.02em]">Your stamp card has been reset. Enjoy! 🍻</p>
