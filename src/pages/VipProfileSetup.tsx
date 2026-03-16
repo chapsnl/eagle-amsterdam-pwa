@@ -43,13 +43,6 @@ const VipProfileSetup = () => {
     <div className="flex flex-col min-h-screen pb-24">
       <div className="flex-1 flex flex-col items-center justify-center px-4">
         <div className="w-full max-w-[90%] mx-auto space-y-6">
-          {/* Free stamp banner */}
-          <div className="bg-primary/10 border border-primary rounded-xl p-5 text-center space-y-2">
-            <Star className="w-10 h-10 text-primary mx-auto" fill="currentColor" />
-            <p className="text-foreground text-sm font-bold leading-snug">
-              Congratulations, you got 1 loyalty token for free for signing up!
-            </p>
-          </div>
 
           <div className="text-center space-y-2">
             <h1 className="text-2xl text-foreground">ONE LAST STEP</h1>
