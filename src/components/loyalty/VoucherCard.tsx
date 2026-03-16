@@ -80,7 +80,7 @@ const VoucherCard = ({ title, description, expiresAt, redeemed, onRedeem }: Vouc
       {/* Warning text below — only for active vouchers */}
       {!redeemed && onRedeem && (
         <p className="text-foreground text-xs text-center tracking-[-0.02em]">
-          Do not press redeem — the bartender will do that for you. You may lose your voucher.
+          Do not press redeem — the bartender will do that for you. Otherwise, your voucher will disappear.
         </p>
       )}
     </div>
