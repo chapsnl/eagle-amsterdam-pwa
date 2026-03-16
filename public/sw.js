@@ -1,4 +1,4 @@
-const CACHE_NAME = "eagle-v3";
+const CACHE_NAME = "eagle-v4";
 const APP_SHELL = [
   "/",
   "/manifest.json",

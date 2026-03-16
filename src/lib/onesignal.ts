@@ -148,7 +148,6 @@ export async function requestPushPermission(): Promise<boolean> {
       return true;
     } catch {
       return false;
-      return false;
     }
   });
 }
