@@ -33,7 +33,6 @@ const Loyalty = () => {
   const [successOpen, setSuccessOpen] = useState(false);
   const [successMsg, setSuccessMsg] = useState("");
   const [limitOpen, setLimitOpen] = useState(false);
-  const [limitMsg, setLimitMsg] = useState("");
   const [redeemSuccessOpen, setRedeemSuccessOpen] = useState(false);
   const [redeemFading, setRedeemFading] = useState(false);
   const [cameraBlocked, setCameraBlocked] = useState(false);
@@ -127,7 +126,6 @@ const Loyalty = () => {
       const remaining = getRemainingHours();
       if (remaining !== null) {
         setScannerOpen(false);
-        setLimitMsg(`Next stamp available in ${remaining} hour${remaining !== 1 ? "s" : ""}.`);
         setLimitOpen(true);
         return;
       }
@@ -144,7 +142,6 @@ const Loyalty = () => {
     } else {
       setScannerOpen(false);
       setInvalidOpen(true);
-      setTimeout(() => setInvalidOpen(false), 2000);
     }
   }, [getRemainingHours]);
 
@@ -152,12 +149,6 @@ const Loyalty = () => {
 
   const handleScannerOpen = useCallback(async () => {
     if (stamps >= TOTAL_STAMPS) { setRewardOpen(true); return; }
-    const remaining = getRemainingHours();
-    if (remaining !== null) {
-      setLimitMsg(`Next stamp available in ${remaining} hour${remaining !== 1 ? "s" : ""}.`);
-      setLimitOpen(true);
-      return;
-    }
 
     try {
       if (navigator.permissions?.query) {
@@ -169,7 +160,7 @@ const Loyalty = () => {
     setCameraBlocked(false);
     setScannerKey((k) => k + 1);
     setScannerOpen(true);
-  }, [stamps, getRemainingHours]);
+  }, [stamps]);
 
   const handleScannerClose = useCallback(() => setScannerOpen(false), []);
 
@@ -186,7 +177,6 @@ const Loyalty = () => {
   }, []);
 
   const isComplete = stamps >= TOTAL_STAMPS;
-  const remainingHours = getRemainingHours();
 
   return (
     <div className="flex flex-col min-h-screen pb-24">
@@ -209,11 +199,6 @@ const Loyalty = () => {
           </p>
         )}
 
-        {remainingHours !== null && !isComplete && (
-          <p className="text-muted-foreground text-sm text-center mt-4">
-            Next stamp available in <strong className="text-foreground">{remainingHours} hour{remainingHours !== 1 ? "s" : ""}</strong>.
-          </p>
-        )}
 
         <Button variant="eagle" size="lg" className="w-full mt-6 text-base py-4" onClick={handleScannerOpen}>
           <QrCode className="w-5 h-5 mr-2" />
@@ -255,14 +240,14 @@ const Loyalty = () => {
       <WarningDialog
         open={invalidOpen}
         title="Invalid Code"
-        message="This QR code is not recognized."
+        message="This QR code is not valid."
         onClose={() => setInvalidOpen(false)}
       />
 
       <WarningDialog
         open={limitOpen}
         title="Limit Reached"
-        message={limitMsg}
+        message="This code can only be scanned once a week. Try again next week!"
         onClose={() => setLimitOpen(false)}
       />
 
