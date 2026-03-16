@@ -42,8 +42,8 @@ Deno.serve(async (req) => {
 
     const { error } = await supabase.from("member_vouchers").insert({
       user_id: userId,
-      title: "FREE HOT SHOT",
-      description: "Enjoy a complimentary Hot Shot at the bar. Welcome to the club!",
+      title: "FREE COAT CHECK",
+      description: "Enjoy a complimentary coat check on us. Welcome to the club!",
     });
 
     if (error) {
