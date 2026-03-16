@@ -5,15 +5,8 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const normalizeQrValue = (value: string) =>
-  value
-    .trim()
-    .replace(/^['"]+|['"]+$/g, "")
-    .toUpperCase();
-
 const VALID_CODE = Deno.env.get("LOYALTY_QR_CODE") ?? "";
 if (!VALID_CODE) throw new Error("Missing LOYALTY_QR_CODE secret");
-const NORMALIZED_VALID_CODE = normalizeQrValue(VALID_CODE);
 const COOLDOWN_MS = 160 * 60 * 60 * 1000; // 160 hours
 const TOTAL_STAMPS = 9;
 
@@ -53,7 +46,7 @@ Deno.serve(async (req) => {
     const { scannedCode } = await req.json();
 
     // Validate QR code server-side
-    if (!scannedCode || normalizeQrValue(scannedCode) !== NORMALIZED_VALID_CODE) {
+    if (!scannedCode || scannedCode.trim().toUpperCase() !== VALID_CODE) {
       return new Response(
         JSON.stringify({ success: false, error: "invalid_code" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
