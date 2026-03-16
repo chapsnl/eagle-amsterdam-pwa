@@ -43,11 +43,19 @@ const PageLoader = () => (
 );
 
 const App = () => {
+  const [pinUnlocked, setPinUnlocked] = useState(() => {
+    return localStorage.getItem("app_pin_enabled") !== "true";
+  });
+
   useEffect(() => {
     import("@/lib/onesignal")
       .then(({ initOneSignalSilently }) => initOneSignalSilently())
       .catch(() => {/* OneSignal unavailable */});
   }, []);
+
+  if (!pinUnlocked) {
+    return <PinLockScreen onUnlock={() => setPinUnlocked(true)} />;
+  }
 
   return (
     <QueryClientProvider client={queryClient}>
