@@ -12,7 +12,7 @@ const Index = () => {
       {/* Settings gear */}
       <button
         onClick={() => navigate("/settings")}
-        className="fixed top-4 right-4 z-50 w-10 h-10 rounded-full bg-primary flex items-center justify-center shadow-lg hover:bg-primary/90 transition-colors"
+        className="fixed top-[66px] right-4 z-50 w-10 h-10 rounded-full bg-primary flex items-center justify-center shadow-lg hover:bg-primary/90 transition-colors"
         aria-label="Settings"
       >
         <Settings className="w-5 h-5 text-primary-foreground" />
