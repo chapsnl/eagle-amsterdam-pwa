@@ -119,9 +119,9 @@ Deno.serve(async (req) => {
 
     // Calculate VIP status
     let newStatus = "Regular";
-    if (newTotal >= 75) newStatus = "Eagle";
-    else if (newTotal >= 50) newStatus = "Gold";
+    if (newTotal >= 50) newStatus = "Slut";
     else if (newTotal >= 25) newStatus = "Party Boy";
+    else if (newTotal >= 10) newStatus = "Cruiser";
 
     const updates: Record<string, unknown> = { total_stamps_earned: newTotal };
     if (newStatus !== (profile?.vip_status || "Regular")) {
