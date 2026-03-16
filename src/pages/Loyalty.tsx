@@ -33,7 +33,6 @@ const Loyalty = () => {
   const [successOpen, setSuccessOpen] = useState(false);
   const [successMsg, setSuccessMsg] = useState("");
   const [limitOpen, setLimitOpen] = useState(false);
-  const [limitMsg, setLimitMsg] = useState("");
   const [redeemSuccessOpen, setRedeemSuccessOpen] = useState(false);
   const [redeemFading, setRedeemFading] = useState(false);
   const [cameraBlocked, setCameraBlocked] = useState(false);
