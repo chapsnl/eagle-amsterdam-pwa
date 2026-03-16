@@ -133,7 +133,7 @@ const Loyalty = () => {
       localStorage.setItem(LAST_SCAN_KEY, Date.now().toString());
       setStamps((prev) => {
         const newCount = Math.min(prev + 1, TOTAL_STAMPS);
-        setSuccessMsg("Loyalty scan successful! See you next week.");
+        setSuccessMsg("Loyalty scan successful!");
         setSuccessOpen(true);
         return newCount;
       });
