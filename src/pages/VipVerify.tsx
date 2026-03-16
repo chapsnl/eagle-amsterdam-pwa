@@ -79,6 +79,9 @@ const VipVerify = () => {
       sessionStorage.removeItem("vip_otp_email");
       localStorage.removeItem("vip_otp_pending");
 
+      // Send email to OneSignal
+      try { await setOneSignalExternalId(data.email); } catch {}
+
       if (!data.name) navigate("/vip/profile-setup");
       else navigate("/vip");
     } catch (err: any) {
