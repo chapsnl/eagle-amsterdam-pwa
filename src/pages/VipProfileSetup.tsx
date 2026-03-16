@@ -13,28 +13,16 @@ const VipProfileSetup = () => {
   const [error, setError] = useState("");
 
   const handleSave = async () => {
-    if (!name.trim()) {
-      setError("Please enter your name.");
-      return;
-    }
-
+    if (!name.trim()) { setError("Please enter your name."); return; }
     setError("");
     setLoading(true);
 
     try {
       const sessionRaw = localStorage.getItem("vip_session");
-      if (!sessionRaw) {
-        navigate("/vip/login");
-        return;
-      }
-
+      if (!sessionRaw) { navigate("/vip/login"); return; }
       const session = JSON.parse(sessionRaw);
 
-      // Update profile in database
-      await supabase
-        .from("profiles")
-        .update({ name: name.trim() })
-        .eq("id", session.userId);
+      await supabase.from("profiles").update({ name: name.trim() }).eq("id", session.userId);
 
       // Grant 1 free loyalty stamp for signing up
       const { data: existing } = await supabase
@@ -45,22 +33,17 @@ const VipProfileSetup = () => {
 
       if (!existing) {
         await supabase.from("loyalty_stamps").insert({
-          user_id: session.userId,
-          stamps: 1,
-          redeemed: false,
+          user_id: session.userId, stamps: 1, redeemed: false,
         });
       }
 
-      // Update local loyalty storage to reflect the free stamp
-      localStorage.setItem(
-        "eagle-loyalty-stamps",
-        JSON.stringify({ stamps: 1, redeemed: false })
-      );
+      // Update total stamps earned
+      await supabase.from("profiles").update({ total_stamps_earned: 1 }).eq("id", session.userId);
 
-      // Update local session
+      localStorage.setItem("eagle-loyalty-stamps", JSON.stringify({ stamps: 1, redeemed: false }));
+
       session.name = name.trim();
       localStorage.setItem("vip_session", JSON.stringify(session));
-
       navigate("/vip/dashboard");
     } catch (err: any) {
       setError(err.message || "Something went wrong.");
@@ -74,7 +57,7 @@ const VipProfileSetup = () => {
       <div className="flex-1 flex flex-col items-center justify-center px-4">
         <div className="w-full max-w-[90%] mx-auto space-y-6">
           {/* Free stamp banner */}
-          <div className="bg-primary/10 border border-primary rounded-none p-5 text-center space-y-2">
+          <div className="bg-primary/10 border border-primary rounded-xl p-5 text-center space-y-2">
             <Star className="w-10 h-10 text-primary mx-auto" fill="currentColor" />
             <p className="text-foreground text-sm font-bold leading-snug">
               Congratulations, you got 1 loyalty stamp for free for signing up!
@@ -89,22 +72,27 @@ const VipProfileSetup = () => {
           </div>
 
           <div className="space-y-3">
-            <div className="space-y-1.5">
-              <Label htmlFor="name" className="text-foreground text-sm">Name</Label>
+            <div className="relative">
               <Input
                 id="name"
                 type="text"
-                placeholder="Your name"
+                placeholder=" "
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="bg-secondary border-border text-foreground rounded-none h-11"
+                className="bg-secondary border-border text-foreground rounded-xl h-14 pt-5 pb-2 px-4 peer"
                 maxLength={100}
                 autoFocus
               />
+              <Label
+                htmlFor="name"
+                className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground text-sm transition-all duration-200 pointer-events-none peer-focus:top-3 peer-focus:text-xs peer-focus:text-primary peer-[:not(:placeholder-shown)]:top-3 peer-[:not(:placeholder-shown)]:text-xs"
+              >
+                Name
+              </Label>
             </div>
 
             {error && (
-              <div className="bg-destructive/20 border border-destructive text-destructive-foreground text-sm p-3 rounded-none">
+              <div className="bg-destructive/20 border border-destructive text-destructive-foreground text-sm p-3 rounded-xl">
                 {error}
               </div>
             )}
@@ -112,7 +100,7 @@ const VipProfileSetup = () => {
             <Button
               variant="eagle"
               size="lg"
-              className="w-full h-12 text-lg rounded-none"
+              className="w-full h-12 text-lg rounded-xl"
               onClick={handleSave}
               disabled={loading}
             >

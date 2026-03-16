@@ -71,6 +71,7 @@ const App = () => {
                 <Route path="/vip/loyalty" element={<Loyalty />} />
                 <Route path="/vip/member-pass" element={<VipMemberPass />} />
                 <Route path="/vip/profile-setup" element={<VipProfileSetup />} />
+                <Route path="/vip/info" element={<VipInfo />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </Suspense>

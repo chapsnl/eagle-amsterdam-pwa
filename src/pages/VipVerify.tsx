@@ -27,30 +27,17 @@ const VipVerify = () => {
   };
   const { email } = getLoginState();
 
-  useEffect(() => {
-    if (!email) navigate("/vip");
-  }, [email, navigate]);
-
-  useEffect(() => {
-    inputRefs.current[0]?.focus();
-  }, []);
+  useEffect(() => { if (!email) navigate("/vip"); }, [email, navigate]);
+  useEffect(() => { inputRefs.current[0]?.focus(); }, []);
 
   const handleChange = useCallback((index: number, value: string) => {
     const digit = value.replace(/\D/g, "").slice(-1);
-    setDigits((prev) => {
-      const next = [...prev];
-      next[index] = digit;
-      return next;
-    });
-    if (digit && index < CODE_LENGTH - 1) {
-      inputRefs.current[index + 1]?.focus();
-    }
+    setDigits((prev) => { const next = [...prev]; next[index] = digit; return next; });
+    if (digit && index < CODE_LENGTH - 1) inputRefs.current[index + 1]?.focus();
   }, []);
 
   const handleKeyDown = useCallback((index: number, e: React.KeyboardEvent) => {
-    if (e.key === "Backspace" && !digits[index] && index > 0) {
-      inputRefs.current[index - 1]?.focus();
-    }
+    if (e.key === "Backspace" && !digits[index] && index > 0) inputRefs.current[index - 1]?.focus();
   }, [digits]);
 
   const handlePaste = useCallback((e: React.ClipboardEvent) => {
@@ -65,73 +52,34 @@ const VipVerify = () => {
 
   const handleVerify = async () => {
     const code = digits.join("");
-    if (code.length !== CODE_LENGTH) {
-      setError("Please enter the full 4-digit code.");
-      return;
-    }
-
+    if (code.length !== CODE_LENGTH) { setError("Please enter the full 4-digit code."); return; }
     setError("");
     setLoading(true);
 
     try {
-      const { data, error: fnError } = await supabase.functions.invoke("verify-otp", {
-        body: { email, code },
-      });
+      const { data, error: fnError } = await supabase.functions.invoke("verify-otp", { body: { email, code } });
+      if (fnError) { setError("You entered an invalid code, try again!"); setLoading(false); return; }
+      if (!data?.success) { setError(data?.error || "Invalid or expired code."); setLoading(false); return; }
 
-      if (fnError) {
-        setError("You entered an invalid code, try again!");
-        setLoading(false);
-        return;
-      }
-
-      if (!data?.success) {
-        setError(data?.error || "Invalid or expired code.");
-        setLoading(false);
-        return;
-      }
-
-      // Try auth session
       if (data.verification_url) {
-        const { error: authError } = await supabase.auth.verifyOtp({
-          email,
-          token_hash: data.hashed_token,
-          type: "magiclink",
-        });
-
+        const { error: authError } = await supabase.auth.verifyOtp({ email, token_hash: data.hashed_token, type: "magiclink" });
         if (authError) {
           localStorage.setItem("vip_session", JSON.stringify({
-            userId: data.userId,
-            email: data.email,
-            name: data.name || "",
-            member_number: data.member_number || "",
-            verified: true,
-            timestamp: Date.now(),
+            userId: data.userId, email: data.email, name: data.name || "", member_number: data.member_number || "", verified: true, timestamp: Date.now(),
           }));
         }
       } else {
         localStorage.setItem("vip_session", JSON.stringify({
-          userId: data.userId,
-          email: data.email,
-          name: data.name || "",
-          member_number: data.member_number || "",
-          verified: true,
-          timestamp: Date.now(),
+          userId: data.userId, email: data.email, name: data.name || "", member_number: data.member_number || "", verified: true, timestamp: Date.now(),
         }));
       }
 
-      // Migrate loyalty stamps
       await migrateLoyaltyStamps(data.userId, data.email);
-
-      // Cleanup
       sessionStorage.removeItem("vip_otp_email");
       localStorage.removeItem("vip_otp_pending");
 
-      // If user has no name yet, redirect to profile setup
-      if (!data.name) {
-        navigate("/vip/profile-setup");
-      } else {
-        navigate("/vip");
-      }
+      if (!data.name) navigate("/vip/profile-setup");
+      else navigate("/vip");
     } catch (err: any) {
       setError(err.message || "Something went wrong.");
     } finally {
@@ -163,14 +111,14 @@ const VipVerify = () => {
                 value={digit}
                 onChange={(e) => handleChange(i, e.target.value)}
                 onKeyDown={(e) => handleKeyDown(i, e)}
-                className="w-14 h-16 text-center text-3xl font-bold bg-secondary border-2 border-border text-foreground rounded-none focus:border-primary focus:outline-none transition-colors"
+                className="w-14 h-16 text-center text-3xl font-bold bg-secondary border-2 border-border text-foreground rounded-xl focus:border-primary focus:outline-none transition-colors"
                 autoComplete="one-time-code"
               />
             ))}
           </div>
 
           {error && (
-            <div className="bg-destructive/20 border border-destructive text-destructive-foreground text-sm p-3 rounded-none text-center">
+            <div className="bg-destructive/20 border border-destructive text-destructive-foreground text-sm p-3 rounded-xl text-center">
               {error}
             </div>
           )}
@@ -178,7 +126,7 @@ const VipVerify = () => {
           <Button
             variant="eagle"
             size="lg"
-            className="w-full h-14 text-lg rounded-none"
+            className="w-full h-14 text-lg rounded-xl"
             onClick={handleVerify}
             disabled={loading || digits.join("").length !== CODE_LENGTH}
           >
@@ -205,15 +153,11 @@ async function migrateLoyaltyStamps(userId: string, email: string) {
     const lastScan = localStorage.getItem("last_loyalty_scan");
 
     const { data: existing } = await supabase
-      .from("loyalty_stamps")
-      .select("id, stamps")
-      .eq("user_id", userId)
-      .maybeSingle();
+      .from("loyalty_stamps").select("id, stamps").eq("user_id", userId).maybeSingle();
 
     if (existing) {
       if (stamps > existing.stamps) {
-        await supabase
-          .from("loyalty_stamps")
+        await supabase.from("loyalty_stamps")
           .update({ stamps, redeemed, last_scan_at: lastScan ? new Date(parseInt(lastScan)).toISOString() : null })
           .eq("user_id", userId);
       }

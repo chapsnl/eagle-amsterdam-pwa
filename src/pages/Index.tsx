@@ -20,19 +20,9 @@ const Index = () => {
           fetchPriority="high"
           decoding="async"
         />
-        <div
-          className="absolute inset-0"
-          style={{ background: "var(--gradient-hero)" }}
-        />
+        <div className="absolute inset-0" style={{ background: "var(--gradient-hero)" }} />
         <div className="absolute bottom-0 left-0 right-0 p-6 flex flex-col items-center text-center gap-4 animate-fade-in">
-          <img
-            src={eagleLogo}
-            alt="Eagle Amsterdam logo"
-            className="w-64 object-contain"
-            width={192}
-            height={96}
-            fetchPriority="high"
-          />
+          <img src={eagleLogo} alt="Eagle Amsterdam logo" className="w-64 object-contain" width={192} height={96} fetchPriority="high" />
           <p className="text-muted-foreground text-sm max-w-xs">
             Eagle Amsterdam is originally a men-only club and during regular hours that core identity remains. At the same time, we serve the wider LGBTQI+ community with a diverse program of inclusive fetish events.
           </p>
@@ -43,23 +33,13 @@ const Index = () => {
         </div>
       </div>
 
-      {/* Quick Actions */}
-      <div className="p-6 pb-24 flex flex-col gap-4 max-w-lg mx-auto w-full">
-        <Button
-          variant="eagle"
-          size="lg"
-          className="w-full"
-          onClick={() => navigate("/agenda")}
-        >
+      {/* Quick Actions — no bottom margin */}
+      <div className="p-6 pb-0 flex flex-col gap-4 max-w-lg mx-auto w-full">
+        <Button variant="eagle" size="lg" className="w-full" onClick={() => navigate("/agenda")}>
           <Calendar className="w-5 h-5 mr-2" />
           UPCOMING EVENTS
         </Button>
-        <Button
-          variant="eagle-outline"
-          size="lg"
-          className="w-full"
-          onClick={() => navigate("/contact")}
-        >
+        <Button variant="eagle-outline" size="lg" className="w-full" onClick={() => navigate("/contact")}>
           <MapPin className="w-5 h-5 mr-2" />
           FIND US
         </Button>
