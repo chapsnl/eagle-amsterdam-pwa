@@ -24,24 +24,10 @@ const VipProfileSetup = () => {
 
       await supabase.from("profiles").update({ name: name.trim() }).eq("id", session.userId);
 
-      // Grant 1 free loyalty stamp for signing up
-      const { data: existing } = await supabase
-        .from("loyalty_stamps")
-        .select("id")
-        .eq("user_id", session.userId)
-        .maybeSingle();
-
-      if (!existing) {
-        await supabase.from("loyalty_stamps").insert({
-          user_id: session.userId, stamps: 1, redeemed: false,
-        });
-      }
-
-      // Update total stamps earned
-      await supabase.from("profiles").update({ total_stamps_earned: 1 }).eq("id", session.userId);
-
-      localStorage.setItem("eagle-loyalty-stamps", JSON.stringify({ stamps: 1, redeemed: false }));
-      localStorage.setItem("eagle-lifetime-stamps", "1");
+      // Grant a free welcome voucher
+      await supabase.functions.invoke("grant-welcome-voucher", {
+        body: { userId: session.userId },
+      });
 
       session.name = name.trim();
       localStorage.setItem("vip_session", JSON.stringify(session));
