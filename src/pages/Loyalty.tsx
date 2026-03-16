@@ -218,10 +218,6 @@ const Loyalty = () => {
       <div className="px-4 max-w-[90%] mx-auto w-full">
         <StampCard stamps={stamps} onRewardOpen={() => setRewardOpen(true)} />
 
-        <div className="mt-6 rounded-xl bg-card border border-border p-4 text-center">
-          <p className="text-muted-foreground text-xs uppercase tracking-widest mb-1">Your total number of stamps collected</p>
-          <p className="text-3xl font-bold text-primary">{totalStampsEarned}</p>
-        </div>
 
 
         <Button variant="eagle" size="lg" className="w-full mt-6 text-base py-4" onClick={handleScannerOpen}>
@@ -231,6 +227,11 @@ const Loyalty = () => {
         <p className="text-muted-foreground text-xs text-center mt-3 tracking-[-0.02em] leading-snug italic">
           *Not valid for events by Ready2Kink, Horse Fair or other external event organizers.
         </p>
+
+        <div className="mt-6 rounded-xl bg-card border border-border p-4 text-center">
+          <p className="text-muted-foreground text-xs uppercase tracking-widest mb-1">Your total number of stamps collected</p>
+          <p className="text-3xl font-bold text-primary">{totalStampsEarned}</p>
+        </div>
       </div>
 
       <ScannerDialog
