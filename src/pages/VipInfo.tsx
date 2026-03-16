@@ -137,7 +137,6 @@ const VipInfo = () => {
           </div>
         </div>
       </div>
-      </div>
     </div>
   );
 };
