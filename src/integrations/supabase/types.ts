@@ -41,6 +41,39 @@ export type Database = {
         }
         Relationships: []
       }
+      member_vouchers: {
+        Row: {
+          created_at: string
+          description: string | null
+          expires_at: string | null
+          id: string
+          redeemed: boolean
+          redeemed_at: string | null
+          title: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          expires_at?: string | null
+          id?: string
+          redeemed?: boolean
+          redeemed_at?: string | null
+          title: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          expires_at?: string | null
+          id?: string
+          redeemed?: boolean
+          redeemed_at?: string | null
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       otp_codes: {
         Row: {
           code: string
