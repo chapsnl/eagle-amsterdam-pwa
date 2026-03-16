@@ -53,7 +53,7 @@ Deno.serve(async (req) => {
     const { scannedCode } = await req.json();
 
     // Validate QR code server-side
-    if (!scannedCode || scannedCode.trim().toUpperCase() !== VALID_CODE) {
+    if (!scannedCode || normalizeQrValue(scannedCode) !== NORMALIZED_VALID_CODE) {
       return new Response(
         JSON.stringify({ success: false, error: "invalid_code" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
