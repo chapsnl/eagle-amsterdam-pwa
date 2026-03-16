@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Info, Star, Gift, Ticket, Crown, ShieldCheck } from "lucide-react";
+import { Info, Star, Gift, Crown, ShieldCheck } from "lucide-react";
 
 const VIP_INFO_SEEN_KEY = "eagle_vip_info_seen";
 
@@ -61,22 +61,8 @@ const VipInfo = () => {
             <h2 className="text-foreground text-base font-bold">Member Deals</h2>
           </div>
           <p className="text-muted-foreground text-sm leading-relaxed">
-            This section explains the buttons and sections found on the main Member Page. Vouchers for app users include:
+            Unlock Member Deals: Get automatic vouchers for free cloakroom, drinks, or event entry. Rewards are added every time your status levels up. Plus, we drop surprise vouchers for everyone! Check your Member Deals regularly so you don't miss out!
           </p>
-          <ul className="text-muted-foreground text-sm space-y-2 pl-1">
-            <li className="flex items-start gap-2">
-              <Ticket className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-              <span>Free access to selected events</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <Ticket className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-              <span>A welcome drink on your first visit</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <Ticket className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-              <span>A free wardrobe item</span>
-            </li>
-          </ul>
         </div>
 
         {/* Fast-Track & Priority Entry (combined) */}
@@ -145,7 +131,7 @@ const VipInfo = () => {
             </div>
 
             {/* Party Boy */}
-            <div className="flex flex-col rounded-lg px-4 py-3" style={{ backgroundColor: "#1a5c2a" }}>
+            <div className="flex flex-col rounded-lg px-4 py-3" style={{ backgroundColor: "#1a3a6b" }}>
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-white text-sm font-bold">Party Boy</p>
@@ -156,13 +142,13 @@ const VipInfo = () => {
               <div className="mt-2 flex items-start gap-2">
                 <ShieldCheck className="w-4 h-4 text-white/80 mt-0.5 shrink-0" />
                 <p className="text-white/80 text-xs leading-relaxed">
-                  Grants Fast-Track access. Your Member Pass turns <strong className="text-white">Green</strong>.
+                  Grants Fast-Track access. Your Member Pass turns <strong className="text-white">Blue</strong>.
                 </p>
               </div>
             </div>
 
             {/* Slut */}
-            <div className="flex flex-col rounded-lg px-4 py-3" style={{ backgroundColor: "#ff10f0" }}>
+            <div className="flex flex-col rounded-lg px-4 py-3" style={{ backgroundColor: "#333333", border: "3px solid #b43227" }}>
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-white text-sm font-bold">Slut</p>
@@ -173,7 +159,7 @@ const VipInfo = () => {
               <div className="mt-2 flex items-start gap-2">
                 <ShieldCheck className="w-4 h-4 text-white/80 mt-0.5 shrink-0" />
                 <p className="text-white/80 text-xs leading-relaxed">
-                  Your Member Pass turns <strong className="text-white">Neon Pink</strong>. Benefits: Free access during All Prides and Kings Night, Free Coat Check at all times, and permanent Priority/Fast-Track access.
+                  Your Member Pass turns <strong className="text-white">Dark Grey with a Red border</strong>. Benefits: Free access during All Prides and Kings Night, Free Coat Check at all times, and permanent Priority/Fast-Track access.
                 </p>
               </div>
             </div>
