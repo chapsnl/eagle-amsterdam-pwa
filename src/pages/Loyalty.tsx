@@ -37,7 +37,7 @@ const Loyalty = () => {
   const [redeemFading, setRedeemFading] = useState(false);
   const [cameraBlocked, setCameraBlocked] = useState(false);
   const [invalidOpen, setInvalidOpen] = useState(false);
-  const [totalStampsEarned, setTotalStampsEarned] = useState<number | null>(null);
+  const [totalStampsEarned, setTotalStampsEarned] = useState<number>(0);
 
   useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
@@ -59,7 +59,7 @@ const Loyalty = () => {
           .select("total_stamps_earned")
           .eq("id", session.userId)
           .maybeSingle();
-        if (data) setTotalStampsEarned(data.total_stamps_earned || 0);
+        if (data) setTotalStampsEarned(data.total_stamps_earned ?? 0);
       } catch {}
     };
     loadTotalStamps();
@@ -193,12 +193,10 @@ const Loyalty = () => {
       <div className="px-4 max-w-[90%] mx-auto w-full">
         <StampCard stamps={stamps} onRewardOpen={() => setRewardOpen(true)} />
 
-        {totalStampsEarned !== null && (
-          <div className="mt-6 rounded-xl bg-card border border-border p-4 text-center">
-            <p className="text-muted-foreground text-xs uppercase tracking-widest mb-1">Your total number of stamps collected</p>
-            <p className="text-3xl font-bold text-primary">{totalStampsEarned}</p>
-          </div>
-        )}
+        <div className="mt-6 rounded-xl bg-card border border-border p-4 text-center">
+          <p className="text-muted-foreground text-xs uppercase tracking-widest mb-1">Your total number of stamps collected</p>
+          <p className="text-3xl font-bold text-primary">{totalStampsEarned}</p>
+        </div>
 
 
         <Button variant="eagle" size="lg" className="w-full mt-6 text-base py-4" onClick={handleScannerOpen}>
