@@ -169,7 +169,7 @@ const Contact = () => {
       <div className="border border-border rounded-lg p-6 bg-card neon-border mb-4">
         <h2 className="font-display text-2xl tracking-wider text-foreground mb-2 flex items-center gap-2">
           <MessageCircle className="w-5 h-5 text-primary" />
-          JOIN OUR GROUP CHATS
+          OUR GROUP CHATS
         </h2>
         <p className="text-muted-foreground text-sm mb-4">
           Stay connected with the Eagle Amsterdam community.
