@@ -91,6 +91,10 @@ export default {
           "0%, 100%": { boxShadow: "0 0 20px hsl(5 64% 43% / 0.3)" },
           "50%": { boxShadow: "0 0 40px hsl(5 64% 43% / 0.6)" },
         },
+        "scale-in": {
+          from: { opacity: "0", transform: "scale(0.9)" },
+          to: { opacity: "1", transform: "scale(1)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
