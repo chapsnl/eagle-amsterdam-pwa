@@ -32,6 +32,13 @@ const VipMemberPass = () => {
         const parsed = JSON.parse(stored);
         setSession(parsed);
         if (parsed.member_number) setMemberNumber(parsed.member_number);
+        // Use session created_at as initial fallback
+        if (parsed.created_at) {
+          const d = new Date(parsed.created_at);
+          setMemberSince(
+            `${String(d.getDate()).padStart(2, "0")}-${String(d.getMonth() + 1).padStart(2, "0")}-${d.getFullYear()}`
+          );
+        }
         loadProfile(parsed.userId);
       } catch {
         navigate("/vip/login");
