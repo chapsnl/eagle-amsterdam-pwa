@@ -48,7 +48,7 @@ const VipInfo = () => {
           {showBonus && (
             <div className="bg-primary/10 border border-primary rounded-lg p-4">
               <p className="text-foreground text-sm font-bold leading-snug">
-                Since you've joined, you've received 1 stamp as a gift! Scan your second stamp during an event — only 7 more to go!
+                Since you've joined, you've received 1 token as a gift! Scan your second token during an event — only 7 more to go!
               </p>
             </div>
           )}
