@@ -65,15 +65,12 @@ const VipMemberDeals = () => {
       return;
     }
 
-    setVouchers((prev) =>
-      prev.map((v) =>
-        v.id === voucher.id ? { ...v, redeemed: true, redeemed_at: new Date().toISOString() } : v
-      )
-    );
+    // Remove redeemed voucher from the list immediately
+    setVouchers((prev) => prev.filter((v) => v.id !== voucher.id));
   };
 
+  // Only show unredeemed vouchers
   const activeVouchers = vouchers.filter((v) => !v.redeemed);
-  const redeemedVouchers = vouchers.filter((v) => v.redeemed);
 
   return (
     <div className="flex flex-col min-h-screen pb-24">
