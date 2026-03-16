@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
+import { setOneSignalExternalId } from "@/lib/onesignal";
 
 const CODE_LENGTH = 4;
 
