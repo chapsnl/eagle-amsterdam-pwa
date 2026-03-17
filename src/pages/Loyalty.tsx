@@ -107,55 +107,44 @@ const Loyalty = () => {
     if (stamps >= TOTAL_STAMPS && !redeemed) setRewardOpen(true);
   }, [stamps, redeemed]);
 
-  const getRemainingHours = useCallback((): number | null => {
-    const lastScan = localStorage.getItem(LAST_SCAN_KEY);
-    if (!lastScan) return null;
-    const elapsed = Date.now() - parseInt(lastScan, 10);
-    if (elapsed >= COOLDOWN_MS) return null;
-    return Math.ceil((COOLDOWN_MS - elapsed) / (60 * 60 * 1000));
-  }, []);
-
-  const [levelUpMsg, setLevelUpMsg] = useState<string | null>(null);
-  const [levelUpFading, setLevelUpFading] = useState(false);
-
-  const incrementTotalStamps = async () => {
-    const optimisticTotal = totalStampsEarned + 1;
-    setTotalStampsEarned(optimisticTotal);
-    localStorage.setItem(LIFETIME_STAMPS_KEY, String(optimisticTotal));
-
+  const handleScanResult = useCallback(async (decodedText: string) => {
     try {
       const sessionRaw = localStorage.getItem("vip_session");
-      if (!sessionRaw) return;
-
-      const session = JSON.parse(sessionRaw);
-      const { data } = await supabase.functions.invoke("get-profile", {
-        body: { userId: session.userId },
-      });
-
-      const currentTotal = data?.success && data.profile
-        ? data.profile.total_stamps_earned ?? 0
-        : optimisticTotal - 1;
-      const oldStatus = data?.success && data.profile
-        ? data.profile.vip_status || "Regular"
-        : calculateVipStatus(currentTotal);
-      const newTotal = currentTotal + 1;
-      const newStatus = calculateVipStatus(newTotal);
-      const updates: Record<string, unknown> = { total_stamps_earned: newTotal };
-
-      if (newStatus !== oldStatus) {
-        updates.vip_status = newStatus;
+      if (!sessionRaw) {
+        setScannerOpen(false);
+        setInvalidOpen(true);
+        return;
       }
 
-      await supabase
-        .from("profiles")
-        .update(updates)
-        .eq("id", session.userId);
+      const session = JSON.parse(sessionRaw);
+      const { data } = await supabase.functions.invoke("scan-loyalty-stamp", {
+        body: { userId: session.userId, code: decodedText.trim() },
+      });
 
-      setTotalStampsEarned(newTotal);
-      localStorage.setItem(LIFETIME_STAMPS_KEY, String(newTotal));
+      setScannerOpen(false);
 
-      if (newStatus !== oldStatus) {
-        setLevelUpMsg(`🎉 You've reached ${newStatus} status!`);
+      if (!data?.success) {
+        if (data?.error === "invalid_code") {
+          setInvalidOpen(true);
+        } else if (data?.error === "cooldown") {
+          setLimitOpen(true);
+        } else if (data?.error === "card_full") {
+          setRewardOpen(true);
+        }
+        return;
+      }
+
+      // Update local state from server response
+      setStamps(data.stamps);
+      setTotalStampsEarned(data.totalStampsEarned);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ stamps: data.stamps, redeemed: false }));
+      localStorage.setItem(LIFETIME_STAMPS_KEY, String(data.totalStampsEarned));
+
+      setSuccessMsg("Loyalty scan successful!");
+      setSuccessOpen(true);
+
+      if (data.levelUp) {
+        setLevelUpMsg(`🎉 You've reached ${data.levelUp} status!`);
         setLevelUpFading(false);
         setTimeout(() => {
           setLevelUpFading(true);
@@ -163,33 +152,10 @@ const Loyalty = () => {
         }, 3000);
       }
     } catch {
-      // Silently fail
-    }
-  };
-
-  const handleScanResult = useCallback((decodedText: string) => {
-    if (decodedText.trim().toUpperCase() === VALID_CODE) {
-      const remaining = getRemainingHours();
-      if (remaining !== null) {
-        setScannerOpen(false);
-        setLimitOpen(true);
-        return;
-      }
-
-      localStorage.setItem(LAST_SCAN_KEY, Date.now().toString());
-      setStamps((prev) => {
-        const newCount = Math.min(prev + 1, TOTAL_STAMPS);
-        setSuccessMsg("Loyalty scan successful!");
-        setSuccessOpen(true);
-        return newCount;
-      });
-      setScannerOpen(false);
-      incrementTotalStamps();
-    } else {
       setScannerOpen(false);
       setInvalidOpen(true);
     }
-  }, [getRemainingHours]);
+  }, []);
 
   const handlePermissionDenied = useCallback(() => setCameraBlocked(true), []);
 
