@@ -107,6 +107,9 @@ const Loyalty = () => {
     if (stamps >= TOTAL_STAMPS && !redeemed) setRewardOpen(true);
   }, [stamps, redeemed]);
 
+  const [levelUpMsg, setLevelUpMsg] = useState<string | null>(null);
+  const [levelUpFading, setLevelUpFading] = useState(false);
+
   const handleScanResult = useCallback(async (decodedText: string) => {
     try {
       const sessionRaw = localStorage.getItem("vip_session");
