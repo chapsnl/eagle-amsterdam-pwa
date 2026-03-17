@@ -77,6 +77,28 @@ Deno.serve(async (req) => {
         name: otpRecord.name,
         email: email.toLowerCase(),
       }, { onConflict: "id" });
+
+      // Subscribe new member to Sender.net mailing list
+      try {
+        const SENDER_API_TOKEN = Deno.env.get("SENDER_API_TOKEN");
+        const SENDER_GROUP_ID = Deno.env.get("SENDER_GROUP_ID");
+        if (SENDER_API_TOKEN && SENDER_GROUP_ID) {
+          await fetch("https://api.sender.net/v2/subscribers", {
+            method: "POST",
+            headers: {
+              "Authorization": `Bearer ${SENDER_API_TOKEN}`,
+              "Content-Type": "application/json",
+              "Accept": "application/json",
+            },
+            body: JSON.stringify({
+              email: email.toLowerCase(),
+              groups: [SENDER_GROUP_ID],
+            }),
+          });
+        }
+      } catch (e) {
+        console.error("Sender.net subscription failed (non-blocking):", e);
+      }
     }
 
     const { data: signInData } = await supabase.auth.admin.generateLink({
