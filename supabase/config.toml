@@ -23,3 +23,6 @@ verify_jwt = false
 
 [functions.get-profile]
 verify_jwt = false
+
+[functions.scan-loyalty-stamp]
+verify_jwt = false
