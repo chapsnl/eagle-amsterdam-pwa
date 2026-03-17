@@ -257,8 +257,8 @@ const Loyalty = () => {
 
       <WarningDialog
         open={limitOpen}
-        title="Limit Reached"
-        message="This code can only be scanned once a week. Try again next week!"
+        title="Already Scanned"
+        message="Already scanned, see you next time at the party."
         onClose={() => setLimitOpen(false)}
       />
 
