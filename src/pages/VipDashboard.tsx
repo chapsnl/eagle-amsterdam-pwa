@@ -58,13 +58,12 @@ const VipDashboard = () => {
 
   const loadVoucherStatus = async (userId: string) => {
     try {
-      const { data } = await supabase
-        .from("member_vouchers")
-        .select("id")
-        .eq("user_id", userId)
-        .eq("redeemed", false)
-        .limit(1);
-      setHasActiveVouchers(!!data && data.length > 0);
+      const { data, error } = await supabase.functions.invoke("get-member-vouchers", {
+        body: { userId },
+      });
+      if (!error && data?.success) {
+        setHasActiveVouchers((data.vouchers || []).length > 0);
+      }
     } catch {
       // silently fail
     }
