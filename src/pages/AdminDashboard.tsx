@@ -320,10 +320,13 @@ const AdminDashboard = () => {
                             {member.vip_status}
                           </span>
                           <span className="text-muted-foreground text-[10px]">
-                            · {member.total_stamps_earned} tokens
+                             · {member.total_stamps_earned} tokens
+                          </span>
+                          <span className="text-muted-foreground text-[10px]">
+                            · {member.active_vouchers} voucher{member.active_vouchers !== 1 ? "s" : ""}
                           </span>
                           {member.member_number && (
-                            <span className="text-muted-foreground text-[10px]">
+                             <span className="text-muted-foreground text-[10px]">
                               · #{member.member_number}
                             </span>
                           )}
