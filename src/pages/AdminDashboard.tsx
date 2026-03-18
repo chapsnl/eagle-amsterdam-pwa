@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Crown, Users, QrCode, Gift, RefreshCw, Check, Send, ChevronDown, ChevronUp, LogOut } from "lucide-react";
+import { Crown, Users, QrCode, Gift, RefreshCw, Check, Send, ChevronDown, ChevronUp, LogOut, ScanLine } from "lucide-react";
 import MemberScannerSection from "@/components/admin/MemberScannerSection";
 import { supabase } from "@/integrations/supabase/client";
 import { QRCodeSVG } from "qrcode.react";
@@ -48,6 +48,7 @@ const AdminDashboard = () => {
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [qrSectionOpen, setQrSectionOpen] = useState(false);
+  const [scannedMember, setScannedMember] = useState<Member | null>(null);
   const activityTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const logout = useCallback(() => {
@@ -198,7 +199,7 @@ const AdminDashboard = () => {
   const handleMemberScanned = useCallback((memberNumber: string) => {
     const found = members.find((m) => m.member_number === memberNumber);
     if (found) {
-      setSearchQuery(memberNumber);
+      setScannedMember(found);
       setExpandedMember(found.id);
       showSuccess(`Found: ${found.name || found.email}`);
     } else {
@@ -315,6 +316,25 @@ const AdminDashboard = () => {
           <LogOut className="w-4 h-4" />
           ADMIN LOGOUT
         </button>
+
+        {/* ═══ SCANNED MEMBER ═══ */}
+        {scannedMember && (
+          <section className="space-y-2">
+            <div className="flex items-center justify-between">
+              <h2 className="text-foreground font-bold text-sm flex items-center gap-2">
+                <ScanLine className="w-4 h-4 text-primary" />
+                Scanned Member
+              </h2>
+              <button
+                onClick={() => { setScannedMember(null); setExpandedMember(null); }}
+                className="text-muted-foreground hover:text-foreground text-xs font-semibold transition-colors"
+              >
+                Dismiss
+              </button>
+            </div>
+            {renderMemberRow(scannedMember)}
+          </section>
+        )}
 
         {/* Success toast */}
         {successMsg && (
