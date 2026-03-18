@@ -42,7 +42,8 @@ const AdminDashboard = () => {
 
   const logout = useCallback(() => {
     localStorage.removeItem("admin_session");
-    navigate("/eagle-admin-dashboard", { replace: true });
+    const isAdminHost = window.location.hostname === "admin.eagleamsterdam.com";
+    navigate(isAdminHost ? "/" : "/eagle-admin-dashboard", { replace: true });
   }, [navigate]);
 
   // Activity tracking — reset timer on interaction
