@@ -12,6 +12,7 @@ interface Member {
   email: string;
   vip_status: string;
   total_stamps_earned: number;
+  active_vouchers: number;
   member_number: string | null;
   created_at: string;
 }
