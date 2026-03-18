@@ -26,6 +26,7 @@ const VipProfileSetup = lazy(() => import("./pages/VipProfileSetup"));
 const VipInfo = lazy(() => import("./pages/VipInfo"));
 const VipMemberDeals = lazy(() => import("./pages/VipMemberDeals"));
 const Settings = lazy(() => import("./pages/Settings"));
+const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient({
@@ -83,6 +84,7 @@ const App = () => {
                 <Route path="/vip/profile-setup" element={<VipProfileSetup />} />
                 <Route path="/vip/info" element={<VipInfo />} />
                 <Route path="/vip/member-deals" element={<VipMemberDeals />} />
+                <Route path="/eagle-admin-dashboard" element={<AdminDashboard />} />
                 <Route path="/settings" element={<Settings />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>

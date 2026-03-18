@@ -14,6 +14,27 @@ export type Database = {
   }
   public: {
     Tables: {
+      active_loyalty_code: {
+        Row: {
+          code: string
+          created_at: string
+          created_by: string
+          id: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          created_by: string
+          id?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          created_by?: string
+          id?: string
+        }
+        Relationships: []
+      }
       loyalty_stamps: {
         Row: {
           created_at: string
@@ -146,6 +167,7 @@ export type Database = {
     }
     Functions: {
       generate_member_number: { Args: never; Returns: string }
+      is_admin: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
       [_ in never]: never

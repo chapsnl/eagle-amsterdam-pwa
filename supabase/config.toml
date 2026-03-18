@@ -26,3 +26,27 @@ verify_jwt = false
 
 [functions.scan-loyalty-stamp]
 verify_jwt = false
+
+[functions.admin-dispatch-voucher]
+verify_jwt = false
+
+[functions.admin-update-loyalty-code]
+verify_jwt = false
+
+[functions.admin-get-members]
+verify_jwt = false
+
+[functions.get-member-vouchers]
+verify_jwt = false
+
+[functions.grant-welcome-voucher]
+verify_jwt = false
+
+[functions.get-profile]
+verify_jwt = false
+
+[functions.redeem-voucher]
+verify_jwt = false
+
+[functions.upload-profile-image]
+verify_jwt = false
