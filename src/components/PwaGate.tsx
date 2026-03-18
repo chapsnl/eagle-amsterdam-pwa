@@ -159,15 +159,16 @@ const PwaGate = ({ children }: { children: React.ReactNode }) => {
 
   const isBypassRoute = BYPASS_PATHS.some((p) => location.pathname.startsWith(p));
 
-  // Bypass PWA gate for admin routes
-  if (isBypassRoute) return <>{children}</>;
-
   const t = useMemo(() => {
     const lang = navigator.language || "en";
     return getTranslations(lang);
   }, []);
 
   useEffect(() => {
+    if (isBypassRoute) {
+      setAllowed(true);
+      return;
+    }
     if (isStandalone()) {
       setAllowed(true);
       return;
@@ -187,7 +188,7 @@ const PwaGate = ({ children }: { children: React.ReactNode }) => {
       setPlatform("android");
     }
     setAllowed(false);
-  }, []);
+  }, [isBypassRoute]);
 
   // Still detecting
   if (allowed === null) {
