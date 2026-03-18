@@ -261,6 +261,12 @@ const AdminDashboard = () => {
                   · #{member.member_number}
                 </span>
               )}
+              {member.last_active_at && (
+                <span className="text-muted-foreground text-[10px]">
+                  · {new Date(member.last_active_at).toLocaleDateString("en-GB", { day: "2-digit", month: "short" })}{" "}
+                  {new Date(member.last_active_at).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "Europe/Amsterdam" })}
+                </span>
+              )}
             </div>
           </div>
           {isExpanded ? (
