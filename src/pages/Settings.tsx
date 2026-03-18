@@ -92,7 +92,7 @@ const Settings = () => {
 
   const savePin = () => {
     const code = pinDigits.join("");
-    if (code.length !== 4) return;
+    if (code.length !== 6) return;
     localStorage.setItem("app_pin_code", code);
     localStorage.setItem("app_pin_enabled", "true");
     setPinEnabled(true);
