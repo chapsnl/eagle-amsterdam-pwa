@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import { useLocation } from "react-router-dom";
 import { Share, MoreVertical, Monitor } from "lucide-react";
 import eagleLogo from "@/assets/eagle-logo-white.webp";
 
@@ -149,9 +150,17 @@ function getTranslations(lang: string): Translations {
   };
 }
 
+const BYPASS_PATHS = ["/eagle-admin-dashboard"];
+
 const PwaGate = ({ children }: { children: React.ReactNode }) => {
+  const location = useLocation();
   const [allowed, setAllowed] = useState<boolean | null>(null);
   const [platform, setPlatform] = useState<Platform>("desktop");
+
+  // Use both React Router location and window.location for reliability
+  const isBypassRoute = BYPASS_PATHS.some((p) =>
+    location.pathname.startsWith(p) || window.location.pathname.startsWith(p)
+  );
 
   const t = useMemo(() => {
     const lang = navigator.language || "en";
@@ -159,6 +168,10 @@ const PwaGate = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   useEffect(() => {
+    if (isBypassRoute) {
+      setAllowed(true);
+      return;
+    }
     if (isStandalone()) {
       setAllowed(true);
       return;
@@ -178,7 +191,10 @@ const PwaGate = ({ children }: { children: React.ReactNode }) => {
       setPlatform("android");
     }
     setAllowed(false);
-  }, []);
+  }, [isBypassRoute]);
+
+  // Bypass for admin routes - immediate, no waiting
+  if (isBypassRoute) return <>{children}</>;
 
   // Still detecting
   if (allowed === null) {
