@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Crown, Users, QrCode, Gift, RefreshCw, Check, Send, ChevronDown, ChevronUp } from "lucide-react";
+import { Crown, Users, QrCode, Gift, RefreshCw, Check, Send, ChevronDown, ChevronUp, LogOut } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { QRCodeSVG } from "qrcode.react";
 import { Input } from "@/components/ui/input";
@@ -22,8 +22,7 @@ const VOUCHER_PRESETS = [
   { title: "FREE DRINK", description: "One free drink at the bar.", label: "🍺 Free Drink" },
 ];
 
-const ADMIN_EMAIL = "michael.roks@icloud.com";
-const ADMIN_REDIRECT = "/eagle-admin-dashboard";
+const SESSION_TIMEOUT = 60 * 60 * 1000; // 1 hour
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -39,26 +38,69 @@ const AdminDashboard = () => {
   const [warning, setWarning] = useState({ open: false, title: "", message: "" });
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const activityTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const logout = useCallback(() => {
+    localStorage.removeItem("admin_session");
+    navigate("/eagle-admin-dashboard", { replace: true });
+  }, [navigate]);
+
+  // Activity tracking — reset timer on interaction
+  const resetActivityTimer = useCallback(() => {
+    const stored = localStorage.getItem("admin_session");
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored);
+        parsed.lastActivity = Date.now();
+        localStorage.setItem("admin_session", JSON.stringify(parsed));
+      } catch {}
+    }
+
+    if (activityTimer.current) clearTimeout(activityTimer.current);
+    activityTimer.current = setTimeout(() => {
+      logout();
+    }, SESSION_TIMEOUT);
+  }, [logout]);
 
   useEffect(() => {
-    const stored = localStorage.getItem("vip_session");
+    const stored = localStorage.getItem("admin_session");
     if (!stored) {
-      navigate(`/vip/login?redirect=${encodeURIComponent(ADMIN_REDIRECT)}`, { replace: true });
+      navigate("/eagle-admin-dashboard", { replace: true });
       return;
     }
 
     try {
       const parsed = JSON.parse(stored);
-      if (parsed.email !== ADMIN_EMAIL || !parsed.userId) {
-        navigate("/", { replace: true });
+      if (!parsed.authenticated || !parsed.userId) {
+        navigate("/eagle-admin-dashboard", { replace: true });
         return;
       }
+
+      // Check session timeout
+      const lastActivity = parsed.lastActivity || parsed.timestamp || 0;
+      if (Date.now() - lastActivity > SESSION_TIMEOUT) {
+        localStorage.removeItem("admin_session");
+        navigate("/eagle-admin-dashboard", { replace: true });
+        return;
+      }
+
       setAdminUserId(parsed.userId);
       loadData(parsed.userId);
+      resetActivityTimer();
     } catch {
-      navigate(`/vip/login?redirect=${encodeURIComponent(ADMIN_REDIRECT)}`, { replace: true });
+      navigate("/eagle-admin-dashboard", { replace: true });
     }
-  }, [navigate]);
+
+    // Listen for user activity
+    const events = ["mousedown", "keydown", "touchstart", "scroll"];
+    const handler = () => resetActivityTimer();
+    events.forEach((e) => window.addEventListener(e, handler));
+
+    return () => {
+      events.forEach((e) => window.removeEventListener(e, handler));
+      if (activityTimer.current) clearTimeout(activityTimer.current);
+    };
+  }, [navigate, resetActivityTimer]);
 
   const loadData = useCallback(async (uid: string) => {
     setLoading(true);
@@ -153,7 +195,7 @@ const AdminDashboard = () => {
   if (!adminUserId) return null;
 
   return (
-    <div className="flex flex-col min-h-screen pb-24 bg-background">
+    <div className="flex flex-col min-h-screen pb-8 bg-background">
       <div className="pt-8 px-4 max-w-2xl mx-auto w-full space-y-8">
         {/* Header */}
         <div className="text-center space-y-2">
@@ -161,6 +203,15 @@ const AdminDashboard = () => {
           <h1 className="text-2xl text-foreground font-extrabold tracking-tight">ADMIN DASHBOARD</h1>
           <p className="text-muted-foreground text-xs">Manage members, vouchers & loyalty codes</p>
         </div>
+
+        {/* Admin Logout */}
+        <button
+          onClick={logout}
+          className="w-full flex items-center justify-center gap-2 bg-destructive/20 hover:bg-destructive/30 text-destructive border border-destructive/30 rounded-xl py-3 font-bold text-sm transition-colors"
+        >
+          <LogOut className="w-4 h-4" />
+          ADMIN LOGOUT
+        </button>
 
         {/* Success toast */}
         {successMsg && (
@@ -178,7 +229,6 @@ const AdminDashboard = () => {
           </h2>
 
           <div className="bg-card rounded-xl p-4 space-y-4 border border-border">
-            {/* Current active code */}
             {activeCode && (
               <div className="space-y-3">
                 <p className="text-muted-foreground text-xs">Current active code:</p>
@@ -198,7 +248,6 @@ const AdminDashboard = () => {
               </div>
             )}
 
-            {/* New code input */}
             <div className="space-y-2">
               <p className="text-muted-foreground text-xs">Set new loyalty code:</p>
               <div className="flex gap-2">
@@ -214,11 +263,7 @@ const AdminDashboard = () => {
                   disabled={savingCode || !newCode.trim()}
                   className="bg-primary text-primary-foreground px-4 py-2 rounded-lg font-bold text-sm disabled:opacity-40 transition-all"
                 >
-                  {savingCode ? (
-                    <RefreshCw className="w-4 h-4 animate-spin" />
-                  ) : (
-                    "Save"
-                  )}
+                  {savingCode ? <RefreshCw className="w-4 h-4 animate-spin" /> : "Save"}
                 </button>
               </div>
               <p className="text-muted-foreground text-[10px]">
@@ -243,7 +288,6 @@ const AdminDashboard = () => {
             </button>
           </div>
 
-          {/* Search */}
           <Input
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -261,7 +305,6 @@ const AdminDashboard = () => {
                 const isExpanded = expandedMember === member.id;
                 return (
                   <div key={member.id} className="bg-card border border-border rounded-xl overflow-hidden">
-                    {/* Member row */}
                     <button
                       onClick={() => setExpandedMember(isExpanded ? null : member.id)}
                       className="w-full flex items-center justify-between p-3 text-left"
@@ -290,7 +333,6 @@ const AdminDashboard = () => {
                       )}
                     </button>
 
-                    {/* Expanded: voucher buttons */}
                     {isExpanded && (
                       <div className="px-3 pb-3 space-y-2 border-t border-border pt-3">
                         <p className="text-muted-foreground text-[10px] font-bold uppercase">Quick-Add Voucher</p>
