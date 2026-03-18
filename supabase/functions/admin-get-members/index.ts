@@ -52,6 +52,24 @@ Deno.serve(async (req) => {
       );
     }
 
+    // Get active (unredeemed) voucher counts per user
+    const { data: vouchers } = await supabase
+      .from("member_vouchers")
+      .select("user_id")
+      .eq("redeemed", false);
+
+    const voucherCounts: Record<string, number> = {};
+    if (vouchers) {
+      for (const v of vouchers) {
+        voucherCounts[v.user_id] = (voucherCounts[v.user_id] || 0) + 1;
+      }
+    }
+
+    const membersWithVouchers = (members || []).map((m: any) => ({
+      ...m,
+      active_vouchers: voucherCounts[m.id] || 0,
+    }));
+
     // Get current active loyalty code
     const { data: codeData } = await supabase
       .from("active_loyalty_code")
@@ -63,7 +81,7 @@ Deno.serve(async (req) => {
     return new Response(
       JSON.stringify({
         success: true,
-        members: members || [],
+        members: membersWithVouchers,
         activeCode: codeData?.code || null,
         codeUpdatedAt: codeData?.created_at || null,
       }),
