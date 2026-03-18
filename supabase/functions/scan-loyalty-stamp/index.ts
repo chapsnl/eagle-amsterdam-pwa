@@ -23,8 +23,25 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Validate QR code server-side
-    const validCode = Deno.env.get("LOYALTY_QR_CODE") || "EAGLE2026";
+    // Validate QR code server-side — check active_loyalty_code table first, then fallback to secret
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    let validCode = Deno.env.get("LOYALTY_QR_CODE") || "EAGLE2027";
+
+    // Check if there's a dynamic code in the database (takes priority)
+    const { data: activeCode } = await supabase
+      .from("active_loyalty_code")
+      .select("code")
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (activeCode?.code) {
+      validCode = activeCode.code;
+    }
+
     if (code.trim().toUpperCase() !== validCode.toUpperCase()) {
       return new Response(
         JSON.stringify({ success: false, error: "invalid_code" }),
