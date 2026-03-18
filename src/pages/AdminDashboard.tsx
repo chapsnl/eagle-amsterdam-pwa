@@ -48,6 +48,7 @@ const AdminDashboard = () => {
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [qrSectionOpen, setQrSectionOpen] = useState(false);
+  const [scannedMember, setScannedMember] = useState<Member | null>(null);
   const activityTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const logout = useCallback(() => {
