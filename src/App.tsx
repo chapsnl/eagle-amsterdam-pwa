@@ -84,6 +84,7 @@ const App = () => {
                 <Route path="/vip/profile-setup" element={<VipProfileSetup />} />
                 <Route path="/vip/info" element={<VipInfo />} />
                 <Route path="/vip/member-deals" element={<VipMemberDeals />} />
+                <Route path="/eagle-admin-dashboard" element={<AdminDashboard />} />
                 <Route path="/settings" element={<Settings />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
