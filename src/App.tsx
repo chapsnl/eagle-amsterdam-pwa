@@ -57,6 +57,8 @@ const App = () => {
       .catch(() => {/* OneSignal unavailable */});
   }, []);
 
+  useActivityHeartbeat();
+
   if (!pinUnlocked) {
     return <PinLockScreen onUnlock={() => setPinUnlocked(true)} />;
   }
