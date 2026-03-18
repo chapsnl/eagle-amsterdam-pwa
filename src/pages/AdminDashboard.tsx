@@ -14,6 +14,7 @@ interface Member {
   vip_status: string;
   total_stamps_earned: number;
   active_vouchers: number;
+  active_voucher_titles: string[];
   member_number: string | null;
   created_at: string;
   last_active_at: string | null;
