@@ -71,6 +71,7 @@ Deno.serve(async (req) => {
     const membersWithVouchers = (members || []).map((m: any) => ({
       ...m,
       active_vouchers: voucherCounts[m.id] || 0,
+      active_voucher_titles: activeVoucherTitles[m.id] || [],
     }));
 
     // Get current active loyalty code
