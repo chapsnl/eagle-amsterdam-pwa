@@ -26,6 +26,7 @@ const VipProfileSetup = lazy(() => import("./pages/VipProfileSetup"));
 const VipInfo = lazy(() => import("./pages/VipInfo"));
 const VipMemberDeals = lazy(() => import("./pages/VipMemberDeals"));
 const Settings = lazy(() => import("./pages/Settings"));
+const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient({
