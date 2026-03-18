@@ -58,6 +58,16 @@ const Settings = () => {
     }
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem("vip_session");
+    sessionStorage.removeItem("vip_otp_email");
+    sessionStorage.removeItem("vip_redirect_after_verify");
+    localStorage.removeItem("vip_otp_pending");
+    setIsLoggedIn(false);
+    setProfile(null);
+    navigate("/");
+  };
+
   const handlePinToggle = () => {
     if (pinEnabled) {
       // Disable PIN
