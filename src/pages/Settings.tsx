@@ -177,7 +177,7 @@ const Settings = () => {
                 )}
                 <div>
                   <p className="text-foreground text-sm font-semibold">App Lock</p>
-                  <p className="text-muted-foreground text-xs">Require a PIN to open the app</p>
+                  <p className="text-muted-foreground text-xs">Require a 6-digit PIN to open the app</p>
                 </div>
               </div>
               <button
