@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Share, MoreVertical, Monitor } from "lucide-react";
 import eagleLogo from "@/assets/eagle-logo-white.webp";
 
@@ -25,9 +25,138 @@ function isMobile(): boolean {
 
 type Platform = "ios" | "android" | "desktop";
 
+interface Translations {
+  mobileOnly: string;
+  mobileOnlyDesc: string;
+  installTitle: string;
+  installDesc: string;
+  step1TitleIos: string;
+  step1DescIos: string;
+  step1TitleAndroid: string;
+  step1DescAndroid: string;
+  step2TitleIos: string;
+  step2DescIos: string;
+  step2TitleAndroid: string;
+  step2DescAndroid: string;
+  step3Title: string;
+  step3Desc: string;
+}
+
+function getTranslations(lang: string): Translations {
+  const l = lang.toLowerCase().slice(0, 2);
+
+  if (l === "nl") return {
+    mobileOnly: "Alleen Mobiel",
+    mobileOnlyDesc: "Open deze link op je telefoon om de Eagle VIP app te installeren.",
+    installTitle: "Installeer de Eagle App",
+    installDesc: "Voeg de app toe aan je startscherm voor de volledige ervaring.",
+    step1TitleIos: "Tik op de Deel-knop",
+    step1DescIos: "Zoek het icoon onderaan Safari",
+    step1TitleAndroid: "Tik op de menuknop",
+    step1DescAndroid: "Zoek het icoon in je browser",
+    step2TitleIos: "Kies \"Zet op beginscherm\"",
+    step2DescIos: "Scroll naar beneden in het menu en tik erop",
+    step2TitleAndroid: "Kies \"App installeren\" of \"Toevoegen aan startscherm\"",
+    step2DescAndroid: "Tik op de optie in het menu",
+    step3Title: "Open vanaf je startscherm",
+    step3Desc: "Tik op het Eagle-icoon om de app te openen",
+  };
+
+  if (l === "de") return {
+    mobileOnly: "Nur Mobil",
+    mobileOnlyDesc: "Bitte öffne diesen Link auf deinem Handy, um die Eagle VIP App zu installieren.",
+    installTitle: "Eagle App installieren",
+    installDesc: "Füge die App zu deinem Startbildschirm hinzu.",
+    step1TitleIos: "Tippe auf das Teilen-Symbol",
+    step1DescIos: "Suche das Symbol unten in Safari",
+    step1TitleAndroid: "Tippe auf die Menü-Taste",
+    step1DescAndroid: "Suche das Symbol in deinem Browser",
+    step2TitleIos: "Wähle „Zum Home-Bildschirm"",
+    step2DescIos: "Scrolle im Menü nach unten und tippe darauf",
+    step2TitleAndroid: "Wähle „App installieren" oder „Zum Startbildschirm hinzufügen"",
+    step2DescAndroid: "Tippe auf die Option im Menü",
+    step3Title: "Öffne vom Startbildschirm",
+    step3Desc: "Tippe auf das Eagle-Symbol, um die App zu starten",
+  };
+
+  if (l === "fr") return {
+    mobileOnly: "Mobile uniquement",
+    mobileOnlyDesc: "Ouvrez ce lien sur votre téléphone pour installer l'application Eagle VIP.",
+    installTitle: "Installer l'application Eagle",
+    installDesc: "Ajoutez l'application à votre écran d'accueil pour l'expérience complète.",
+    step1TitleIos: "Appuyez sur le bouton Partager",
+    step1DescIos: "Cherchez l'icône en bas de Safari",
+    step1TitleAndroid: "Appuyez sur le bouton menu",
+    step1DescAndroid: "Cherchez l'icône dans votre navigateur",
+    step2TitleIos: "Sélectionnez « Sur l'écran d'accueil »",
+    step2DescIos: "Faites défiler le menu et appuyez dessus",
+    step2TitleAndroid: "Sélectionnez « Installer l'appli » ou « Ajouter à l'écran d'accueil »",
+    step2DescAndroid: "Appuyez sur l'option dans le menu",
+    step3Title: "Ouvrez depuis l'écran d'accueil",
+    step3Desc: "Appuyez sur l'icône Eagle pour lancer l'application",
+  };
+
+  if (l === "es") return {
+    mobileOnly: "Solo Móvil",
+    mobileOnlyDesc: "Abre este enlace en tu teléfono para instalar la app Eagle VIP.",
+    installTitle: "Instalar la app Eagle",
+    installDesc: "Añade la app a tu pantalla de inicio para la experiencia completa.",
+    step1TitleIos: "Toca el botón Compartir",
+    step1DescIos: "Busca el icono en la parte inferior de Safari",
+    step1TitleAndroid: "Toca el botón de menú",
+    step1DescAndroid: "Busca el icono en tu navegador",
+    step2TitleIos: "Selecciona \"Añadir a pantalla de inicio\"",
+    step2DescIos: "Desplázate en el menú y tócalo",
+    step2TitleAndroid: "Selecciona \"Instalar app\" o \"Añadir a pantalla de inicio\"",
+    step2DescAndroid: "Toca la opción en el menú",
+    step3Title: "Abre desde tu pantalla de inicio",
+    step3Desc: "Toca el icono Eagle para abrir la app",
+  };
+
+  if (l === "pt") return {
+    mobileOnly: "Apenas Mobile",
+    mobileOnlyDesc: "Abra este link no seu telemóvel para instalar a app Eagle VIP.",
+    installTitle: "Instalar a app Eagle",
+    installDesc: "Adicione a app ao ecrã inicial para a experiência completa.",
+    step1TitleIos: "Toque no botão Partilhar",
+    step1DescIos: "Procure o ícone na parte inferior do Safari",
+    step1TitleAndroid: "Toque no botão de menu",
+    step1DescAndroid: "Procure o ícone no seu navegador",
+    step2TitleIos: "Selecione \"Adicionar ao ecrã inicial\"",
+    step2DescIos: "Deslize no menu e toque",
+    step2TitleAndroid: "Selecione \"Instalar app\" ou \"Adicionar ao ecrã inicial\"",
+    step2DescAndroid: "Toque na opção no menu",
+    step3Title: "Abra a partir do ecrã inicial",
+    step3Desc: "Toque no ícone Eagle para abrir a app",
+  };
+
+  // Default: English
+  return {
+    mobileOnly: "Mobile Only",
+    mobileOnlyDesc: "Please visit this link on your mobile device to install the Eagle VIP app.",
+    installTitle: "Install the Eagle App",
+    installDesc: "To access the full app experience, add it to your home screen.",
+    step1TitleIos: "Tap the Share button",
+    step1DescIos: "Look for the icon at the bottom of Safari",
+    step1TitleAndroid: "Tap the menu button",
+    step1DescAndroid: "Look for the icon in your browser",
+    step2TitleIos: "Select \"Add to Home Screen\"",
+    step2DescIos: "Scroll down in the menu and tap it",
+    step2TitleAndroid: "Select \"Install app\" or \"Add to Home screen\"",
+    step2DescAndroid: "Tap the option in the menu",
+    step3Title: "Open from your home screen",
+    step3Desc: "Tap the Eagle icon to launch the full app",
+  };
+}
+
 const PwaGate = ({ children }: { children: React.ReactNode }) => {
   const [allowed, setAllowed] = useState<boolean | null>(null);
   const [platform, setPlatform] = useState<Platform>("desktop");
+
+  const t = useMemo(() => {
+    const lang = navigator.language || "en";
+    return getTranslations(lang);
+  }, []);
 
   useEffect(() => {
     if (isStandalone()) {
@@ -70,10 +199,10 @@ const PwaGate = ({ children }: { children: React.ReactNode }) => {
         <img src={eagleLogo} alt="Eagle Amsterdam" className="w-48 mb-8" />
         <Monitor className="w-20 h-20 text-primary mb-5" />
         <h1 className="text-2xl font-extrabold text-foreground mb-3" style={{ letterSpacing: '-0.05em', lineHeight: 1.1 }}>
-          Mobile Only
+          {t.mobileOnly}
         </h1>
         <p className="text-muted-foreground text-sm max-w-sm leading-relaxed" style={{ letterSpacing: '-0.02em' }}>
-          Please visit this link on your mobile device to install the Eagle VIP app.
+          {t.mobileOnlyDesc}
         </p>
       </div>
     );
@@ -85,11 +214,11 @@ const PwaGate = ({ children }: { children: React.ReactNode }) => {
       <img src={eagleLogo} alt="Eagle Amsterdam" className="w-48 mb-10" />
 
       <h1 className="text-2xl font-extrabold text-foreground mb-3" style={{ letterSpacing: '-0.05em', lineHeight: 1.1 }}>
-        Install the Eagle App
+        {t.installTitle}
       </h1>
 
       <p className="text-muted-foreground text-sm mb-10 max-w-xs leading-relaxed" style={{ letterSpacing: '-0.02em' }}>
-        To access the full app experience, add it to your home screen.
+        {t.installDesc}
       </p>
 
       <div className="w-full max-w-xs space-y-6">
@@ -101,10 +230,10 @@ const PwaGate = ({ children }: { children: React.ReactNode }) => {
               </div>
               <div>
                 <p className="text-foreground font-bold text-base" style={{ letterSpacing: '-0.03em' }}>
-                  Tap the Share button
+                  {t.step1TitleIos}
                 </p>
                 <p className="text-muted-foreground text-sm mt-1 flex items-center gap-1" style={{ letterSpacing: '-0.02em' }}>
-                  Look for the <Share className="inline w-7 h-7 text-primary" /> icon at the bottom of Safari
+                  {t.step1DescIos} <Share className="inline w-7 h-7 text-primary" />
                 </p>
               </div>
             </div>
@@ -115,10 +244,10 @@ const PwaGate = ({ children }: { children: React.ReactNode }) => {
               </div>
               <div>
                 <p className="text-foreground font-bold text-base" style={{ letterSpacing: '-0.03em' }}>
-                  Select "Add to Home Screen"
+                  {t.step2TitleIos}
                 </p>
                 <p className="text-muted-foreground text-sm mt-1" style={{ letterSpacing: '-0.02em' }}>
-                  Scroll down in the menu and tap it
+                  {t.step2DescIos}
                 </p>
               </div>
             </div>
@@ -129,10 +258,10 @@ const PwaGate = ({ children }: { children: React.ReactNode }) => {
               </div>
               <div>
                 <p className="text-foreground font-bold text-base" style={{ letterSpacing: '-0.03em' }}>
-                  Open from your home screen
+                  {t.step3Title}
                 </p>
                 <p className="text-muted-foreground text-sm mt-1" style={{ letterSpacing: '-0.02em' }}>
-                  Tap the Eagle icon to launch the full app
+                  {t.step3Desc}
                 </p>
               </div>
             </div>
@@ -145,10 +274,10 @@ const PwaGate = ({ children }: { children: React.ReactNode }) => {
               </div>
               <div>
                 <p className="text-foreground font-bold text-base" style={{ letterSpacing: '-0.03em' }}>
-                  Tap the menu button
+                  {t.step1TitleAndroid}
                 </p>
                 <p className="text-muted-foreground text-sm mt-1 flex items-center gap-1" style={{ letterSpacing: '-0.02em' }}>
-                  Look for the <MoreVertical className="inline w-7 h-7 text-primary" /> icon in your browser
+                  {t.step1DescAndroid} <MoreVertical className="inline w-7 h-7 text-primary" />
                 </p>
               </div>
             </div>
@@ -159,10 +288,10 @@ const PwaGate = ({ children }: { children: React.ReactNode }) => {
               </div>
               <div>
                 <p className="text-foreground font-bold text-base" style={{ letterSpacing: '-0.03em' }}>
-                  Select "Install app" or "Add to Home screen"
+                  {t.step2TitleAndroid}
                 </p>
                 <p className="text-muted-foreground text-sm mt-1" style={{ letterSpacing: '-0.02em' }}>
-                  Tap the option in the menu
+                  {t.step2DescAndroid}
                 </p>
               </div>
             </div>
@@ -173,10 +302,10 @@ const PwaGate = ({ children }: { children: React.ReactNode }) => {
               </div>
               <div>
                 <p className="text-foreground font-bold text-base" style={{ letterSpacing: '-0.03em' }}>
-                  Open from your home screen
+                  {t.step3Title}
                 </p>
                 <p className="text-muted-foreground text-sm mt-1" style={{ letterSpacing: '-0.02em' }}>
-                  Tap the Eagle icon to launch the full app
+                  {t.step3Desc}
                 </p>
               </div>
             </div>

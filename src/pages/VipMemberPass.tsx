@@ -97,8 +97,8 @@ const VipMemberPass = () => {
 
   const statusColors: Record<VipStatusLevel, { bg: string; border?: string }> = {
     Regular: { bg: "#b43227" },
-    Cruiser: { bg: "#1a5c2a" },
-    "Party Boy": { bg: "#1a3a6b" },
+    "Party Boy": { bg: "#1a5c2a" },
+    Cruiser: { bg: "#1a3a6b" },
     Slut: { bg: "#333333", border: "3px solid #b43227" },
   };
 

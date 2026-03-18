@@ -119,7 +119,7 @@ Deno.serve(async (req) => {
 
 function calculateVipStatus(totalStamps: number): string {
   if (totalStamps >= 50) return "Slut";
-  if (totalStamps >= 25) return "Party Boy";
-  if (totalStamps >= 10) return "Cruiser";
+  if (totalStamps >= 25) return "Cruiser";
+  if (totalStamps >= 10) return "Party Boy";
   return "Regular";
 }
