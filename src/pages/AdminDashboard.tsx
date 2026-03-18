@@ -14,6 +14,7 @@ interface Member {
   vip_status: string;
   total_stamps_earned: number;
   active_vouchers: number;
+  active_voucher_titles: string[];
   member_number: string | null;
   created_at: string;
   last_active_at: string | null;
@@ -275,18 +276,23 @@ const AdminDashboard = () => {
               {VOUCHER_PRESETS.map((preset) => {
                 const key = `${member.id}-${preset.title}`;
                 const isSending = sendingVoucher === key;
+                const hasUnredeemed = member.active_voucher_titles?.includes(preset.title);
                 return (
                   <button
                     key={preset.title}
                     onClick={() => handleDispatchVoucher(member.id, preset)}
-                    disabled={isSending}
-                    className="flex items-center justify-between bg-secondary hover:bg-secondary/80 rounded-lg px-3 py-2.5 text-sm font-semibold text-foreground transition-all disabled:opacity-40"
+                    disabled={isSending || hasUnredeemed}
+                    className={`flex items-center justify-between rounded-lg px-3 py-2.5 text-sm font-semibold transition-all disabled:opacity-60 ${
+                      hasUnredeemed
+                        ? "bg-destructive/20 text-destructive border border-destructive/30 cursor-not-allowed"
+                        : "bg-secondary hover:bg-secondary/80 text-foreground"
+                    }`}
                   >
-                    <span>{preset.label}</span>
+                    <span>{preset.label}{hasUnredeemed ? " (active)" : ""}</span>
                     {isSending ? (
                       <RefreshCw className="w-3.5 h-3.5 animate-spin text-primary" />
                     ) : (
-                      <Send className="w-3.5 h-3.5 text-primary" />
+                      <Send className={`w-3.5 h-3.5 ${hasUnredeemed ? "text-destructive" : "text-primary"}`} />
                     )}
                   </button>
                 );
