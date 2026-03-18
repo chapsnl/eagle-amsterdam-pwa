@@ -40,6 +40,22 @@ Deno.serve(async (req) => {
       );
     }
 
+    // Check if user already has an unredeemed voucher with this title
+    const { data: existing } = await supabase
+      .from("member_vouchers")
+      .select("id")
+      .eq("user_id", targetUserId)
+      .eq("title", voucherTitle)
+      .eq("redeemed", false)
+      .limit(1);
+
+    if (existing && existing.length > 0) {
+      return new Response(
+        JSON.stringify({ success: false, error: `User already has an active "${voucherTitle}" voucher. It must be redeemed first.` }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     // Insert voucher
     const { error: insertError } = await supabase.from("member_vouchers").insert({
       user_id: targetUserId,
@@ -84,7 +100,6 @@ Deno.serve(async (req) => {
       }
     } catch (pushErr) {
       console.error("[admin-dispatch-voucher] Push notification error:", pushErr);
-      // Don't fail the whole request if push fails
     }
 
     return new Response(
