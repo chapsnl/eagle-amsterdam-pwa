@@ -22,6 +22,9 @@ const VOUCHER_PRESETS = [
   { title: "FREE DRINK", description: "One free drink at the bar.", label: "🍺 Free Drink" },
 ];
 
+const ADMIN_EMAIL = "michael.roks@icloud.com";
+const ADMIN_REDIRECT = "/eagle-admin-dashboard";
+
 const AdminDashboard = () => {
   const navigate = useNavigate();
   const [adminUserId, setAdminUserId] = useState<string | null>(null);
@@ -40,19 +43,20 @@ const AdminDashboard = () => {
   useEffect(() => {
     const stored = localStorage.getItem("vip_session");
     if (!stored) {
-      navigate("/");
+      navigate(`/vip/login?redirect=${encodeURIComponent(ADMIN_REDIRECT)}`, { replace: true });
       return;
     }
+
     try {
       const parsed = JSON.parse(stored);
-      if (parsed.email !== "michael.roks@icloud.com") {
-        navigate("/");
+      if (parsed.email !== ADMIN_EMAIL || !parsed.userId) {
+        navigate("/", { replace: true });
         return;
       }
       setAdminUserId(parsed.userId);
       loadData(parsed.userId);
     } catch {
-      navigate("/");
+      navigate(`/vip/login?redirect=${encodeURIComponent(ADMIN_REDIRECT)}`, { replace: true });
     }
   }, [navigate]);
 

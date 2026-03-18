@@ -80,12 +80,14 @@ const VipVerify = () => {
       await migrateLoyaltyStamps(data.userId, data.email);
       sessionStorage.removeItem("vip_otp_email");
       localStorage.removeItem("vip_otp_pending");
+      const nextRoute = redirect.startsWith("/") ? redirect : "/vip";
+      sessionStorage.removeItem("vip_redirect_after_verify");
 
       // Send email to OneSignal
       try { await setOneSignalExternalId(data.email); } catch {}
 
-      if (!data.name) navigate("/vip/profile-setup");
-      else navigate("/vip");
+      if (!data.name && nextRoute === "/vip") navigate("/vip/profile-setup");
+      else navigate(nextRoute);
     } catch (err: any) {
       setError(err.message || "Something went wrong.");
     } finally {
