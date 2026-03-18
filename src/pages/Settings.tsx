@@ -22,7 +22,7 @@ const Settings = () => {
   // PIN lock state
   const [pinEnabled, setPinEnabled] = useState(() => localStorage.getItem("app_pin_enabled") === "true");
   const [showPinSetup, setShowPinSetup] = useState(false);
-  const [pinDigits, setPinDigits] = useState<string[]>(["", "", "", ""]);
+  const [pinDigits, setPinDigits] = useState<string[]>(["", "", "", "", "", ""]);
 
   useEffect(() => {
     const stored = localStorage.getItem("vip_session");
