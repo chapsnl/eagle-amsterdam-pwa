@@ -9,7 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 const VipLogin = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(() => localStorage.getItem("remembered_email") || "");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -33,6 +33,7 @@ const VipLogin = () => {
     setLoading(true);
     try {
       const targetEmail = email.trim().toLowerCase();
+      localStorage.setItem("remembered_email", targetEmail);
       const { data, error: fnError } = await supabase.functions.invoke("send-otp", {
         body: { email: targetEmail },
       });

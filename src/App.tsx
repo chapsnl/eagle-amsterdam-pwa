@@ -70,7 +70,7 @@ const App = () => {
           <PwaGate>
             <Suspense fallback={<PageLoader />}>
               <Routes>
-                <Route path="/" element={
+            <Route path="/" element={
                   window.location.hostname === "admin.eagleamsterdam.com"
                     ? <AdminLogin />
                     : <Index />
@@ -89,18 +89,7 @@ const App = () => {
                 <Route path="/vip/profile-setup" element={<VipProfileSetup />} />
                 <Route path="/vip/info" element={<VipInfo />} />
                 <Route path="/vip/member-deals" element={<VipMemberDeals />} />
-                <Route path="/eagle-admin-dashboard" element={
-                  (() => {
-                    const stored = localStorage.getItem("admin_session");
-                    if (stored) {
-                      try {
-                        const parsed = JSON.parse(stored);
-                        if (parsed.authenticated) return <AdminDashboard />;
-                      } catch {}
-                    }
-                    return <AdminLogin />;
-                  })()
-                } />
+                <Route path="/eagle-admin-dashboard" element={<AdminDashboard />} />
                 <Route path="/settings" element={<Settings />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
