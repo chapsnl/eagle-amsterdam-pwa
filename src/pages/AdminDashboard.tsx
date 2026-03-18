@@ -430,43 +430,6 @@ const AdminDashboard = () => {
           </section>
         )}
 
-        {/* ═══ ALL MEMBERS ═══ */}
-        <section className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-foreground font-bold text-lg flex items-center gap-2">
-              <Users className="w-5 h-5 text-primary" />
-              All Members ({members.length})
-            </h2>
-            <button
-              onClick={() => adminUserId && loadData(adminUserId)}
-              className="text-muted-foreground hover:text-foreground transition-colors"
-            >
-              <RefreshCw className="w-4 h-4" />
-            </button>
-          </div>
-
-          <Input
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search by name, email, or member #..."
-            className="w-full"
-          />
-
-          {loading ? (
-            <div className="flex justify-center py-12">
-              <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-            </div>
-          ) : (
-            <div className="space-y-2">
-              {filteredMembers.map(renderMemberRow)}
-              {filteredMembers.length === 0 && (
-                <div className="text-center py-8">
-                  <p className="text-muted-foreground text-sm">No members found.</p>
-                </div>
-              )}
-            </div>
-          )}
-        </section>
       </div>
 
       <WarningDialog
