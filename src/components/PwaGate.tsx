@@ -159,9 +159,10 @@ const PwaGate = ({ children }: { children: React.ReactNode }) => {
   const [platform, setPlatform] = useState<Platform>("desktop");
 
   // Use both React Router location and window.location for reliability
-  const isBypassRoute = BYPASS_PATHS.some((p) =>
-    location.pathname.startsWith(p) || window.location.pathname.startsWith(p)
-  );
+  const isBypassRoute = BYPASS_HOSTS.includes(window.location.hostname) ||
+    BYPASS_PATHS.some((p) =>
+      location.pathname.startsWith(p) || window.location.pathname.startsWith(p)
+    );
 
   const t = useMemo(() => {
     const lang = navigator.language || "en";
