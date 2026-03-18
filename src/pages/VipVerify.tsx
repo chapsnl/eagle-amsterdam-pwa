@@ -4,6 +4,7 @@ import { ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { setOneSignalExternalId } from "@/lib/onesignal";
+import { toast } from "sonner";
 
 const CODE_LENGTH = 4;
 
