@@ -53,13 +53,22 @@ Deno.serve(async (req) => {
 
     if (existingUser) {
       userId = existingUser.id;
-      // Only update name if profile has no name and OTP provided one
+      // Ensure profile exists for this user
       const { data: existingProfile } = await supabase
         .from("profiles")
         .select("name")
         .eq("id", userId)
         .maybeSingle();
-      if ((!existingProfile?.name || existingProfile.name.trim() === "") && otpRecord.name) {
+      
+      if (!existingProfile) {
+        // Profile missing — create it
+        await supabase.from("profiles").upsert({
+          id: userId,
+          name: otpRecord.name || "",
+          email: email.toLowerCase(),
+        }, { onConflict: "id" });
+      } else if ((!existingProfile.name || existingProfile.name.trim() === "") && otpRecord.name) {
+        // Profile exists but no name — update if OTP provided one
         await supabase.from("profiles").update({ name: otpRecord.name }).eq("id", userId);
       }
     } else {
