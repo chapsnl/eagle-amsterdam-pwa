@@ -312,56 +312,68 @@ const AdminDashboard = () => {
           </div>
         )}
 
-        {/* ═══ LOYALTY MANAGEMENT ═══ */}
-        <section className="space-y-4">
-          <h2 className="text-foreground font-bold text-lg flex items-center gap-2">
-            <QrCode className="w-5 h-5 text-primary" />
-            Loyalty Management
-          </h2>
+        {/* ═══ LOYALTY QR CODE ═══ */}
+        <section className="space-y-0">
+          <button
+            onClick={() => setQrSectionOpen(!qrSectionOpen)}
+            className="w-full flex items-center justify-between bg-card border border-border rounded-xl px-4 py-3"
+          >
+            <h2 className="text-foreground font-bold text-lg flex items-center gap-2">
+              <QrCode className="w-5 h-5 text-primary" />
+              Loyalty QR Code
+            </h2>
+            {qrSectionOpen ? (
+              <ChevronUp className="w-5 h-5 text-muted-foreground" />
+            ) : (
+              <ChevronDown className="w-5 h-5 text-muted-foreground" />
+            )}
+          </button>
 
-          <div className="bg-card rounded-xl p-4 space-y-4 border border-border">
-            {activeCode && (
-              <div className="space-y-3">
-                <p className="text-muted-foreground text-xs">Current active code:</p>
-                <div className="bg-secondary rounded-lg p-3 text-center">
-                  <p className="text-foreground font-bold text-lg tracking-widest">{activeCode}</p>
-                  {codeUpdatedAt && (
-                    <p className="text-muted-foreground text-[10px] mt-1">
-                      Updated: {new Date(codeUpdatedAt).toLocaleString()}
-                    </p>
-                  )}
-                </div>
-                <div className="flex justify-center">
-                  <div className="bg-white rounded-lg p-3">
-                    <QRCodeSVG value={activeCode} size={200} />
+          {qrSectionOpen && (
+            <div className="bg-card rounded-b-xl px-4 pb-4 pt-2 space-y-4 border border-t-0 border-border -mt-2 rounded-t-none">
+              {activeCode && (
+                <div className="space-y-3">
+                  <p className="text-muted-foreground text-xs">Current active code:</p>
+                  <div className="bg-secondary rounded-lg p-3 text-center">
+                    <p className="text-foreground font-bold text-lg tracking-widest">{activeCode}</p>
+                    {codeUpdatedAt && (
+                      <p className="text-muted-foreground text-[10px] mt-1">
+                        Updated: {new Date(codeUpdatedAt).toLocaleString()}
+                      </p>
+                    )}
+                  </div>
+                  <div className="flex justify-center">
+                    <div className="bg-white rounded-lg p-3">
+                      <QRCodeSVG value={activeCode} size={200} />
+                    </div>
                   </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            <div className="space-y-2">
-              <p className="text-muted-foreground text-xs">Set new loyalty code:</p>
-              <div className="flex gap-2">
-                <Input
-                  value={newCode}
-                  onChange={(e) => setNewCode(e.target.value.toUpperCase())}
-                  placeholder="e.g. EAGLE_SUMMER_26"
-                  className="flex-1 uppercase"
-                  maxLength={50}
-                />
-                <button
-                  onClick={handleSaveCode}
-                  disabled={savingCode || !newCode.trim()}
-                  className="bg-primary text-primary-foreground px-4 py-2 rounded-lg font-bold text-sm disabled:opacity-40 transition-all"
-                >
-                  {savingCode ? <RefreshCw className="w-4 h-4 animate-spin" /> : "Save"}
-                </button>
+              <div className="space-y-2">
+                <p className="text-muted-foreground text-xs">Set new loyalty code:</p>
+                <div className="flex gap-2">
+                  <Input
+                    value={newCode}
+                    onChange={(e) => setNewCode(e.target.value.toUpperCase())}
+                    placeholder="e.g. EAGLE_SUMMER_26"
+                    className="flex-1 uppercase"
+                    maxLength={50}
+                  />
+                  <button
+                    onClick={handleSaveCode}
+                    disabled={savingCode || !newCode.trim()}
+                    className="bg-primary text-primary-foreground px-4 py-2 rounded-lg font-bold text-sm disabled:opacity-40 transition-all"
+                  >
+                    {savingCode ? <RefreshCw className="w-4 h-4 animate-spin" /> : "Save"}
+                  </button>
+                </div>
+                <p className="text-muted-foreground text-[10px]">
+                  Saving invalidates the old code immediately, resets all cooldowns, and sends a QR email to your inbox.
+                </p>
               </div>
-              <p className="text-muted-foreground text-[10px]">
-                Saving invalidates the old code immediately. A QR code email will be sent to your inbox.
-              </p>
             </div>
-          </div>
+          )}
         </section>
 
         {/* ═══ RECENT ACTIVITY ═══ */}
