@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Crown, Users, QrCode, Gift, RefreshCw, Check, Send, ChevronDown, ChevronUp, LogOut } from "lucide-react";
+import MemberScannerSection from "@/components/admin/MemberScannerSection";
 import { supabase } from "@/integrations/supabase/client";
 import { QRCodeSVG } from "qrcode.react";
 import { Input } from "@/components/ui/input";
@@ -194,6 +195,17 @@ const AdminDashboard = () => {
     }
   };
 
+  const handleMemberScanned = useCallback((memberNumber: string) => {
+    const found = members.find((m) => m.member_number === memberNumber);
+    if (found) {
+      setSearchQuery(memberNumber);
+      setExpandedMember(found.id);
+      showSuccess(`Found: ${found.name || found.email}`);
+    } else {
+      setWarning({ open: true, title: "Not Found", message: `No member found with number ${memberNumber}.` });
+    }
+  }, [members]);
+
   const filteredMembers = members.filter((m) => {
     const q = searchQuery.toLowerCase();
     return (
@@ -375,6 +387,9 @@ const AdminDashboard = () => {
             </div>
           )}
         </section>
+
+        {/* ═══ SCAN MEMBER PASS ═══ */}
+        <MemberScannerSection onMemberFound={handleMemberScanned} />
 
         {/* ═══ RECENT ACTIVITY ═══ */}
         {!loading && recentMembers.length > 0 && (
