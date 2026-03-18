@@ -81,19 +81,18 @@ const VipVerify = () => {
       await migrateLoyaltyStamps(data.userId, data.email);
       sessionStorage.removeItem("vip_otp_email");
       localStorage.removeItem("vip_otp_pending");
-      const nextRoute = redirect.startsWith("/") ? redirect : "/vip";
+      const nextRoute = redirect.startsWith("/") ? redirect : "/vip/dashboard";
       sessionStorage.removeItem("vip_redirect_after_verify");
 
       // Send email to OneSignal
       try { await setOneSignalExternalId(data.email); } catch {}
 
-      if (!data.name && nextRoute === "/vip") navigate("/vip/profile-setup");
-      else {
-        // Show welcome back for existing users
-        if (data.name) {
-          toast.success(`Welcome Back, ${data.name}!`, { duration: 4000 });
-        }
-        navigate(nextRoute);
+      if (!data.name || data.name.trim() === "") {
+        // No name on profile — ask user to set one
+        navigate("/vip/profile-setup");
+      } else {
+        toast.success(`Welcome Back, ${data.name}!`, { duration: 4000 });
+        navigate(nextRoute === "/vip" ? "/vip/dashboard" : nextRoute);
       }
     } catch (err: any) {
       setError(err.message || "Something went wrong.");

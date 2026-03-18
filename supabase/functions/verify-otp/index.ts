@@ -53,7 +53,15 @@ Deno.serve(async (req) => {
 
     if (existingUser) {
       userId = existingUser.id;
-      await supabase.from("profiles").update({ name: otpRecord.name }).eq("id", userId);
+      // Only update name if profile has no name and OTP provided one
+      const { data: existingProfile } = await supabase
+        .from("profiles")
+        .select("name")
+        .eq("id", userId)
+        .maybeSingle();
+      if ((!existingProfile?.name || existingProfile.name.trim() === "") && otpRecord.name) {
+        await supabase.from("profiles").update({ name: otpRecord.name }).eq("id", userId);
+      }
     } else {
       const tempPassword = crypto.randomUUID();
       const { data: newUser, error: createError } = await supabase.auth.admin.createUser({
@@ -110,16 +118,18 @@ Deno.serve(async (req) => {
 
     const { data: profile } = await supabase
       .from("profiles")
-      .select("member_number, created_at")
+      .select("name, member_number, created_at")
       .eq("id", userId)
       .single();
+
+    const resolvedName = (profile?.name && profile.name.trim() !== "") ? profile.name : otpRecord.name;
 
     return new Response(
       JSON.stringify({
         success: true,
         userId,
         email: email.toLowerCase(),
-        name: otpRecord.name,
+        name: resolvedName,
         member_number: profile?.member_number || "",
         created_at: profile?.created_at || "",
         hashed_token: signInData?.properties?.hashed_token || "",
