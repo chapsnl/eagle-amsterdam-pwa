@@ -236,7 +236,7 @@ const Settings = () => {
             className="w-full flex items-center justify-center gap-2 bg-destructive/20 hover:bg-destructive/30 text-destructive border border-destructive/30 rounded-xl py-3.5 font-bold text-sm transition-colors"
           >
             <LogOut className="w-4 h-4" />
-            LOGOUT
+            LOGOUT AS VIP
           </button>
         </div>
       )}
