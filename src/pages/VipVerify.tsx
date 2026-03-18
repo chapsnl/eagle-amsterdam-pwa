@@ -4,6 +4,7 @@ import { ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { setOneSignalExternalId } from "@/lib/onesignal";
+import { toast } from "sonner";
 
 const CODE_LENGTH = 4;
 
@@ -87,7 +88,13 @@ const VipVerify = () => {
       try { await setOneSignalExternalId(data.email); } catch {}
 
       if (!data.name && nextRoute === "/vip") navigate("/vip/profile-setup");
-      else navigate(nextRoute);
+      else {
+        // Show welcome back for existing users
+        if (data.name) {
+          toast.success(`Welcome Back, ${data.name}!`, { duration: 4000 });
+        }
+        navigate(nextRoute);
+      }
     } catch (err: any) {
       setError(err.message || "Something went wrong.");
     } finally {

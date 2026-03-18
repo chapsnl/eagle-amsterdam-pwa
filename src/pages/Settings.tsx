@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Settings as SettingsIcon, Crown, User, Mail, Hash, Calendar, Star, Shield, ShieldOff } from "lucide-react";
+import { ArrowLeft, Settings as SettingsIcon, Crown, User, Mail, Hash, Calendar, Star, Shield, ShieldOff, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -56,6 +56,16 @@ const Settings = () => {
     } catch {} finally {
       setLoading(false);
     }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("vip_session");
+    sessionStorage.removeItem("vip_otp_email");
+    sessionStorage.removeItem("vip_redirect_after_verify");
+    localStorage.removeItem("vip_otp_pending");
+    setIsLoggedIn(false);
+    setProfile(null);
+    navigate("/");
   };
 
   const handlePinToggle = () => {
@@ -219,6 +229,15 @@ const Settings = () => {
               </div>
             )}
           </div>
+
+          {/* Logout */}
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center justify-center gap-2 bg-destructive/20 hover:bg-destructive/30 text-destructive border border-destructive/30 rounded-xl py-3.5 font-bold text-sm transition-colors"
+          >
+            <LogOut className="w-4 h-4" />
+            LOGOUT
+          </button>
         </div>
       )}
     </div>

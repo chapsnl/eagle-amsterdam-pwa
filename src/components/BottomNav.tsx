@@ -14,6 +14,9 @@ const BottomNav = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
+  // Hide bottom nav on admin subdomain
+  if (window.location.hostname === "admin.eagleamsterdam.com") return null;
+
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-border bg-eagle-dark/95 backdrop-blur-md pb-[env(safe-area-inset-bottom)]">
       <div className="flex items-center justify-around h-14 max-w-lg mx-auto px-4">
