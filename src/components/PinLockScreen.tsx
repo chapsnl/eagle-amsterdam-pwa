@@ -6,8 +6,10 @@ interface PinLockScreenProps {
   onUnlock: () => void;
 }
 
+const PIN_LENGTH = 6;
+
 const PinLockScreen = ({ onUnlock }: PinLockScreenProps) => {
-  const [digits, setDigits] = useState<string[]>(["", "", "", ""]);
+  const [digits, setDigits] = useState<string[]>(Array(PIN_LENGTH).fill(""));
   const [error, setError] = useState(false);
 
   const handleChange = (index: number, value: string) => {
@@ -16,13 +18,13 @@ const PinLockScreen = ({ onUnlock }: PinLockScreenProps) => {
     next[index] = digit;
     setDigits(next);
 
-    if (digit && index < 3) {
+    if (digit && index < PIN_LENGTH - 1) {
       document.getElementById(`pin-lock-${index + 1}`)?.focus();
     }
 
-    // Auto-verify when all 4 digits entered
-    if (digit && index === 3) {
-      const code = [...next.slice(0, 3), digit].join("");
+    // Auto-verify when all digits entered
+    if (digit && index === PIN_LENGTH - 1) {
+      const code = [...next.slice(0, PIN_LENGTH - 1), digit].join("");
       verifyPin(code);
     }
   };
@@ -39,7 +41,7 @@ const PinLockScreen = ({ onUnlock }: PinLockScreenProps) => {
       onUnlock();
     } else {
       setError(true);
-      setDigits(["", "", "", ""]);
+      setDigits(Array(PIN_LENGTH).fill(""));
       setTimeout(() => {
         setError(false);
         document.getElementById("pin-lock-0")?.focus();
@@ -58,7 +60,7 @@ const PinLockScreen = ({ onUnlock }: PinLockScreenProps) => {
       <h1 className="text-2xl font-display tracking-wider text-foreground mb-2">APP LOCKED</h1>
       <p className="text-muted-foreground text-sm mb-8">Enter your PIN to continue</p>
 
-      <div className={`flex gap-3 ${error ? "animate-shake" : ""}`}>
+      <div className={`flex gap-2 ${error ? "animate-shake" : ""}`}>
         {digits.map((d, i) => (
           <input
             key={i}
@@ -69,7 +71,7 @@ const PinLockScreen = ({ onUnlock }: PinLockScreenProps) => {
             value={d}
             onChange={(e) => handleChange(i, e.target.value)}
             onKeyDown={(e) => handleKeyDown(i, e)}
-            className={`w-14 h-16 text-center text-3xl font-bold bg-secondary border-2 text-foreground rounded-xl focus:outline-none transition-colors ${
+            className={`w-11 h-14 text-center text-2xl font-bold bg-secondary border-2 text-foreground rounded-xl focus:outline-none transition-colors ${
               error ? "border-destructive" : "border-border focus:border-primary"
             }`}
           />

@@ -22,7 +22,7 @@ const Settings = () => {
   // PIN lock state
   const [pinEnabled, setPinEnabled] = useState(() => localStorage.getItem("app_pin_enabled") === "true");
   const [showPinSetup, setShowPinSetup] = useState(false);
-  const [pinDigits, setPinDigits] = useState<string[]>(["", "", "", ""]);
+  const [pinDigits, setPinDigits] = useState<string[]>(["", "", "", "", "", ""]);
 
   useEffect(() => {
     const stored = localStorage.getItem("vip_session");
@@ -67,7 +67,7 @@ const Settings = () => {
       setShowPinSetup(false);
     } else {
       // Show PIN setup
-      setPinDigits(["", "", "", ""]);
+      setPinDigits(["", "", "", "", "", ""]);
       setShowPinSetup(true);
     }
   };
@@ -77,7 +77,7 @@ const Settings = () => {
     const next = [...pinDigits];
     next[index] = digit;
     setPinDigits(next);
-    if (digit && index < 3) {
+    if (digit && index < 5) {
       const nextInput = document.getElementById(`pin-setup-${index + 1}`);
       nextInput?.focus();
     }
@@ -92,7 +92,7 @@ const Settings = () => {
 
   const savePin = () => {
     const code = pinDigits.join("");
-    if (code.length !== 4) return;
+    if (code.length !== 6) return;
     localStorage.setItem("app_pin_code", code);
     localStorage.setItem("app_pin_enabled", "true");
     setPinEnabled(true);
@@ -177,7 +177,7 @@ const Settings = () => {
                 )}
                 <div>
                   <p className="text-foreground text-sm font-semibold">App Lock</p>
-                  <p className="text-muted-foreground text-xs">Require a PIN to open the app</p>
+                  <p className="text-muted-foreground text-xs">Require a 6-digit PIN to open the app</p>
                 </div>
               </div>
               <button
@@ -192,7 +192,7 @@ const Settings = () => {
 
             {showPinSetup && (
               <div className="space-y-3 pt-2">
-                <p className="text-muted-foreground text-xs text-center">Enter a 4-digit PIN</p>
+                <p className="text-muted-foreground text-xs text-center">Enter a 6-digit PIN</p>
                 <div className="flex justify-center gap-3">
                   {pinDigits.map((d, i) => (
                     <input
@@ -204,14 +204,14 @@ const Settings = () => {
                       value={d}
                       onChange={(e) => handlePinDigitChange(i, e.target.value)}
                       onKeyDown={(e) => handlePinKeyDown(i, e)}
-                      className="w-12 h-14 text-center text-2xl font-bold bg-secondary border-2 border-border text-foreground rounded-xl focus:border-primary focus:outline-none transition-colors"
+                      className="w-10 h-14 text-center text-2xl font-bold bg-secondary border-2 border-border text-foreground rounded-xl focus:border-primary focus:outline-none transition-colors"
                     />
                   ))}
                 </div>
                 <Button
                   variant="eagle"
                   className="w-full rounded-xl"
-                  disabled={pinDigits.join("").length !== 4}
+                  disabled={pinDigits.join("").length !== 6}
                   onClick={savePin}
                 >
                   SET PIN

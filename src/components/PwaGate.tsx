@@ -51,15 +51,15 @@ function getTranslations(lang: string): Translations {
     installTitle: "Installeer de Eagle App",
     installDesc: "Voeg de app toe aan je startscherm voor de volledige ervaring.",
     step1TitleIos: "Tik op de Deel-knop",
-    step1DescIos: "Zoek het icoon onderaan Safari",
+    step1DescIos: "Zoek het icoon onderaan Safari. Soms zit de deelknop verstopt achter de 3 puntjes",
     step1TitleAndroid: "Tik op de menuknop",
-    step1DescAndroid: "Zoek het icoon in je browser",
+    step1DescAndroid: "Zoek het icoon in je browser. Soms zit de deelknop verstopt achter de 3 puntjes",
     step2TitleIos: "Kies \"Zet op beginscherm\"",
     step2DescIos: "Scroll naar beneden in het menu en tik erop",
     step2TitleAndroid: "Kies \"App installeren\" of \"Toevoegen aan startscherm\"",
     step2DescAndroid: "Tik op de optie in het menu",
-    step3Title: "Open vanaf je startscherm",
-    step3Desc: "Tik op het Eagle-icoon om de app te openen",
+    step3Title: "Open de app vanaf je telefoon",
+    step3Desc: "Tik op het Eagle-icoon op je startscherm om de app te openen",
   };
 
   if (l === "de") return {
@@ -68,15 +68,15 @@ function getTranslations(lang: string): Translations {
     installTitle: "Eagle App installieren",
     installDesc: "Füge die App zu deinem Startbildschirm hinzu.",
     step1TitleIos: "Tippe auf das Teilen-Symbol",
-    step1DescIos: "Suche das Symbol unten in Safari",
+    step1DescIos: "Suche das Symbol unten in Safari. Manchmal ist der Teilen-Button hinter den 3 Punkten versteckt",
     step1TitleAndroid: "Tippe auf die Menü-Taste",
-    step1DescAndroid: "Suche das Symbol in deinem Browser",
+    step1DescAndroid: "Suche das Symbol in deinem Browser. Manchmal ist der Teilen-Button hinter den 3 Punkten versteckt",
     step2TitleIos: 'W\u00e4hle \u201eZum Home-Bildschirm\u201c',
     step2DescIos: "Scrolle im Men\u00fc nach unten und tippe darauf",
     step2TitleAndroid: 'W\u00e4hle \u201eApp installieren\u201c oder \u201eZum Startbildschirm hinzuf\u00fcgen\u201c',
     step2DescAndroid: "Tippe auf die Option im Menü",
-    step3Title: "Öffne vom Startbildschirm",
-    step3Desc: "Tippe auf das Eagle-Symbol, um die App zu starten",
+    step3Title: "Öffne die App von deinem Handy",
+    step3Desc: "Tippe auf das Eagle-Symbol auf deinem Startbildschirm",
   };
 
   if (l === "fr") return {
@@ -85,15 +85,15 @@ function getTranslations(lang: string): Translations {
     installTitle: "Installer l'application Eagle",
     installDesc: "Ajoutez l'application à votre écran d'accueil pour l'expérience complète.",
     step1TitleIos: "Appuyez sur le bouton Partager",
-    step1DescIos: "Cherchez l'icône en bas de Safari",
+    step1DescIos: "Cherchez l'icône en bas de Safari. Parfois le bouton de partage est caché derrière les 3 points",
     step1TitleAndroid: "Appuyez sur le bouton menu",
-    step1DescAndroid: "Cherchez l'icône dans votre navigateur",
+    step1DescAndroid: "Cherchez l'icône dans votre navigateur. Parfois le bouton est caché derrière les 3 points",
     step2TitleIos: "Sélectionnez « Sur l'écran d'accueil »",
     step2DescIos: "Faites défiler le menu et appuyez dessus",
     step2TitleAndroid: "Sélectionnez « Installer l'appli » ou « Ajouter à l'écran d'accueil »",
     step2DescAndroid: "Appuyez sur l'option dans le menu",
-    step3Title: "Ouvrez depuis l'écran d'accueil",
-    step3Desc: "Appuyez sur l'icône Eagle pour lancer l'application",
+    step3Title: "Ouvrez l'app depuis votre téléphone",
+    step3Desc: "Appuyez sur l'icône Eagle sur votre écran d'accueil",
   };
 
   if (l === "es") return {
@@ -102,15 +102,15 @@ function getTranslations(lang: string): Translations {
     installTitle: "Instalar la app Eagle",
     installDesc: "Añade la app a tu pantalla de inicio para la experiencia completa.",
     step1TitleIos: "Toca el botón Compartir",
-    step1DescIos: "Busca el icono en la parte inferior de Safari",
+    step1DescIos: "Busca el icono en la parte inferior de Safari. A veces el botón de compartir está oculto detrás de los 3 puntos",
     step1TitleAndroid: "Toca el botón de menú",
-    step1DescAndroid: "Busca el icono en tu navegador",
+    step1DescAndroid: "Busca el icono en tu navegador. A veces el botón está oculto detrás de los 3 puntos",
     step2TitleIos: "Selecciona \"Añadir a pantalla de inicio\"",
     step2DescIos: "Desplázate en el menú y tócalo",
     step2TitleAndroid: "Selecciona \"Instalar app\" o \"Añadir a pantalla de inicio\"",
     step2DescAndroid: "Toca la opción en el menú",
-    step3Title: "Abre desde tu pantalla de inicio",
-    step3Desc: "Toca el icono Eagle para abrir la app",
+    step3Title: "Abre la app desde tu teléfono",
+    step3Desc: "Toca el icono Eagle en tu pantalla de inicio",
   };
 
   if (l === "pt") return {
@@ -119,15 +119,15 @@ function getTranslations(lang: string): Translations {
     installTitle: "Instalar a app Eagle",
     installDesc: "Adicione a app ao ecrã inicial para a experiência completa.",
     step1TitleIos: "Toque no botão Partilhar",
-    step1DescIos: "Procure o ícone na parte inferior do Safari",
+    step1DescIos: "Procure o ícone na parte inferior do Safari. Por vezes o botão de partilha está escondido atrás dos 3 pontos",
     step1TitleAndroid: "Toque no botão de menu",
-    step1DescAndroid: "Procure o ícone no seu navegador",
+    step1DescAndroid: "Procure o ícone no seu navegador. Por vezes o botão está escondido atrás dos 3 pontos",
     step2TitleIos: "Selecione \"Adicionar ao ecrã inicial\"",
     step2DescIos: "Deslize no menu e toque",
     step2TitleAndroid: "Selecione \"Instalar app\" ou \"Adicionar ao ecrã inicial\"",
     step2DescAndroid: "Toque na opção no menu",
-    step3Title: "Abra a partir do ecrã inicial",
-    step3Desc: "Toque no ícone Eagle para abrir a app",
+    step3Title: "Abra a app a partir do seu telemóvel",
+    step3Desc: "Toque no ícone Eagle no seu ecrã inicial",
   };
 
   // Default: English
@@ -137,15 +137,15 @@ function getTranslations(lang: string): Translations {
     installTitle: "Install the Eagle App",
     installDesc: "To access the full app experience, add it to your home screen.",
     step1TitleIos: "Tap the Share button",
-    step1DescIos: "Look for the icon at the bottom of Safari",
+    step1DescIos: "Look for the icon at the bottom of Safari. Sometimes the share button is hidden under the 3 dots",
     step1TitleAndroid: "Tap the menu button",
-    step1DescAndroid: "Look for the icon in your browser",
+    step1DescAndroid: "Look for the icon in your browser. Sometimes the share button is hidden under the 3 dots",
     step2TitleIos: "Select \"Add to Home Screen\"",
     step2DescIos: "Scroll down in the menu and tap it",
     step2TitleAndroid: "Select \"Install app\" or \"Add to Home screen\"",
     step2DescAndroid: "Tap the option in the menu",
-    step3Title: "Open from your home screen",
-    step3Desc: "Tap the Eagle icon to launch the full app",
+    step3Title: "Open the app from your phone",
+    step3Desc: "Tap the Eagle icon on your home screen to launch the app",
   };
 }
 

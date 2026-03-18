@@ -96,7 +96,7 @@ const VipInfo = () => {
               <div className="mt-2 flex items-start gap-2">
                 <ShieldCheck className="w-4 h-4 text-white/80 mt-0.5 shrink-0" />
                 <p className="text-white/80 text-[16px] leading-relaxed">
-                  Priority Access. Your Member Pass turns <strong className="text-white">Green</strong>.
+                  Priority access. Your Member Pass gets <strong className="text-white">Green</strong>.
                 </p>
               </div>
             </div>
@@ -113,7 +113,7 @@ const VipInfo = () => {
               <div className="mt-2 flex items-start gap-2">
                 <ShieldCheck className="w-4 h-4 text-white/80 mt-0.5 shrink-0" />
                 <p className="text-white/80 text-[16px] leading-relaxed">
-                  Free Access*, Fast-Lane Access, Always Access even when we are Full. Your Member Pass turns <strong className="text-white">Blue</strong>.
+                  Free access*, Fast-Lane access, Always access even when we are full. Your Member Pass gets <strong className="text-white">Blue</strong>.
                 </p>
               </div>
             </div>
@@ -130,7 +130,7 @@ const VipInfo = () => {
               <div className="mt-2 flex items-start gap-2">
                 <ShieldCheck className="w-4 h-4 text-white/80 mt-0.5 shrink-0" />
                 <p className="text-white/80 text-[16px] leading-relaxed">
-                  Free Access*, Priority Access, Fast-Lane Access, Always Access even when we are Full, Free Coat Check (1 Item). Your Member Pass turns <strong className="text-white">Grey/Red</strong>.
+                  Free access*, Priority access, Fast-Lane access, Always access even if we are full, Free Coat Check (1 Item). Your Member Pass gets <strong className="text-white">Grey/Red</strong>.
                 </p>
               </div>
             </div>
@@ -138,7 +138,7 @@ const VipInfo = () => {
 
           {/* Disclaimer */}
           <p className="text-muted-foreground text-xs italic leading-relaxed mt-3">
-            *Free Entry is limited to Pride, Kings Weekend, and other city-wide events. VIP Members must always show their digital Member Pass on their phone to verify status and skip the standard entry requirements.
+            *Free Entry is limited to Pride, Kings Weekend and other city-wide events. VIP Members must always show their digital Member Pass on their phone to verify status and skip the standard entry requirements.
           </p>
         </div>
       </div>
