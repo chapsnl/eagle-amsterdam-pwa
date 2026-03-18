@@ -1,0 +1,340 @@
+import { useState, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
+import { Crown, Users, QrCode, Gift, RefreshCw, Check, Send, ChevronDown, ChevronUp } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { QRCodeSVG } from "qrcode.react";
+import { Input } from "@/components/ui/input";
+import WarningDialog from "@/components/shared/WarningDialog";
+
+interface Member {
+  id: string;
+  name: string;
+  email: string;
+  vip_status: string;
+  total_stamps_earned: number;
+  member_number: string | null;
+  created_at: string;
+}
+
+const VOUCHER_PRESETS = [
+  { title: "FREE COAT CHECK", description: "Complimentary coat check.", label: "🧥 Coat Check" },
+  { title: "FREE ENTRY SUNDAY SEX PARTY", description: "Free entry to Sunday Sex Party.", label: "🎉 Free Entry" },
+  { title: "FREE DRINK", description: "One free drink at the bar.", label: "🍺 Free Drink" },
+];
+
+const AdminDashboard = () => {
+  const navigate = useNavigate();
+  const [adminUserId, setAdminUserId] = useState<string | null>(null);
+  const [members, setMembers] = useState<Member[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [activeCode, setActiveCode] = useState<string | null>(null);
+  const [codeUpdatedAt, setCodeUpdatedAt] = useState<string | null>(null);
+  const [newCode, setNewCode] = useState("");
+  const [savingCode, setSavingCode] = useState(false);
+  const [sendingVoucher, setSendingVoucher] = useState<string | null>(null);
+  const [expandedMember, setExpandedMember] = useState<string | null>(null);
+  const [warning, setWarning] = useState({ open: false, title: "", message: "" });
+  const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  useEffect(() => {
+    const stored = localStorage.getItem("vip_session");
+    if (!stored) {
+      navigate("/");
+      return;
+    }
+    try {
+      const parsed = JSON.parse(stored);
+      if (parsed.email !== "michael.roks@icloud.com") {
+        navigate("/");
+        return;
+      }
+      setAdminUserId(parsed.userId);
+      loadData(parsed.userId);
+    } catch {
+      navigate("/");
+    }
+  }, [navigate]);
+
+  const loadData = useCallback(async (uid: string) => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("admin-get-members", {
+        body: { adminUserId: uid },
+      });
+      if (!error && data?.success) {
+        setMembers(data.members || []);
+        setActiveCode(data.activeCode || null);
+        setCodeUpdatedAt(data.codeUpdatedAt || null);
+      } else {
+        setWarning({ open: true, title: "Error", message: "Failed to load data." });
+      }
+    } catch {
+      setWarning({ open: true, title: "Error", message: "Failed to load data." });
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const handleSaveCode = async () => {
+    if (!adminUserId || !newCode.trim()) return;
+    setSavingCode(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("admin-update-loyalty-code", {
+        body: { adminUserId, newCode: newCode.trim() },
+      });
+      if (!error && data?.success) {
+        setActiveCode(data.code);
+        setCodeUpdatedAt(new Date().toISOString());
+        setNewCode("");
+        showSuccess("QR code updated! Email sent.");
+      } else {
+        setWarning({ open: true, title: "Error", message: data?.error || "Failed to update code." });
+      }
+    } catch {
+      setWarning({ open: true, title: "Error", message: "Failed to update code." });
+    } finally {
+      setSavingCode(false);
+    }
+  };
+
+  const handleDispatchVoucher = async (targetUserId: string, preset: typeof VOUCHER_PRESETS[0]) => {
+    if (!adminUserId) return;
+    const key = `${targetUserId}-${preset.title}`;
+    setSendingVoucher(key);
+    try {
+      const { data, error } = await supabase.functions.invoke("admin-dispatch-voucher", {
+        body: {
+          adminUserId,
+          targetUserId,
+          voucherTitle: preset.title,
+          voucherDescription: preset.description,
+        },
+      });
+      if (!error && data?.success) {
+        showSuccess(`${preset.title} sent!`);
+      } else {
+        setWarning({ open: true, title: "Error", message: data?.error || "Failed to send voucher." });
+      }
+    } catch {
+      setWarning({ open: true, title: "Error", message: "Failed to send voucher." });
+    } finally {
+      setSendingVoucher(null);
+    }
+  };
+
+  const showSuccess = (msg: string) => {
+    setSuccessMsg(msg);
+    setTimeout(() => setSuccessMsg(null), 3000);
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "Party Boy": return "text-green-400";
+      case "Cruiser": return "text-blue-400";
+      case "Slut": return "text-red-400";
+      default: return "text-muted-foreground";
+    }
+  };
+
+  const filteredMembers = members.filter((m) => {
+    const q = searchQuery.toLowerCase();
+    return (
+      m.name.toLowerCase().includes(q) ||
+      m.email.toLowerCase().includes(q) ||
+      (m.member_number && m.member_number.includes(q))
+    );
+  });
+
+  if (!adminUserId) return null;
+
+  return (
+    <div className="flex flex-col min-h-screen pb-24 bg-background">
+      <div className="pt-8 px-4 max-w-2xl mx-auto w-full space-y-8">
+        {/* Header */}
+        <div className="text-center space-y-2">
+          <Crown className="w-10 h-10 text-primary mx-auto" />
+          <h1 className="text-2xl text-foreground font-extrabold tracking-tight">ADMIN DASHBOARD</h1>
+          <p className="text-muted-foreground text-xs">Manage members, vouchers & loyalty codes</p>
+        </div>
+
+        {/* Success toast */}
+        {successMsg && (
+          <div className="flex items-center gap-2 bg-green-900/60 border border-green-700 rounded-lg px-4 py-3 text-green-200 text-sm animate-fade-in">
+            <Check className="w-4 h-4" />
+            {successMsg}
+          </div>
+        )}
+
+        {/* ═══ LOYALTY MANAGEMENT ═══ */}
+        <section className="space-y-4">
+          <h2 className="text-foreground font-bold text-lg flex items-center gap-2">
+            <QrCode className="w-5 h-5 text-primary" />
+            Loyalty Management
+          </h2>
+
+          <div className="bg-card rounded-xl p-4 space-y-4 border border-border">
+            {/* Current active code */}
+            {activeCode && (
+              <div className="space-y-3">
+                <p className="text-muted-foreground text-xs">Current active code:</p>
+                <div className="bg-secondary rounded-lg p-3 text-center">
+                  <p className="text-foreground font-bold text-lg tracking-widest">{activeCode}</p>
+                  {codeUpdatedAt && (
+                    <p className="text-muted-foreground text-[10px] mt-1">
+                      Updated: {new Date(codeUpdatedAt).toLocaleString()}
+                    </p>
+                  )}
+                </div>
+                <div className="flex justify-center">
+                  <div className="bg-white rounded-lg p-3">
+                    <QRCodeSVG value={activeCode} size={200} />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* New code input */}
+            <div className="space-y-2">
+              <p className="text-muted-foreground text-xs">Set new loyalty code:</p>
+              <div className="flex gap-2">
+                <Input
+                  value={newCode}
+                  onChange={(e) => setNewCode(e.target.value.toUpperCase())}
+                  placeholder="e.g. EAGLE_SUMMER_26"
+                  className="flex-1 uppercase"
+                  maxLength={50}
+                />
+                <button
+                  onClick={handleSaveCode}
+                  disabled={savingCode || !newCode.trim()}
+                  className="bg-primary text-primary-foreground px-4 py-2 rounded-lg font-bold text-sm disabled:opacity-40 transition-all"
+                >
+                  {savingCode ? (
+                    <RefreshCw className="w-4 h-4 animate-spin" />
+                  ) : (
+                    "Save"
+                  )}
+                </button>
+              </div>
+              <p className="text-muted-foreground text-[10px]">
+                Saving invalidates the old code immediately. A QR code email will be sent to your inbox.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* ═══ MEMBER LIST ═══ */}
+        <section className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-foreground font-bold text-lg flex items-center gap-2">
+              <Users className="w-5 h-5 text-primary" />
+              Members ({members.length})
+            </h2>
+            <button
+              onClick={() => adminUserId && loadData(adminUserId)}
+              className="text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <RefreshCw className="w-4 h-4" />
+            </button>
+          </div>
+
+          {/* Search */}
+          <Input
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search by name, email, or member #..."
+            className="w-full"
+          />
+
+          {loading ? (
+            <div className="flex justify-center py-12">
+              <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {filteredMembers.map((member) => {
+                const isExpanded = expandedMember === member.id;
+                return (
+                  <div key={member.id} className="bg-card border border-border rounded-xl overflow-hidden">
+                    {/* Member row */}
+                    <button
+                      onClick={() => setExpandedMember(isExpanded ? null : member.id)}
+                      className="w-full flex items-center justify-between p-3 text-left"
+                    >
+                      <div className="min-w-0 flex-1">
+                        <p className="text-foreground font-bold text-sm truncate">{member.name || "—"}</p>
+                        <p className="text-muted-foreground text-[11px] truncate">{member.email}</p>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <span className={`text-[10px] font-bold ${getStatusColor(member.vip_status)}`}>
+                            {member.vip_status}
+                          </span>
+                          <span className="text-muted-foreground text-[10px]">
+                            · {member.total_stamps_earned} tokens
+                          </span>
+                          {member.member_number && (
+                            <span className="text-muted-foreground text-[10px]">
+                              · #{member.member_number}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      {isExpanded ? (
+                        <ChevronUp className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                      ) : (
+                        <ChevronDown className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                      )}
+                    </button>
+
+                    {/* Expanded: voucher buttons */}
+                    {isExpanded && (
+                      <div className="px-3 pb-3 space-y-2 border-t border-border pt-3">
+                        <p className="text-muted-foreground text-[10px] font-bold uppercase">Quick-Add Voucher</p>
+                        <div className="grid grid-cols-1 gap-2">
+                          {VOUCHER_PRESETS.map((preset) => {
+                            const key = `${member.id}-${preset.title}`;
+                            const isSending = sendingVoucher === key;
+                            return (
+                              <button
+                                key={preset.title}
+                                onClick={() => handleDispatchVoucher(member.id, preset)}
+                                disabled={isSending}
+                                className="flex items-center justify-between bg-secondary hover:bg-secondary/80 rounded-lg px-3 py-2.5 text-sm font-semibold text-foreground transition-all disabled:opacity-40"
+                              >
+                                <span>{preset.label}</span>
+                                {isSending ? (
+                                  <RefreshCw className="w-3.5 h-3.5 animate-spin text-primary" />
+                                ) : (
+                                  <Send className="w-3.5 h-3.5 text-primary" />
+                                )}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+
+              {filteredMembers.length === 0 && (
+                <div className="text-center py-8">
+                  <p className="text-muted-foreground text-sm">No members found.</p>
+                </div>
+              )}
+            </div>
+          )}
+        </section>
+      </div>
+
+      <WarningDialog
+        open={warning.open}
+        title={warning.title}
+        message={warning.message}
+        onClose={() => setWarning({ open: false, title: "", message: "" })}
+      />
+    </div>
+  );
+};
+
+export default AdminDashboard;
