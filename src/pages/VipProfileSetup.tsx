@@ -22,7 +22,10 @@ const VipProfileSetup = () => {
       if (!sessionRaw) { navigate("/vip/login"); return; }
       const session = JSON.parse(sessionRaw);
 
-      await supabase.from("profiles").update({ name: name.trim() }).eq("id", session.userId);
+      const { data, error: fnError } = await supabase.functions.invoke("update-profile-name", {
+        body: { userId: session.userId, name: name.trim() },
+      });
+      if (fnError || !data?.success) throw new Error("Failed to save name");
 
       // Grant a free welcome voucher
       await supabase.functions.invoke("grant-welcome-voucher", {
