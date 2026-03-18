@@ -151,6 +151,7 @@ function getTranslations(lang: string): Translations {
 }
 
 const BYPASS_PATHS = ["/eagle-admin-dashboard"];
+const BYPASS_HOSTS = ["admin.eagleamsterdam.com"];
 
 const PwaGate = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
