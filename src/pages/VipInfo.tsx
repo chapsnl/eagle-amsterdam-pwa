@@ -96,7 +96,7 @@ const VipInfo = () => {
               <div className="mt-2 flex items-start gap-2">
                 <ShieldCheck className="w-4 h-4 text-white/80 mt-0.5 shrink-0" />
                 <p className="text-white/80 text-[16px] leading-relaxed">
-                  Priority Access. Your Member Pass turns <strong className="text-white">Green</strong>.
+                  Priority access. Your Member Pass gets <strong className="text-white">Green</strong>.
                 </p>
               </div>
             </div>
