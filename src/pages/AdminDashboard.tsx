@@ -202,7 +202,14 @@ const AdminDashboard = () => {
     );
   });
 
-  if (!adminUserId) return null;
+  // Top 5: online users first (sorted by most recent activity), then latest signups
+  const recentMembers = (() => {
+    const online = members.filter((m) => isOnline(m.last_active_at))
+      .sort((a, b) => new Date(b.last_active_at!).getTime() - new Date(a.last_active_at!).getTime());
+    const offline = members.filter((m) => !isOnline(m.last_active_at))
+      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    return [...online, ...offline].slice(0, 5);
+  })();
 
   return (
     <div className="flex flex-col min-h-screen pb-8 bg-background">
