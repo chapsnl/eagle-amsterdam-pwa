@@ -33,6 +33,7 @@ const VipLogin = () => {
     setLoading(true);
     try {
       const targetEmail = email.trim().toLowerCase();
+      localStorage.setItem("remembered_email", targetEmail);
       const { data, error: fnError } = await supabase.functions.invoke("send-otp", {
         body: { email: targetEmail },
       });

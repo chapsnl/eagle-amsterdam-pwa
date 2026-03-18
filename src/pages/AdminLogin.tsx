@@ -15,7 +15,7 @@ type Step = "loading" | "set-password" | "login" | "otp";
 const AdminLogin = () => {
   const navigate = useNavigate();
   const [step, setStep] = useState<Step>("loading");
-  const [email, setEmail] = useState(ADMIN_EMAIL);
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [digits, setDigits] = useState<string[]>(Array(CODE_LENGTH).fill(""));
@@ -29,7 +29,7 @@ const AdminLogin = () => {
     if (stored) {
       try {
         const parsed = JSON.parse(stored);
-        const elapsed = Date.now() - (parsed.timestamp || 0);
+        const elapsed = Date.now() - (parsed.lastActivity || parsed.timestamp || 0);
         if (elapsed < 60 * 60 * 1000 && parsed.authenticated) {
           navigate("/eagle-admin-dashboard", { replace: true });
           return;
@@ -40,7 +40,6 @@ const AdminLogin = () => {
       }
     }
 
-    // Check if password is already set
     checkSetup();
   }, []);
 
@@ -53,9 +52,11 @@ const AdminLogin = () => {
         setStep(data.hasPassword ? "login" : "set-password");
       } else {
         setWarning({ open: true, title: "Error", message: "Failed to check admin setup." });
+        setStep("login");
       }
     } catch {
       setWarning({ open: true, title: "Error", message: "Connection failed." });
+      setStep("login");
     }
   };
 
@@ -88,6 +89,10 @@ const AdminLogin = () => {
   };
 
   const handleLogin = async () => {
+    if (!email.trim()) {
+      setWarning({ open: true, title: "Required", message: "Please enter your email address." });
+      return;
+    }
     if (!password) {
       setWarning({ open: true, title: "Required", message: "Please enter your password." });
       return;
@@ -95,7 +100,7 @@ const AdminLogin = () => {
     setLoading(true);
     try {
       const { data } = await supabase.functions.invoke("admin-auth", {
-        body: { action: "verify-password", email: ADMIN_EMAIL, password },
+        body: { action: "verify-password", email: email.trim().toLowerCase(), password },
       });
       if (data?.success && data.otpSent) {
         setPassword("");
@@ -141,12 +146,12 @@ const AdminLogin = () => {
     setLoading(true);
     try {
       const { data } = await supabase.functions.invoke("admin-auth", {
-        body: { action: "verify-otp", email: ADMIN_EMAIL, code },
+        body: { action: "verify-otp", email: email.trim().toLowerCase(), code },
       });
       if (data?.success) {
         localStorage.setItem("admin_session", JSON.stringify({
           userId: data.adminUserId,
-          email: ADMIN_EMAIL,
+          email: email.trim().toLowerCase(),
           sessionToken: data.sessionToken,
           authenticated: true,
           timestamp: Date.now(),
@@ -225,7 +230,7 @@ const AdminLogin = () => {
             </div>
           )}
 
-          {/* Login */}
+          {/* Login — email + password */}
           {step === "login" && (
             <div className="space-y-4">
               <div className="relative">

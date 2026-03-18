@@ -90,7 +90,7 @@ const AdminDashboard = () => {
       loadData(parsed.userId);
       resetActivityTimer();
     } catch {
-      navigate("/eagle-admin-dashboard", { replace: true });
+      navigate(loginPath, { replace: true });
     }
 
     // Listen for user activity
