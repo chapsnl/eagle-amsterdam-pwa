@@ -211,7 +211,7 @@ const Settings = () => {
                 <Button
                   variant="eagle"
                   className="w-full rounded-xl"
-                  disabled={pinDigits.join("").length !== 4}
+                  disabled={pinDigits.join("").length !== 6}
                   onClick={savePin}
                 >
                   SET PIN

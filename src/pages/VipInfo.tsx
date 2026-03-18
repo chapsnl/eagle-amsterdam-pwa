@@ -138,7 +138,7 @@ const VipInfo = () => {
 
           {/* Disclaimer */}
           <p className="text-muted-foreground text-xs italic leading-relaxed mt-3">
-            *Free Entry is limited to Pride, Kings Weekend, and other city-wide events. VIP Members must always show their digital Member Pass on their phone to verify status and skip the standard entry requirements.
+            *Free Entry is limited to Pride, Kings Weekend and other city-wide events. VIP Members must always show their digital Member Pass on their phone to verify status and skip the standard entry requirements.
           </p>
         </div>
       </div>
