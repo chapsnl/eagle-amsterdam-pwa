@@ -1,11 +1,11 @@
-export type VipStatusLevel = "Regular" | "Cruiser" | "Party Boy" | "Slut";
+export type VipStatusLevel = "Regular" | "Party Boy" | "Cruiser" | "Slut";
 
 const APP_OPENS_KEY = "eagle_app_opens";
 
 export function calculateVipStatus(totalStampsEarned: number): VipStatusLevel {
   if (totalStampsEarned >= 50) return "Slut";
-  if (totalStampsEarned >= 25) return "Party Boy";
-  if (totalStampsEarned >= 10) return "Cruiser";
+  if (totalStampsEarned >= 25) return "Cruiser";
+  if (totalStampsEarned >= 10) return "Party Boy";
   return "Regular";
 }
 

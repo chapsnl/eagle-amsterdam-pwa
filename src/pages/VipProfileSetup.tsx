@@ -52,7 +52,7 @@ const VipProfileSetup = () => {
           <div className="text-center space-y-2">
             <h1 className="text-2xl text-foreground">ONE LAST STEP</h1>
             <p className="text-muted-foreground text-xs">
-              Tell us your name to complete your profile.
+              One last thing: What's your name or nickname?
             </p>
           </div>
 
