@@ -52,16 +52,19 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Get active (unredeemed) voucher counts per user
+    // Get active (unredeemed) vouchers per user — include titles
     const { data: vouchers } = await supabase
       .from("member_vouchers")
-      .select("user_id")
+      .select("user_id, title")
       .eq("redeemed", false);
 
     const voucherCounts: Record<string, number> = {};
+    const activeVoucherTitles: Record<string, string[]> = {};
     if (vouchers) {
       for (const v of vouchers) {
         voucherCounts[v.user_id] = (voucherCounts[v.user_id] || 0) + 1;
+        if (!activeVoucherTitles[v.user_id]) activeVoucherTitles[v.user_id] = [];
+        activeVoucherTitles[v.user_id].push(v.title);
       }
     }
 
