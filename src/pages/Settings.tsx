@@ -192,7 +192,7 @@ const Settings = () => {
 
             {showPinSetup && (
               <div className="space-y-3 pt-2">
-                <p className="text-muted-foreground text-xs text-center">Enter a 4-digit PIN</p>
+                <p className="text-muted-foreground text-xs text-center">Enter a 6-digit PIN</p>
                 <div className="flex justify-center gap-3">
                   {pinDigits.map((d, i) => (
                     <input
