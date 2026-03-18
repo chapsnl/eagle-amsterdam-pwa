@@ -150,9 +150,17 @@ function getTranslations(lang: string): Translations {
   };
 }
 
+const BYPASS_PATHS = ["/eagle-admin-dashboard"];
+
 const PwaGate = ({ children }: { children: React.ReactNode }) => {
+  const location = useLocation();
   const [allowed, setAllowed] = useState<boolean | null>(null);
   const [platform, setPlatform] = useState<Platform>("desktop");
+
+  const isBypassRoute = BYPASS_PATHS.some((p) => location.pathname.startsWith(p));
+
+  // Bypass PWA gate for admin routes
+  if (isBypassRoute) return <>{children}</>;
 
   const t = useMemo(() => {
     const lang = navigator.language || "en";
