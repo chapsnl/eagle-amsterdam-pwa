@@ -204,7 +204,7 @@ const Settings = () => {
                       value={d}
                       onChange={(e) => handlePinDigitChange(i, e.target.value)}
                       onKeyDown={(e) => handlePinKeyDown(i, e)}
-                      className="w-12 h-14 text-center text-2xl font-bold bg-secondary border-2 border-border text-foreground rounded-xl focus:border-primary focus:outline-none transition-colors"
+                      className="w-10 h-14 text-center text-2xl font-bold bg-secondary border-2 border-border text-foreground rounded-xl focus:border-primary focus:outline-none transition-colors"
                     />
                   ))}
                 </div>
