@@ -15,7 +15,14 @@ interface Member {
   active_vouchers: number;
   member_number: string | null;
   created_at: string;
+  last_active_at: string | null;
 }
+
+const isOnline = (lastActive: string | null): boolean => {
+  if (!lastActive) return false;
+  const diff = Date.now() - new Date(lastActive).getTime();
+  return diff < 3 * 60 * 1000; // 3 minutes
+};
 
 const VOUCHER_PRESETS = [
   { title: "FREE COAT CHECK", description: "Complimentary coat check.", label: "🧥 Coat Check" },

@@ -41,7 +41,7 @@ Deno.serve(async (req) => {
     // Get all members
     const { data: members, error } = await supabase
       .from("profiles")
-      .select("id, name, email, vip_status, total_stamps_earned, member_number, created_at")
+      .select("id, name, email, vip_status, total_stamps_earned, member_number, created_at, last_active_at")
       .order("created_at", { ascending: false });
 
     if (error) {
