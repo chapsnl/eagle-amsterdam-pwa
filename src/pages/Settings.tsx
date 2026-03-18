@@ -77,7 +77,7 @@ const Settings = () => {
     const next = [...pinDigits];
     next[index] = digit;
     setPinDigits(next);
-    if (digit && index < 3) {
+    if (digit && index < 5) {
       const nextInput = document.getElementById(`pin-setup-${index + 1}`);
       nextInput?.focus();
     }
