@@ -113,7 +113,7 @@ const VipInfo = () => {
               <div className="mt-2 flex items-start gap-2">
                 <ShieldCheck className="w-4 h-4 text-white/80 mt-0.5 shrink-0" />
                 <p className="text-white/80 text-[16px] leading-relaxed">
-                  Free Access*, Fast-Lane Access, Always Access even when we are Full. Your Member Pass turns <strong className="text-white">Blue</strong>.
+                  Free access*, Fast-Lane access, Always access even when we are full. Your Member Pass gets <strong className="text-white">Blue</strong>.
                 </p>
               </div>
             </div>
