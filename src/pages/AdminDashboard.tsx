@@ -388,6 +388,9 @@ const AdminDashboard = () => {
           )}
         </section>
 
+        {/* ═══ SCAN MEMBER PASS ═══ */}
+        <MemberScannerSection onMemberFound={handleMemberScanned} />
+
         {/* ═══ RECENT ACTIVITY ═══ */}
         {!loading && recentMembers.length > 0 && (
           <section className="space-y-4">
