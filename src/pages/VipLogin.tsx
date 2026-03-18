@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Crown, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,9 +8,15 @@ import { supabase } from "@/integrations/supabase/client";
 
 const VipLogin = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  const redirectTarget = useMemo(() => {
+    const redirect = searchParams.get("redirect") || "";
+    return redirect.startsWith("/") ? redirect : "/vip";
+  }, [searchParams]);
 
   useEffect(() => {
     import("@/lib/onesignal").then(({ initOneSignalSilently }) => {
@@ -36,7 +42,8 @@ const VipLogin = () => {
       if (data.smtp_error) { setError(`Code generated but email failed: ${data.smtp_error}`); return; }
 
       sessionStorage.setItem("vip_otp_email", targetEmail);
-      localStorage.setItem("vip_otp_pending", JSON.stringify({ email: targetEmail }));
+      sessionStorage.setItem("vip_redirect_after_verify", redirectTarget);
+      localStorage.setItem("vip_otp_pending", JSON.stringify({ email: targetEmail, redirect: redirectTarget }));
       navigate("/vip/verify");
     } catch (err: any) {
       setError(err.message || "Something went wrong. Please try again.");

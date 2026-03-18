@@ -16,17 +16,19 @@ const VipVerify = () => {
 
   const getLoginState = () => {
     const sEmail = sessionStorage.getItem("vip_otp_email");
-    if (sEmail) return { email: sEmail };
+    const sRedirect = sessionStorage.getItem("vip_redirect_after_verify") || "/vip";
+    if (sEmail) return { email: sEmail, redirect: sRedirect };
     try {
       const pending = JSON.parse(localStorage.getItem("vip_otp_pending") || "{}");
       if (pending.email) {
         sessionStorage.setItem("vip_otp_email", pending.email);
-        return { email: pending.email };
+        sessionStorage.setItem("vip_redirect_after_verify", pending.redirect || "/vip");
+        return { email: pending.email, redirect: pending.redirect || "/vip" };
       }
     } catch {}
-    return { email: "" };
+    return { email: "", redirect: "/vip" };
   };
-  const { email } = getLoginState();
+  const { email, redirect } = getLoginState();
 
   useEffect(() => { if (!email) navigate("/vip"); }, [email, navigate]);
   useEffect(() => { inputRefs.current[0]?.focus(); }, []);
@@ -78,12 +80,14 @@ const VipVerify = () => {
       await migrateLoyaltyStamps(data.userId, data.email);
       sessionStorage.removeItem("vip_otp_email");
       localStorage.removeItem("vip_otp_pending");
+      const nextRoute = redirect.startsWith("/") ? redirect : "/vip";
+      sessionStorage.removeItem("vip_redirect_after_verify");
 
       // Send email to OneSignal
       try { await setOneSignalExternalId(data.email); } catch {}
 
-      if (!data.name) navigate("/vip/profile-setup");
-      else navigate("/vip");
+      if (!data.name && nextRoute === "/vip") navigate("/vip/profile-setup");
+      else navigate(nextRoute);
     } catch (err: any) {
       setError(err.message || "Something went wrong.");
     } finally {
