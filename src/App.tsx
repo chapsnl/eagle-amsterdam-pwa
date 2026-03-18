@@ -69,7 +69,11 @@ const App = () => {
           <PwaGate>
             <Suspense fallback={<PageLoader />}>
               <Routes>
-                <Route path="/" element={<Index />} />
+                <Route path="/" element={
+                  window.location.hostname === "admin.eagleamsterdam.com"
+                    ? <AdminDashboard />
+                    : <Index />
+                } />
                 <Route path="/agenda" element={<Agenda />} />
                 <Route path="/news" element={<News />} />
                 <Route path="/events" element={<Events />} />
