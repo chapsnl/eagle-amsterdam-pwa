@@ -46,6 +46,7 @@ const AdminDashboard = () => {
   const [warning, setWarning] = useState({ open: false, title: "", message: "" });
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [qrSectionOpen, setQrSectionOpen] = useState(false);
   const activityTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const logout = useCallback(() => {

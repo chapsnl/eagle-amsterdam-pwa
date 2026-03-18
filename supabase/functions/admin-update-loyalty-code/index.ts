@@ -63,8 +63,11 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Update the LOYALTY_QR_CODE secret is not possible via edge functions,
-    // so we store it in the table and update scan-loyalty-stamp to check the table first
+    // Reset all users' last_scan_at so everyone can scan the new code immediately
+    await supabase
+      .from("loyalty_stamps")
+      .update({ last_scan_at: null })
+      .neq("id", "00000000-0000-0000-0000-000000000000");
 
     // Send email with the new code to admin
     try {
@@ -74,8 +77,6 @@ Deno.serve(async (req) => {
       const smtpPass = Deno.env.get("SMTP_PASS");
 
       if (smtpHost && smtpPort && smtpUser && smtpPass) {
-        // Use a simple fetch to a mail API or construct SMTP
-        // For simplicity, we'll use the Supabase edge function pattern with nodemailer
         const { SMTPClient } = await import("https://deno.land/x/denomailer@1.6.0/mod.ts");
 
         const client = new SMTPClient({
@@ -108,7 +109,7 @@ Deno.serve(async (req) => {
                 <img src="${qrDataUrl}" alt="QR Code" width="300" height="300" />
               </div>
               <p style="color: #666; font-size: 12px; margin-top: 20px;">
-                The old code has been invalidated. Print this QR code or display it on a tablet at the bar.
+                The old code has been invalidated and all user cooldowns have been reset. Print this QR code or display it on a tablet at the bar.
               </p>
             </div>
           `,
@@ -118,7 +119,6 @@ Deno.serve(async (req) => {
       }
     } catch (emailErr) {
       console.error("[admin-update-loyalty-code] Email error:", emailErr);
-      // Don't fail the request if email fails
     }
 
     return new Response(

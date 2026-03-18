@@ -25,12 +25,13 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
-    // Check if user already has a welcome voucher (prevent duplicates)
+    // Check if user already has an unredeemed welcome voucher (prevent duplicates)
     const { data: existing } = await supabase
       .from("member_vouchers")
       .select("id")
       .eq("user_id", userId)
       .eq("title", "FREE COAT CHECK")
+      .eq("redeemed", false)
       .limit(1);
 
     if (existing && existing.length > 0) {
