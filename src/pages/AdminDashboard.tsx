@@ -6,6 +6,13 @@ import { QRCodeSVG } from "qrcode.react";
 import { Input } from "@/components/ui/input";
 import WarningDialog from "@/components/shared/WarningDialog";
 
+interface MemberVoucher {
+  title: string;
+  redeemed: boolean;
+  redeemed_at: string | null;
+  created_at: string;
+}
+
 interface Member {
   id: string;
   name: string;
@@ -13,6 +20,7 @@ interface Member {
   vip_status: string;
   total_stamps_earned: number;
   active_vouchers: number;
+  vouchers: MemberVoucher[];
   member_number: string | null;
   created_at: string;
   last_active_at: string | null;
