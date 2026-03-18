@@ -53,7 +53,15 @@ Deno.serve(async (req) => {
 
     if (existingUser) {
       userId = existingUser.id;
-      await supabase.from("profiles").update({ name: otpRecord.name }).eq("id", userId);
+      // Only update name if profile has no name and OTP provided one
+      const { data: existingProfile } = await supabase
+        .from("profiles")
+        .select("name")
+        .eq("id", userId)
+        .maybeSingle();
+      if ((!existingProfile?.name || existingProfile.name.trim() === "") && otpRecord.name) {
+        await supabase.from("profiles").update({ name: otpRecord.name }).eq("id", userId);
+      }
     } else {
       const tempPassword = crypto.randomUUID();
       const { data: newUser, error: createError } = await supabase.auth.admin.createUser({
