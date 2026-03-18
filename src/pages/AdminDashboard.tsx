@@ -199,7 +199,7 @@ const AdminDashboard = () => {
   const handleMemberScanned = useCallback((memberNumber: string) => {
     const found = members.find((m) => m.member_number === memberNumber);
     if (found) {
-      setSearchQuery(memberNumber);
+      setScannedMember(found);
       setExpandedMember(found.id);
       showSuccess(`Found: ${found.name || found.email}`);
     } else {
