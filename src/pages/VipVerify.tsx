@@ -88,10 +88,8 @@ const VipVerify = () => {
       try { await setOneSignalExternalId(data.email); } catch {}
 
       if (!data.name || data.name.trim() === "") {
-        // No name on profile — ask user to set one
         navigate("/vip/profile-setup");
       } else {
-        toast.success(`Welcome Back, ${data.name}!`, { duration: 4000 });
         navigate(nextRoute === "/vip" ? "/vip/dashboard" : nextRoute);
       }
     } catch (err: any) {
