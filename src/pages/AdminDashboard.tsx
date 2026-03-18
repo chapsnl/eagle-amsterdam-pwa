@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Crown, Users, QrCode, Gift, RefreshCw, Check, Send, ChevronDown, ChevronUp, LogOut, ScanLine } from "lucide-react";
+import { Crown, Users, QrCode, Gift, RefreshCw, Check, Send, ChevronDown, ChevronUp, LogOut, ScanLine, Search } from "lucide-react";
 import MemberScannerSection from "@/components/admin/MemberScannerSection";
 import { supabase } from "@/integrations/supabase/client";
 import { QRCodeSVG } from "qrcode.react";
@@ -416,6 +416,29 @@ const AdminDashboard = () => {
 
         {/* ═══ SCAN MEMBER PASS ═══ */}
         <MemberScannerSection onMemberFound={handleMemberScanned} />
+
+        {/* ═══ SEARCH MEMBER ═══ */}
+        <section className="space-y-3">
+          <h2 className="text-foreground font-bold text-lg flex items-center gap-2">
+            <Search className="w-5 h-5 text-primary" />
+            Search Member
+          </h2>
+          <Input
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search by name, email, or member #..."
+            className="w-full"
+          />
+          {searchQuery.trim() && (
+            <div className="space-y-2">
+              {filteredMembers.length > 0 ? (
+                filteredMembers.map(renderMemberRow)
+              ) : (
+                <p className="text-muted-foreground text-sm text-center py-4">No members found.</p>
+              )}
+            </div>
+          )}
+        </section>
 
         {/* ═══ RECENT ACTIVITY ═══ */}
         {!loading && recentMembers.length > 0 && (
