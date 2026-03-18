@@ -190,6 +190,9 @@ const PwaGate = ({ children }: { children: React.ReactNode }) => {
     setAllowed(false);
   }, [isBypassRoute]);
 
+  // Bypass for admin routes - immediate, no waiting
+  if (isBypassRoute) return <>{children}</>;
+
   // Still detecting
   if (allowed === null) {
     return (
