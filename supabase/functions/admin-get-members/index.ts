@@ -52,22 +52,28 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Get active (unredeemed) voucher counts per user
+    // Get all vouchers per user (active and redeemed)
     const { data: vouchers } = await supabase
       .from("member_vouchers")
-      .select("user_id")
-      .eq("redeemed", false);
+      .select("user_id, title, redeemed, redeemed_at, created_at")
+      .order("created_at", { ascending: false });
 
     const voucherCounts: Record<string, number> = {};
+    const voucherDetails: Record<string, Array<{ title: string; redeemed: boolean; redeemed_at: string | null; created_at: string }>> = {};
     if (vouchers) {
       for (const v of vouchers) {
-        voucherCounts[v.user_id] = (voucherCounts[v.user_id] || 0) + 1;
+        if (!v.redeemed) {
+          voucherCounts[v.user_id] = (voucherCounts[v.user_id] || 0) + 1;
+        }
+        if (!voucherDetails[v.user_id]) voucherDetails[v.user_id] = [];
+        voucherDetails[v.user_id].push({ title: v.title, redeemed: v.redeemed, redeemed_at: v.redeemed_at, created_at: v.created_at });
       }
     }
 
     const membersWithVouchers = (members || []).map((m: any) => ({
       ...m,
       active_vouchers: voucherCounts[m.id] || 0,
+      vouchers: voucherDetails[m.id] || [],
     }));
 
     // Get current active loyalty code
