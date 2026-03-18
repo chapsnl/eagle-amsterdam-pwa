@@ -15,7 +15,14 @@ interface Member {
   active_vouchers: number;
   member_number: string | null;
   created_at: string;
+  last_active_at: string | null;
 }
+
+const isOnline = (lastActive: string | null): boolean => {
+  if (!lastActive) return false;
+  const diff = Date.now() - new Date(lastActive).getTime();
+  return diff < 3 * 60 * 1000; // 3 minutes
+};
 
 const VOUCHER_PRESETS = [
   { title: "FREE COAT CHECK", description: "Complimentary coat check.", label: "🧥 Coat Check" },
@@ -195,7 +202,87 @@ const AdminDashboard = () => {
     );
   });
 
+  // Top 5: online users first (sorted by most recent activity), then latest signups
+  const recentMembers = (() => {
+    const online = members.filter((m) => isOnline(m.last_active_at))
+      .sort((a, b) => new Date(b.last_active_at!).getTime() - new Date(a.last_active_at!).getTime());
+    const offline = members.filter((m) => !isOnline(m.last_active_at))
+      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    return [...online, ...offline].slice(0, 5);
+  })();
+
   if (!adminUserId) return null;
+
+  const renderMemberRow = (member: Member) => {
+    const isExpanded = expandedMember === member.id;
+    const online = isOnline(member.last_active_at);
+    return (
+      <div key={member.id} className="bg-card border border-border rounded-xl overflow-hidden">
+        <button
+          onClick={() => setExpandedMember(isExpanded ? null : member.id)}
+          className="w-full flex items-center justify-between p-3 text-left"
+        >
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2">
+              {online && (
+                <span className="w-2 h-2 rounded-full bg-green-500 flex-shrink-0 animate-pulse" />
+              )}
+              <p className="text-foreground font-bold text-sm truncate">{member.name || "—"}</p>
+            </div>
+            <p className="text-muted-foreground text-[11px] truncate">{member.email}</p>
+            <div className="flex items-center gap-2 mt-0.5">
+              <span className={`text-[10px] font-bold ${getStatusColor(member.vip_status)}`}>
+                {member.vip_status}
+              </span>
+              <span className="text-muted-foreground text-[10px]">
+                · {member.total_stamps_earned} tokens
+              </span>
+              <span className="text-muted-foreground text-[10px]">
+                · {member.active_vouchers} voucher{member.active_vouchers !== 1 ? "s" : ""}
+              </span>
+              {member.member_number && (
+                <span className="text-muted-foreground text-[10px]">
+                  · #{member.member_number}
+                </span>
+              )}
+            </div>
+          </div>
+          {isExpanded ? (
+            <ChevronUp className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+          ) : (
+            <ChevronDown className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+          )}
+        </button>
+
+        {isExpanded && (
+          <div className="px-3 pb-3 space-y-2 border-t border-border pt-3">
+            <p className="text-muted-foreground text-[10px] font-bold uppercase">Quick-Add Voucher</p>
+            <div className="grid grid-cols-1 gap-2">
+              {VOUCHER_PRESETS.map((preset) => {
+                const key = `${member.id}-${preset.title}`;
+                const isSending = sendingVoucher === key;
+                return (
+                  <button
+                    key={preset.title}
+                    onClick={() => handleDispatchVoucher(member.id, preset)}
+                    disabled={isSending}
+                    className="flex items-center justify-between bg-secondary hover:bg-secondary/80 rounded-lg px-3 py-2.5 text-sm font-semibold text-foreground transition-all disabled:opacity-40"
+                  >
+                    <span>{preset.label}</span>
+                    {isSending ? (
+                      <RefreshCw className="w-3.5 h-3.5 animate-spin text-primary" />
+                    ) : (
+                      <Send className="w-3.5 h-3.5 text-primary" />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
 
   return (
     <div className="flex flex-col min-h-screen pb-8 bg-background">
@@ -276,12 +363,25 @@ const AdminDashboard = () => {
           </div>
         </section>
 
-        {/* ═══ MEMBER LIST ═══ */}
+        {/* ═══ RECENT ACTIVITY ═══ */}
+        {!loading && recentMembers.length > 0 && (
+          <section className="space-y-4">
+            <h2 className="text-foreground font-bold text-lg flex items-center gap-2">
+              <Users className="w-5 h-5 text-primary" />
+              Recent Activity
+            </h2>
+            <div className="space-y-2">
+              {recentMembers.map(renderMemberRow)}
+            </div>
+          </section>
+        )}
+
+        {/* ═══ ALL MEMBERS ═══ */}
         <section className="space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-foreground font-bold text-lg flex items-center gap-2">
               <Users className="w-5 h-5 text-primary" />
-              Members ({members.length})
+              All Members ({members.length})
             </h2>
             <button
               onClick={() => adminUserId && loadData(adminUserId)}
@@ -304,71 +404,7 @@ const AdminDashboard = () => {
             </div>
           ) : (
             <div className="space-y-2">
-              {filteredMembers.map((member) => {
-                const isExpanded = expandedMember === member.id;
-                return (
-                  <div key={member.id} className="bg-card border border-border rounded-xl overflow-hidden">
-                    <button
-                      onClick={() => setExpandedMember(isExpanded ? null : member.id)}
-                      className="w-full flex items-center justify-between p-3 text-left"
-                    >
-                      <div className="min-w-0 flex-1">
-                        <p className="text-foreground font-bold text-sm truncate">{member.name || "—"}</p>
-                        <p className="text-muted-foreground text-[11px] truncate">{member.email}</p>
-                        <div className="flex items-center gap-2 mt-0.5">
-                          <span className={`text-[10px] font-bold ${getStatusColor(member.vip_status)}`}>
-                            {member.vip_status}
-                          </span>
-                          <span className="text-muted-foreground text-[10px]">
-                             · {member.total_stamps_earned} tokens
-                          </span>
-                          <span className="text-muted-foreground text-[10px]">
-                            · {member.active_vouchers} voucher{member.active_vouchers !== 1 ? "s" : ""}
-                          </span>
-                          {member.member_number && (
-                             <span className="text-muted-foreground text-[10px]">
-                              · #{member.member_number}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                      {isExpanded ? (
-                        <ChevronUp className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                      ) : (
-                        <ChevronDown className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                      )}
-                    </button>
-
-                    {isExpanded && (
-                      <div className="px-3 pb-3 space-y-2 border-t border-border pt-3">
-                        <p className="text-muted-foreground text-[10px] font-bold uppercase">Quick-Add Voucher</p>
-                        <div className="grid grid-cols-1 gap-2">
-                          {VOUCHER_PRESETS.map((preset) => {
-                            const key = `${member.id}-${preset.title}`;
-                            const isSending = sendingVoucher === key;
-                            return (
-                              <button
-                                key={preset.title}
-                                onClick={() => handleDispatchVoucher(member.id, preset)}
-                                disabled={isSending}
-                                className="flex items-center justify-between bg-secondary hover:bg-secondary/80 rounded-lg px-3 py-2.5 text-sm font-semibold text-foreground transition-all disabled:opacity-40"
-                              >
-                                <span>{preset.label}</span>
-                                {isSending ? (
-                                  <RefreshCw className="w-3.5 h-3.5 animate-spin text-primary" />
-                                ) : (
-                                  <Send className="w-3.5 h-3.5 text-primary" />
-                                )}
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-
+              {filteredMembers.map(renderMemberRow)}
               {filteredMembers.length === 0 && (
                 <div className="text-center py-8">
                   <p className="text-muted-foreground text-sm">No members found.</p>

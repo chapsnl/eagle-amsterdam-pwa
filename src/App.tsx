@@ -9,6 +9,7 @@ import BottomNav from "@/components/BottomNav";
 import DevModeIndicator from "@/components/DevModeIndicator";
 import PwaGate from "@/components/PwaGate";
 import PinLockScreen from "@/components/PinLockScreen";
+import { useActivityHeartbeat } from "@/hooks/useActivityHeartbeat";
 
 // Lazy-loaded pages
 const Index = lazy(() => import("./pages/Index"));
@@ -55,6 +56,8 @@ const App = () => {
       .then(({ initOneSignalSilently }) => initOneSignalSilently())
       .catch(() => {/* OneSignal unavailable */});
   }, []);
+
+  useActivityHeartbeat();
 
   if (!pinUnlocked) {
     return <PinLockScreen onUnlock={() => setPinUnlocked(true)} />;
