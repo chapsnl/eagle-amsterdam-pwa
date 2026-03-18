@@ -67,7 +67,7 @@ const Settings = () => {
       setShowPinSetup(false);
     } else {
       // Show PIN setup
-      setPinDigits(["", "", "", ""]);
+      setPinDigits(["", "", "", "", "", ""]);
       setShowPinSetup(true);
     }
   };
