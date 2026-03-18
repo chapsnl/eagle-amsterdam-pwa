@@ -72,7 +72,7 @@ const App = () => {
               <Routes>
                 <Route path="/" element={
                   window.location.hostname === "admin.eagleamsterdam.com"
-                    ? <AdminDashboard />
+                    ? <AdminLogin />
                     : <Index />
                 } />
                 <Route path="/agenda" element={<Agenda />} />
