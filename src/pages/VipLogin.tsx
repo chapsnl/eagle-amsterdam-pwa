@@ -9,7 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 const VipLogin = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(() => localStorage.getItem("remembered_email") || "");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
