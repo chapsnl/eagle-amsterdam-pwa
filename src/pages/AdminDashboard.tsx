@@ -173,6 +173,7 @@ const AdminDashboard = () => {
       });
       if (!error && data?.success) {
         showSuccess(`${preset.title} sent!`);
+        if (adminUserId) await loadData(adminUserId);
       } else {
         setWarning({ open: true, title: "Error", message: data?.error || "Failed to send voucher." });
       }
