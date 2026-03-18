@@ -317,6 +317,25 @@ const AdminDashboard = () => {
           ADMIN LOGOUT
         </button>
 
+        {/* ═══ SCANNED MEMBER ═══ */}
+        {scannedMember && (
+          <section className="space-y-2">
+            <div className="flex items-center justify-between">
+              <h2 className="text-foreground font-bold text-sm flex items-center gap-2">
+                <ScanLine className="w-4 h-4 text-primary" />
+                Scanned Member
+              </h2>
+              <button
+                onClick={() => { setScannedMember(null); setExpandedMember(null); }}
+                className="text-muted-foreground hover:text-foreground text-xs font-semibold transition-colors"
+              >
+                Dismiss
+              </button>
+            </div>
+            {renderMemberRow(scannedMember)}
+          </section>
+        )}
+
         {/* Success toast */}
         {successMsg && (
           <div className="flex items-center gap-2 bg-green-900/60 border border-green-700 rounded-lg px-4 py-3 text-green-200 text-sm animate-fade-in">
