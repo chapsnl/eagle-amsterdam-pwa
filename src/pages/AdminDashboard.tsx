@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Crown, Users, QrCode, Gift, RefreshCw, Check, Send, ChevronDown, ChevronUp, LogOut, ScanLine, Search, Shirt, Ticket, Beer } from "lucide-react";
 import MemberScannerSection from "@/components/admin/MemberScannerSection";
+import InviteUserSection from "@/components/admin/InviteUserSection";
 import { supabase } from "@/integrations/supabase/client";
 import { QRCodeSVG } from "qrcode.react";
 import { Input } from "@/components/ui/input";
