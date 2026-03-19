@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Settings as SettingsIcon, Crown, User, Mail, Hash, Calendar, Star, LogOut } from "lucide-react";
+import { ArrowLeft, Settings as SettingsIcon, Crown, User, Mail, Hash, Calendar, Star, LogOut, Bell, BellOff, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -19,6 +19,10 @@ const Settings = () => {
   const [loading, setLoading] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
+  // Push notification state
+  const [pushStatus, setPushStatus] = useState<"loading" | "granted" | "denied" | "default">("loading");
+  const [pushRequesting, setPushRequesting] = useState(false);
+
   useEffect(() => {
     const stored = localStorage.getItem("vip_session");
     if (stored) {
@@ -35,6 +39,29 @@ const Settings = () => {
     setLoading(false);
   }, []);
 
+  // Check push notification status
+  useEffect(() => {
+    if (!isLoggedIn) return;
+    if ("Notification" in window) {
+      setPushStatus(Notification.permission as "granted" | "denied" | "default");
+    } else {
+      setPushStatus("denied");
+    }
+  }, [isLoggedIn]);
+
+  const handleEnablePush = async () => {
+    setPushRequesting(true);
+    try {
+      const { requestPushPermission } = await import("@/lib/onesignal");
+      const granted = await requestPushPermission();
+      setPushStatus(granted ? "granted" : "denied");
+    } catch {
+      setPushStatus("denied");
+    } finally {
+      setPushRequesting(false);
+    }
+  };
+
   const loadProfile = async (userId: string, sessionName?: string) => {
     try {
       const { data } = await supabase.functions.invoke("get-profile", {
@@ -42,7 +69,6 @@ const Settings = () => {
       });
       if (data?.success && data.profile) {
         const p = data.profile;
-        // Use session name (from signup) as fallback if profile name is empty
         if ((!p.name || p.name.trim() === "") && sessionName) {
           p.name = sessionName;
         }
@@ -102,7 +128,6 @@ const Settings = () => {
           <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
         </div>
       ) : !isLoggedIn ? (
-        /* Not logged in */
         <div className="border border-border rounded-xl p-6 bg-card neon-border text-center space-y-4">
           <Crown className="w-10 h-10 text-primary mx-auto" />
           <p className="text-muted-foreground text-sm">
@@ -113,7 +138,6 @@ const Settings = () => {
           </Button>
         </div>
       ) : (
-        /* Logged in — show profile */
         <div className="space-y-4">
           <div className="border border-border rounded-xl bg-card neon-border overflow-hidden">
             {infoRows.map((row, i) => (
@@ -128,6 +152,62 @@ const Settings = () => {
                 <span className="text-foreground text-sm font-semibold">{row.value}</span>
               </div>
             ))}
+          </div>
+
+          {/* Push Notifications */}
+          <div className="border border-border rounded-xl bg-card neon-border p-5 space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                {pushStatus === "granted" ? (
+                  <Bell className="w-5 h-5 text-primary" />
+                ) : (
+                  <BellOff className="w-5 h-5 text-muted-foreground" />
+                )}
+                <div>
+                  <p className="text-foreground text-sm font-semibold">Push Notifications</p>
+                  <p className="text-muted-foreground text-xs">
+                    {pushStatus === "loading"
+                      ? "Checking…"
+                      : pushStatus === "granted"
+                        ? "Notifications are enabled"
+                        : pushStatus === "denied"
+                          ? "Notifications are blocked"
+                          : "Notifications are not enabled"}
+                  </p>
+                </div>
+              </div>
+
+              {pushStatus === "granted" ? (
+                <span className="px-3 py-1 rounded-full bg-primary/20 text-primary text-xs font-bold">
+                  Active
+                </span>
+              ) : pushStatus === "denied" ? (
+                <span className="px-3 py-1 rounded-full bg-destructive/20 text-destructive text-xs font-bold">
+                  Blocked
+                </span>
+              ) : null}
+            </div>
+
+            {pushStatus === "default" && (
+              <button
+                onClick={handleEnablePush}
+                disabled={pushRequesting}
+                className="w-full flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl py-3 font-bold text-sm transition-colors disabled:opacity-60"
+              >
+                {pushRequesting ? (
+                  <RefreshCw className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Bell className="w-4 h-4" />
+                )}
+                {pushRequesting ? "Requesting…" : "Enable Push Notifications"}
+              </button>
+            )}
+
+            {pushStatus === "denied" && (
+              <p className="text-muted-foreground text-xs text-center">
+                Notifications were blocked. To enable them, open your browser or device settings and allow notifications for this app.
+              </p>
+            )}
           </div>
 
           {/* Logout */}
