@@ -122,7 +122,7 @@ Deno.serve(async (req) => {
       await Promise.all([profilePromise, newsletterPromise]);
     }
 
-    // Generate magic link + fetch profile + cleanup OTP in parallel
+    // Generate magic link + fetch profile in parallel
     const [signInResult, profileResult] = await Promise.all([
       supabase.auth.admin.generateLink({
         type: "magiclink",
@@ -135,11 +135,11 @@ Deno.serve(async (req) => {
         .single(),
     ]);
 
-    // Fire-and-forget OTP cleanup
-    supabase.from("otp_codes").delete().eq("email", targetEmail).then(() => {});
-
     const profile = profileResult.data;
     const resolvedName = (profile?.name && profile.name.trim() !== "") ? profile.name : otpRecord.name;
+
+    // Only consume the OTP after everything above succeeded.
+    await supabase.from("otp_codes").delete().eq("id", otpRecord.id);
 
     return new Response(
       JSON.stringify({
