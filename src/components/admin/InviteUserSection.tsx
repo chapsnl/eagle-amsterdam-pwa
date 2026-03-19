@@ -17,7 +17,7 @@ const InviteUserSection = ({ adminUserId }: InviteUserSectionProps) => {
   const [error, setError] = useState("");
 
   const handleOpen = () => {
-    setEmail("");
+    setEmail(localStorage.getItem("remembered_invite_email") || "");
     setError("");
     setSent(false);
     setOpen(true);
