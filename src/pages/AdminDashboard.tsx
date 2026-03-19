@@ -295,7 +295,10 @@ const AdminDashboard = () => {
                         : "bg-secondary hover:bg-secondary/80 text-foreground"
                     }`}
                   >
-                    <span>{preset.label}{hasUnredeemed ? " (active)" : ""}</span>
+                    <span className="flex items-center gap-2">
+                      <preset.icon className="w-4 h-4" />
+                      {preset.label}{hasUnredeemed ? " (active)" : ""}
+                    </span>
                     {isSending ? (
                       <RefreshCw className="w-3.5 h-3.5 animate-spin text-primary" />
                     ) : (
