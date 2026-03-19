@@ -165,9 +165,16 @@ export async function requestPushPermission(): Promise<boolean> {
 
 export async function setOneSignalExternalId(email: string) {
   await withOneSignal(async (OneSignal) => {
-    await OneSignal.login(email);
-    await OneSignal.User.addEmail(email);
+    const normalizedEmail = email.trim().toLowerCase();
+
+    if (Notification.permission !== "granted") {
+      throw new Error("Push permission not granted");
+    }
+
     await OneSignal.User?.PushSubscription?.optIn?.();
+    await waitForValidSubscriptionId();
+    await OneSignal.login(normalizedEmail);
+    await OneSignal.User.addEmail(normalizedEmail);
   });
 }
 

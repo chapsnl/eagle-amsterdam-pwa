@@ -55,8 +55,9 @@ const Settings = () => {
       const { requestPushPermission, setOneSignalExternalId } = await import("@/lib/onesignal");
       const granted = await requestPushPermission();
       setPushStatus(granted ? "granted" : "denied");
+
       if (granted && profile?.email) {
-        try { await setOneSignalExternalId(profile.email); } catch {}
+        await setOneSignalExternalId(profile.email);
       }
     } catch {
       setPushStatus("denied");
