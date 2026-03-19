@@ -20,14 +20,16 @@ Deno.serve(async (req) => {
       );
     }
 
+    const targetEmail = email.toLowerCase();
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
+    // Validate OTP
     const { data: otpRecord, error: fetchError } = await supabase
       .from("otp_codes")
       .select("*")
-      .eq("email", email.toLowerCase())
+      .eq("email", targetEmail)
       .eq("code", code)
       .eq("verified", false)
       .gt("expires_at", new Date().toISOString())
@@ -42,39 +44,37 @@ Deno.serve(async (req) => {
       );
     }
 
-    await supabase.from("otp_codes").update({ verified: true }).eq("id", otpRecord.id);
+    // Mark OTP as verified (fire-and-forget)
+    supabase.from("otp_codes").update({ verified: true }).eq("id", otpRecord.id).then(() => {});
 
-    const { data: existingUsers } = await supabase.auth.admin.listUsers();
-    const existingUser = existingUsers?.users?.find(
-      (u) => u.email?.toLowerCase() === email.toLowerCase()
-    );
+    // Use getUserByEmail instead of listUsers — much faster
+    const { data: userData } = await supabase.auth.admin.getUserByEmail(targetEmail);
+    const existingUser = userData?.user ?? null;
 
     let userId: string;
 
     if (existingUser) {
       userId = existingUser.id;
-      // Ensure profile exists for this user
+      // Ensure profile exists — run in parallel with generate link
       const { data: existingProfile } = await supabase
         .from("profiles")
         .select("name")
         .eq("id", userId)
         .maybeSingle();
-      
+
       if (!existingProfile) {
-        // Profile missing — create it
         await supabase.from("profiles").upsert({
           id: userId,
           name: otpRecord.name || "",
-          email: email.toLowerCase(),
+          email: targetEmail,
         }, { onConflict: "id" });
       } else if ((!existingProfile.name || existingProfile.name.trim() === "") && otpRecord.name) {
-        // Profile exists but no name — update if OTP provided one
-        await supabase.from("profiles").update({ name: otpRecord.name }).eq("id", userId);
+        supabase.from("profiles").update({ name: otpRecord.name }).eq("id", userId).then(() => {});
       }
     } else {
       const tempPassword = crypto.randomUUID();
       const { data: newUser, error: createError } = await supabase.auth.admin.createUser({
-        email: email.toLowerCase(),
+        email: targetEmail,
         password: tempPassword,
         email_confirm: true,
         user_metadata: { name: otpRecord.name },
@@ -89,60 +89,68 @@ Deno.serve(async (req) => {
 
       userId = newUser.user.id;
 
-      await supabase.from("profiles").upsert({
+      // Profile upsert + newsletter subscription in parallel
+      const profilePromise = supabase.from("profiles").upsert({
         id: userId,
         name: otpRecord.name,
-        email: email.toLowerCase(),
+        email: targetEmail,
       }, { onConflict: "id" });
 
-      // Subscribe new member to Sender.net mailing list
-      try {
-        const SENDER_API_TOKEN = Deno.env.get("SENDER_API_TOKEN");
-        const SENDER_GROUP_ID = Deno.env.get("SENDER_GROUP_ID");
-        if (SENDER_API_TOKEN && SENDER_GROUP_ID) {
-          await fetch("https://api.sender.net/v2/subscribers", {
-            method: "POST",
-            headers: {
-              "Authorization": `Bearer ${SENDER_API_TOKEN}`,
-              "Content-Type": "application/json",
-              "Accept": "application/json",
-            },
-            body: JSON.stringify({
-              email: email.toLowerCase(),
-              groups: [SENDER_GROUP_ID],
-            }),
-          });
+      const newsletterPromise = (async () => {
+        try {
+          const SENDER_API_TOKEN = Deno.env.get("SENDER_API_TOKEN");
+          const SENDER_GROUP_ID = Deno.env.get("SENDER_GROUP_ID");
+          if (SENDER_API_TOKEN && SENDER_GROUP_ID) {
+            await fetch("https://api.sender.net/v2/subscribers", {
+              method: "POST",
+              headers: {
+                "Authorization": `Bearer ${SENDER_API_TOKEN}`,
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+              },
+              body: JSON.stringify({
+                email: targetEmail,
+                groups: [SENDER_GROUP_ID],
+              }),
+            });
+          }
+        } catch (e) {
+          console.error("Sender.net subscription failed (non-blocking):", e);
         }
-      } catch (e) {
-        console.error("Sender.net subscription failed (non-blocking):", e);
-      }
+      })();
+
+      await Promise.all([profilePromise, newsletterPromise]);
     }
 
-    const { data: signInData } = await supabase.auth.admin.generateLink({
-      type: "magiclink",
-      email: email.toLowerCase(),
-    });
+    // Generate magic link + fetch profile + cleanup OTP in parallel
+    const [signInResult, profileResult] = await Promise.all([
+      supabase.auth.admin.generateLink({
+        type: "magiclink",
+        email: targetEmail,
+      }),
+      supabase
+        .from("profiles")
+        .select("name, member_number, created_at")
+        .eq("id", userId)
+        .single(),
+    ]);
 
-    await supabase.from("otp_codes").delete().eq("email", email.toLowerCase());
+    // Fire-and-forget OTP cleanup
+    supabase.from("otp_codes").delete().eq("email", targetEmail).then(() => {});
 
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("name, member_number, created_at")
-      .eq("id", userId)
-      .single();
-
+    const profile = profileResult.data;
     const resolvedName = (profile?.name && profile.name.trim() !== "") ? profile.name : otpRecord.name;
 
     return new Response(
       JSON.stringify({
         success: true,
         userId,
-        email: email.toLowerCase(),
+        email: targetEmail,
         name: resolvedName,
         member_number: profile?.member_number || "",
         created_at: profile?.created_at || "",
-        hashed_token: signInData?.properties?.hashed_token || "",
-        verification_url: signInData?.properties?.action_link || "",
+        hashed_token: signInResult.data?.properties?.hashed_token || "",
+        verification_url: signInResult.data?.properties?.action_link || "",
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );

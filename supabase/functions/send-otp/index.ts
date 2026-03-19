@@ -30,25 +30,11 @@ Deno.serve(async (req) => {
     }
 
     const code = Math.floor(1000 + Math.random() * 9000).toString();
+    const targetEmail = email.toLowerCase();
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
-
-    await supabase.from("otp_codes").delete().eq("email", email.toLowerCase());
-
-    const { error: insertError } = await supabase.from("otp_codes").insert({
-      email: email.toLowerCase(),
-      code,
-      name: name || "",
-    });
-
-    if (insertError) {
-      return new Response(
-        JSON.stringify({ success: false, error: "Failed to store verification code" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
 
     const SMTP_HOST = Deno.env.get("SMTP_HOST");
     const SMTP_PORT = Deno.env.get("SMTP_PORT") || "465";
@@ -63,12 +49,32 @@ Deno.serve(async (req) => {
     }
 
     const port = parseInt(SMTP_PORT);
+    // Create transporter immediately (no verify() call — saves ~1-2s)
     const transporter = nodemailer.createTransport({
       host: SMTP_HOST, port, secure: port === 465,
       auth: { user: SMTP_USER, pass: SMTP_PASS },
+      connectionTimeout: 5000,
+      greetingTimeout: 5000,
+      socketTimeout: 10000,
     });
 
-    await transporter.verify();
+    // Run DB cleanup + insert in parallel with nothing blocking
+    const [deleteResult] = await Promise.all([
+      supabase.from("otp_codes").delete().eq("email", targetEmail),
+    ]);
+
+    const { error: insertError } = await supabase.from("otp_codes").insert({
+      email: targetEmail,
+      code,
+      name: name || "",
+    });
+
+    if (insertError) {
+      return new Response(
+        JSON.stringify({ success: false, error: "Failed to store verification code" }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
 
     const htmlBody = `
 <!DOCTYPE html>
@@ -108,11 +114,23 @@ Deno.serve(async (req) => {
 </body>
 </html>`;
 
-    await transporter.sendMail({
-      from: SMTP_USER, to: email,
-      subject: "Eagle Amsterdam - Your VIP Code",
-      html: htmlBody,
-    });
+    let smtpError: string | null = null;
+    try {
+      await transporter.sendMail({
+        from: SMTP_USER, to: targetEmail,
+        subject: "Eagle Amsterdam - Your VIP Code",
+        html: htmlBody,
+      });
+    } catch (e: any) {
+      smtpError = e.message || "Email delivery failed";
+    }
+
+    if (smtpError) {
+      return new Response(
+        JSON.stringify({ success: true, smtp_error: smtpError }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
 
     return new Response(
       JSON.stringify({ success: true }),
