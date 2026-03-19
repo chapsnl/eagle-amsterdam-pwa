@@ -41,17 +41,6 @@ const Index = () => {
         </div>
       </div>
 
-      {/* Quick Actions */}
-      <div className="p-6 pb-0 flex flex-col gap-4 max-w-lg mx-auto w-full">
-        <Button variant="eagle" size="lg" className="w-full" onClick={() => navigate("/agenda")}>
-          <Calendar className="w-5 h-5 mr-2" />
-          UPCOMING EVENTS
-        </Button>
-        <Button variant="eagle-outline" size="lg" className="w-full" onClick={() => navigate("/contact")}>
-          <MapPin className="w-5 h-5 mr-2" />
-          FIND US
-        </Button>
-      </div>
     </div>
   );
 };
