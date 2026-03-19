@@ -7,6 +7,8 @@ import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { isDevMode } from "@/lib/devMode";
 
+const DEV = isDevMode();
+
 const VipLogin = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -15,8 +17,8 @@ const VipLogin = () => {
   const [error, setError] = useState("");
 
   const redirectTarget = useMemo(() => {
-    const redirect = searchParams.get("redirect") || "";
-    return redirect.startsWith("/") ? redirect : "/vip";
+    const r = searchParams.get("redirect") || "";
+    return r.startsWith("/") ? r : "/vip";
   }, [searchParams]);
 
   useEffect(() => {
@@ -29,56 +31,33 @@ const VipLogin = () => {
     setError("");
     const trimmed = email.trim().toLowerCase();
 
-    if (!trimmed) {
-      setError("Please enter your email address.");
-      return;
-    }
-
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
-      setError("Please enter a valid email address.");
-      return;
-    }
+    if (!trimmed) { setError("Please enter your email address."); return; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) { setError("Please enter a valid email address."); return; }
 
     setLoading(true);
+    if (DEV) console.log("[VipLogin] Sending OTP to:", trimmed);
 
     try {
-      if (isDevMode()) console.log("[VipLogin] Sending OTP to:", trimmed);
-
       localStorage.setItem("remembered_email", trimmed);
 
       const { data, error: fnError } = await supabase.functions.invoke("send-otp", {
         body: { email: trimmed },
       });
 
-      if (isDevMode()) console.log("[VipLogin] send-otp response:", { data, fnError });
+      if (DEV) console.log("[VipLogin] Response:", { data, fnError });
 
-      if (fnError) {
-        setError("Could not send code. Please try again.");
-        return;
-      }
+      if (fnError) { setError("Could not send code. Please try again."); return; }
+      if (!data?.success) { setError(data?.error || "Failed to send code."); return; }
+      if (data.smtp_error) { setError(`Code generated but email failed: ${data.smtp_error}`); return; }
 
-      if (!data?.success) {
-        setError(data?.error || "Failed to send code. Please try again.");
-        return;
-      }
-
-      if (data.smtp_error) {
-        setError(`Code generated but email failed: ${data.smtp_error}`);
-        return;
-      }
-
-      // Store state for the verify page
       sessionStorage.setItem("vip_otp_email", trimmed);
       sessionStorage.setItem("vip_redirect_after_verify", redirectTarget);
-      localStorage.setItem(
-        "vip_otp_pending",
-        JSON.stringify({ email: trimmed, redirect: redirectTarget })
-      );
+      localStorage.setItem("vip_otp_pending", JSON.stringify({ email: trimmed, redirect: redirectTarget }));
 
       navigate("/vip/verify");
     } catch (err: any) {
-      if (isDevMode()) console.error("[VipLogin] Error:", err);
-      setError(err.message || "Something went wrong. Please try again.");
+      if (DEV) console.error("[VipLogin] Error:", err);
+      setError(err.message || "Something went wrong.");
     } finally {
       setLoading(false);
     }

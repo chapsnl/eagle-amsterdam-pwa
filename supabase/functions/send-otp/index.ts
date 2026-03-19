@@ -27,25 +27,24 @@ Deno.serve(async (req) => {
     }
 
     const targetEmail = email.trim().toLowerCase();
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(targetEmail)) {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(targetEmail)) {
       return json({ success: false, error: "Invalid email address" }, 400);
     }
 
-    // ── Generate a clean 4-digit code ──
+    // Generate clean 4-digit code
     const code = String(Math.floor(1000 + Math.random() * 9000));
-    console.log(`[send-otp] Generated code "${code}" for ${targetEmail}`);
+    console.log(`[send-otp] Code="${code}" email="${targetEmail}"`);
 
-    // ── Supabase client (service role) ──
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    // Supabase service-role client
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+    );
 
-    // ── Delete any previous codes for this email ──
+    // Clear old codes for this email
     await supabase.from("otp_codes").delete().eq("email", targetEmail);
-    console.log(`[send-otp] Cleared old codes for ${targetEmail}`);
 
-    // ── Insert new code (expires_at defaults to NOW() + 15 min in DB, but we override to 10 min) ──
+    // 10-minute expiration
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
 
     const { error: insertError } = await supabase.from("otp_codes").insert({
@@ -56,13 +55,13 @@ Deno.serve(async (req) => {
     });
 
     if (insertError) {
-      console.error("[send-otp] Insert failed:", insertError.message);
-      return json({ success: false, error: "Failed to store verification code" }, 500);
+      console.error("[send-otp] Insert error:", insertError.message);
+      return json({ success: false, error: "Failed to store code" }, 500);
     }
 
-    console.log(`[send-otp] Stored code, expires at ${expiresAt}`);
+    console.log(`[send-otp] Stored. Expires: ${expiresAt}`);
 
-    // ── SMTP setup ──
+    // SMTP
     const SMTP_HOST = Deno.env.get("SMTP_HOST");
     const SMTP_PORT = Deno.env.get("SMTP_PORT") || "465";
     const SMTP_USER = Deno.env.get("SMTP_USER");
@@ -83,7 +82,7 @@ Deno.serve(async (req) => {
       socketTimeout: 10000,
     });
 
-    // ── Email body — plain digits, no hidden characters ──
+    // Monospace code, plain-text fallback, no hidden chars
     const htmlBody = `<!DOCTYPE html>
 <html><head><meta charset="utf-8"></head>
 <body style="margin:0;padding:0;background:#fff;font-family:Arial,Helvetica,sans-serif;">
@@ -119,7 +118,7 @@ Deno.serve(async (req) => {
         text: textBody,
         html: htmlBody,
       });
-      console.log(`[send-otp] Email sent successfully to ${targetEmail}`);
+      console.log(`[send-otp] Email sent to ${targetEmail}`);
     } catch (e: any) {
       smtpError = e.message || "Email delivery failed";
       console.error(`[send-otp] SMTP error: ${smtpError}`);
@@ -131,7 +130,7 @@ Deno.serve(async (req) => {
 
     return json({ success: true });
   } catch (error: any) {
-    console.error("[send-otp] Unhandled error:", error.message);
+    console.error("[send-otp] Unhandled:", error.message);
     return json({ success: false, error: error.message || "Failed to send code" }, 500);
   }
 });

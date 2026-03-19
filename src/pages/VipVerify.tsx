@@ -20,7 +20,7 @@ const VipVerify = () => {
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const verifyingRef = useRef(false);
 
-  // ── Recover email from session/local storage ──
+  // Recover email from session/local storage
   const getLoginState = () => {
     const sEmail = sessionStorage.getItem("vip_otp_email");
     const sRedirect = sessionStorage.getItem("vip_redirect_after_verify") || "/vip";
@@ -46,59 +46,56 @@ const VipVerify = () => {
     inputRefs.current[0]?.focus();
   }, []);
 
-  // ── Show warning dialog (red, round, 3s auto-dismiss) ──
   const showWarning = (msg: string) => {
     setWarningMsg(msg);
     setWarningOpen(true);
   };
 
-  // ── Verify the code against the backend ──
+  // Core verification logic
   const doVerify = useCallback(
     async (code: string) => {
       if (verifyingRef.current) return;
       verifyingRef.current = true;
       setLoading(true);
 
-      if (DEV) console.log(`[VipVerify] Submitting code "${code}" for email "${email}"`);
+      if (DEV) console.log(`[VipVerify] Submitting code="${code}" email="${email}"`);
 
       try {
         const { data, error: fnError } = await supabase.functions.invoke("verify-otp", {
           body: { email, code },
         });
 
-        if (DEV) console.log("[VipVerify] verify-otp response:", { data, fnError });
+        if (DEV) console.log("[VipVerify] Response:", { data, fnError });
 
+        // Connection / CORS error
         if (fnError) {
-          if (DEV) console.error("[VipVerify] Function invocation error:", fnError);
+          if (DEV) console.error("[VipVerify] fnError:", fnError);
           showWarning("Connection error. Please try again.");
           setDigits(Array(CODE_LENGTH).fill(""));
-          setTimeout(() => inputRefs.current[0]?.focus(), 350);
+          setTimeout(() => inputRefs.current[0]?.focus(), 400);
           return;
         }
 
+        // Invalid code
         if (!data?.success) {
-          const errMsg = data?.error || "Invalid or expired code.";
-          if (DEV) console.log("[VipVerify] Verification failed:", errMsg);
+          if (DEV) console.log("[VipVerify] Failed:", data?.error);
           showWarning("Invalid or expired code. Please try again.");
           setDigits(Array(CODE_LENGTH).fill(""));
-          setTimeout(() => inputRefs.current[0]?.focus(), 350);
+          setTimeout(() => inputRefs.current[0]?.focus(), 400);
           return;
         }
 
-        if (DEV) console.log("[VipVerify] Verification success!", data);
+        if (DEV) console.log("[VipVerify] SUCCESS:", data);
 
-        // ── Authenticate with Supabase Auth ──
+        // Authenticate with Supabase Auth
         if (data.verification_url && data.hashed_token) {
           const { error: authError } = await supabase.auth.verifyOtp({
             email,
             token_hash: data.hashed_token,
             type: "magiclink",
           });
-
-          if (DEV) console.log("[VipVerify] Auth verifyOtp result:", { authError });
-
+          if (DEV) console.log("[VipVerify] Auth result:", { authError });
           if (authError) {
-            // Fallback: store session locally
             localStorage.setItem(
               "vip_session",
               JSON.stringify({
@@ -127,30 +124,29 @@ const VipVerify = () => {
           );
         }
 
-        // ── Post-login tasks ──
+        // Post-login
         await migrateLoyaltyStamps(data.userId, data.email);
         sessionStorage.removeItem("vip_otp_email");
         localStorage.removeItem("vip_otp_pending");
         sessionStorage.removeItem("vip_redirect_after_verify");
 
-        // OneSignal
         try {
           await setOneSignalExternalId(data.email);
         } catch {}
 
-        // ── Navigate ──
+        // Navigate
         if (!data.name || data.name.trim() === "") {
           navigate("/vip/profile-setup");
         } else {
           toast.success(`Welcome Back, ${data.name}!`);
-          const nextRoute = redirect.startsWith("/") ? redirect : "/vip/dashboard";
-          navigate(nextRoute === "/vip" ? "/vip/dashboard" : nextRoute);
+          const next = redirect.startsWith("/") ? redirect : "/vip/member-pass";
+          navigate(next === "/vip" ? "/vip/member-pass" : next);
         }
       } catch (err: any) {
-        if (DEV) console.error("[VipVerify] Unhandled error:", err);
+        if (DEV) console.error("[VipVerify] Unhandled:", err);
         showWarning("Something went wrong. Please try again.");
         setDigits(Array(CODE_LENGTH).fill(""));
-        setTimeout(() => inputRefs.current[0]?.focus(), 350);
+        setTimeout(() => inputRefs.current[0]?.focus(), 400);
       } finally {
         setLoading(false);
         verifyingRef.current = false;
@@ -159,7 +155,7 @@ const VipVerify = () => {
     [email, redirect, navigate]
   );
 
-  // ── Input handlers ──
+  // Auto-focus next + auto-submit on 4th digit
   const handleChange = useCallback(
     (index: number, value: string) => {
       const digit = value.replace(/\D/g, "").slice(-1);
@@ -167,15 +163,13 @@ const VipVerify = () => {
         const next = [...prev];
         next[index] = digit;
 
-        // Auto-submit when last digit entered
         if (digit && index === CODE_LENGTH - 1) {
-          const fullCode = next.join("");
-          if (fullCode.length === CODE_LENGTH) {
-            if (DEV) console.log(`[VipVerify] Auto-submitting code: "${fullCode}"`);
-            setTimeout(() => doVerify(fullCode), 50);
+          const full = next.join("");
+          if (full.length === CODE_LENGTH) {
+            if (DEV) console.log(`[VipVerify] Auto-submit: "${full}"`);
+            setTimeout(() => doVerify(full), 80);
           }
         }
-
         return next;
       });
 
@@ -200,7 +194,6 @@ const VipVerify = () => {
       e.preventDefault();
       const pasted = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, CODE_LENGTH);
       if (!pasted) return;
-
       if (DEV) console.log(`[VipVerify] Pasted: "${pasted}"`);
 
       const newDigits = Array(CODE_LENGTH).fill("");
@@ -208,9 +201,8 @@ const VipVerify = () => {
       setDigits(newDigits);
       inputRefs.current[Math.min(pasted.length, CODE_LENGTH - 1)]?.focus();
 
-      // Auto-submit if full code pasted
       if (pasted.length === CODE_LENGTH) {
-        setTimeout(() => doVerify(pasted), 50);
+        setTimeout(() => doVerify(pasted), 80);
       }
     },
     [doVerify]
@@ -259,9 +251,9 @@ const VipVerify = () => {
                 value={digit}
                 onChange={(e) => handleChange(i, e.target.value)}
                 onKeyDown={(e) => handleKeyDown(i, e)}
+                disabled={loading}
                 className="w-14 h-16 text-center text-3xl font-bold bg-secondary border-2 border-border text-foreground rounded-xl focus:border-primary focus:outline-none transition-colors"
                 autoComplete="one-time-code"
-                disabled={loading}
               />
             ))}
           </div>
@@ -288,7 +280,7 @@ const VipVerify = () => {
   );
 };
 
-async function migrateLoyaltyStamps(userId: string, email: string) {
+async function migrateLoyaltyStamps(userId: string, _email: string) {
   try {
     const saved = localStorage.getItem("eagle-loyalty-stamps");
     if (!saved) return;
@@ -320,9 +312,7 @@ async function migrateLoyaltyStamps(userId: string, email: string) {
         last_scan_at: lastScan ? new Date(parseInt(lastScan)).toISOString() : null,
       });
     }
-  } catch {
-    // Stamp migration failed silently
-  }
+  } catch {}
 }
 
 export default VipVerify;

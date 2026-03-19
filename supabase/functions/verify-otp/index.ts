@@ -20,23 +20,25 @@ Deno.serve(async (req) => {
 
   try {
     const { email, code } = await req.json();
-    console.log(`[verify-otp] Attempt — email: ${email}, code submitted: "${code}"`);
+    console.log(`[verify-otp] email="${email}" submitted_code="${code}"`);
 
     if (!email || !code) {
       return json({ success: false, error: "Email and code are required" }, 400);
     }
 
-    const targetEmail = email.trim().toLowerCase();
+    const targetEmail = String(email).trim().toLowerCase();
     const submittedCode = String(code).trim();
 
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+    );
 
-    // ── Fetch the latest unused, non-expired OTP for this email ──
+    // Server time for comparison
     const now = new Date().toISOString();
-    console.log(`[verify-otp] Server time (ISO): ${now}`);
+    console.log(`[verify-otp] server_time=${now}`);
 
+    // Fetch latest UNUSED, non-expired code for this email
     const { data: otpRecord, error: fetchError } = await supabase
       .from("otp_codes")
       .select("*")
@@ -48,21 +50,20 @@ Deno.serve(async (req) => {
       .maybeSingle();
 
     if (fetchError) {
-      console.error("[verify-otp] DB fetch error:", fetchError.message);
+      console.error("[verify-otp] DB error:", fetchError.message);
       return json({ success: false, error: "Database error" }, 500);
     }
 
     if (!otpRecord) {
-      console.log(`[verify-otp] No valid OTP found for ${targetEmail}`);
+      console.log("[verify-otp] No valid OTP record found");
       return json({ success: false, error: "No valid code found. Please request a new one." }, 400);
     }
 
-    console.log(`[verify-otp] DB code: "${otpRecord.code}", submitted: "${submittedCode}", expires: ${otpRecord.expires_at}`);
+    console.log(`[verify-otp] db_code="${otpRecord.code}" submitted="${submittedCode}" expires="${otpRecord.expires_at}"`);
 
-    // ── Compare codes ──
+    // Compare
     if (otpRecord.code !== submittedCode) {
-      console.log("[verify-otp] Code mismatch!");
-      // Increment attempts
+      console.log("[verify-otp] MISMATCH");
       await supabase
         .from("otp_codes")
         .update({ attempts: (otpRecord.attempts || 0) + 1 })
@@ -70,79 +71,74 @@ Deno.serve(async (req) => {
       return json({ success: false, error: "Invalid code. Please try again." }, 400);
     }
 
-    console.log("[verify-otp] Code matches! Processing login...");
+    console.log("[verify-otp] MATCH — processing login");
 
-    // ── Find or create user ──
+    // Find or create user
     const { data: userData } = await supabase.auth.admin.getUserByEmail(targetEmail);
     const existingUser = userData?.user ?? null;
-
     let userId: string;
 
     if (existingUser) {
       userId = existingUser.id;
       console.log(`[verify-otp] Existing user: ${userId}`);
 
-      // Ensure profile exists
-      const { data: existingProfile } = await supabase
+      const { data: profile } = await supabase
         .from("profiles")
         .select("name")
         .eq("id", userId)
         .maybeSingle();
 
-      if (!existingProfile) {
+      if (!profile) {
         await supabase.from("profiles").upsert(
           { id: userId, name: otpRecord.name || "", email: targetEmail },
           { onConflict: "id" }
         );
       }
     } else {
-      console.log("[verify-otp] Creating new user...");
-      const tempPassword = crypto.randomUUID();
+      console.log("[verify-otp] Creating new user");
       const { data: newUser, error: createError } = await supabase.auth.admin.createUser({
         email: targetEmail,
-        password: tempPassword,
+        password: crypto.randomUUID(),
         email_confirm: true,
         user_metadata: { name: otpRecord.name },
       });
 
       if (createError) {
-        console.error("[verify-otp] User creation failed:", createError.message);
+        console.error("[verify-otp] Create user failed:", createError.message);
         return json({ success: false, error: "Failed to create account" }, 500);
       }
 
       userId = newUser.user.id;
-      console.log(`[verify-otp] New user created: ${userId}`);
 
       // Profile + newsletter in parallel
-      const profilePromise = supabase.from("profiles").upsert(
-        { id: userId, name: otpRecord.name || "", email: targetEmail },
-        { onConflict: "id" }
-      );
-
-      const newsletterPromise = (async () => {
-        try {
-          const SENDER_API_TOKEN = Deno.env.get("SENDER_API_TOKEN");
-          const SENDER_GROUP_ID = Deno.env.get("SENDER_GROUP_ID");
-          if (SENDER_API_TOKEN && SENDER_GROUP_ID) {
-            await fetch("https://api.sender.net/v2/subscribers", {
-              method: "POST",
-              headers: {
-                Authorization: `Bearer ${SENDER_API_TOKEN}`,
-                "Content-Type": "application/json",
-                Accept: "application/json",
-              },
-              body: JSON.stringify({ email: targetEmail, groups: [SENDER_GROUP_ID] }),
-            });
+      await Promise.all([
+        supabase.from("profiles").upsert(
+          { id: userId, name: otpRecord.name || "", email: targetEmail },
+          { onConflict: "id" }
+        ),
+        (async () => {
+          try {
+            const token = Deno.env.get("SENDER_API_TOKEN");
+            const group = Deno.env.get("SENDER_GROUP_ID");
+            if (token && group) {
+              await fetch("https://api.sender.net/v2/subscribers", {
+                method: "POST",
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                  "Content-Type": "application/json",
+                  Accept: "application/json",
+                },
+                body: JSON.stringify({ email: targetEmail, groups: [group] }),
+              });
+            }
+          } catch (e) {
+            console.error("[verify-otp] Newsletter error:", e);
           }
-        } catch (e) {
-          console.error("[verify-otp] Newsletter subscription failed:", e);
-        }
-      })();
-
-      await Promise.all([profilePromise, newsletterPromise]);
+        })(),
+      ]);
     }
 
-    // ── Generate magic link + fetch profile in parallel ──
+    // Magic link + profile in parallel
     const [signInResult, profileResult] = await Promise.all([
       supabase.auth.admin.generateLink({ type: "magiclink", email: targetEmail }),
       supabase.from("profiles").select("name, member_number, created_at").eq("id", userId).single(),
@@ -152,11 +148,11 @@ Deno.serve(async (req) => {
     const resolvedName =
       profile?.name && profile.name.trim() !== "" ? profile.name : otpRecord.name || "";
 
-    // ── Mark code as used ONLY after everything succeeded ──
+    // Mark OTP as used ONLY after everything succeeded
     await supabase.from("otp_codes").update({ verified: true }).eq("id", otpRecord.id);
-    console.log(`[verify-otp] OTP marked as used for ${targetEmail}`);
+    console.log(`[verify-otp] OTP marked used for ${targetEmail}`);
 
-    const response = {
+    const result = {
       success: true,
       userId,
       email: targetEmail,
@@ -167,10 +163,10 @@ Deno.serve(async (req) => {
       verification_url: signInResult.data?.properties?.action_link || "",
     };
 
-    console.log("[verify-otp] Success response:", JSON.stringify({ ...response, hashed_token: "[redacted]" }));
-    return json(response);
+    console.log("[verify-otp] Success:", JSON.stringify({ ...result, hashed_token: "[redacted]" }));
+    return json(result);
   } catch (error: any) {
-    console.error("[verify-otp] Unhandled error:", error.message);
+    console.error("[verify-otp] Unhandled:", error.message);
     return json({ success: false, error: error.message || "Verification failed" }, 500);
   }
 });
