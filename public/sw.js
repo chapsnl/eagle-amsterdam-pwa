@@ -1,4 +1,4 @@
-const CACHE_NAME = "eagle-v4";
+const CACHE_NAME = "eagle-v5";
 const APP_SHELL = [
   "/",
   "/manifest.json",
@@ -30,7 +30,29 @@ self.addEventListener("fetch", (event) => {
 
   if (request.method !== "GET") return;
 
-  // Google Fonts: cache-first (long-lived, rarely changes)
+  // NEVER intercept OneSignal requests — let the OneSignal SW handle push
+  if (
+    url.hostname === "cdn.onesignal.com" ||
+    url.hostname === "onesignal.com" ||
+    url.pathname.includes("OneSignal") ||
+    url.pathname.includes("onesignal") ||
+    url.pathname.startsWith("/api/v1/") ||
+    url.hostname.includes("onesignal")
+  ) {
+    return;
+  }
+
+  // Never cache Supabase API calls
+  if (
+    url.hostname.includes("supabase") ||
+    url.pathname.startsWith("/functions/") ||
+    url.pathname.startsWith("/rest/") ||
+    url.pathname.startsWith("/auth/")
+  ) {
+    return;
+  }
+
+  // Google Fonts: cache-first
   if (
     url.hostname === "fonts.googleapis.com" ||
     url.hostname === "fonts.gstatic.com"
@@ -50,7 +72,7 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Static assets: cache-first (JS, CSS, images, fonts)
+  // Static assets: cache-first
   if (
     url.pathname.match(/\.(js|css|png|jpg|jpeg|webp|svg|ico|woff2?)$/) ||
     url.pathname.startsWith("/assets/")

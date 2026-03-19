@@ -9,15 +9,24 @@ const INIT_FLAG = "eagle-onesignal-initialized";
 
 let sdkLoaded = false;
 let sdkLoadPromise: Promise<void> | null = null;
+let initDone = false;
 
-const SDK_LOAD_TIMEOUT_MS = 8000;
-const SDK_READY_TIMEOUT_MS = 7000;
+const SDK_LOAD_TIMEOUT_MS = 10000;
+const SDK_READY_TIMEOUT_MS = 8000;
 
 async function loadOneSignalSDK(): Promise<void> {
   if (sdkLoaded) return;
 
   if (!sdkLoadPromise) {
     sdkLoadPromise = new Promise((resolve, reject) => {
+      // Check if script already exists
+      const existing = document.querySelector('script[src*="OneSignalSDK"]');
+      if (existing) {
+        sdkLoaded = true;
+        resolve();
+        return;
+      }
+
       const script = document.createElement("script");
       script.src = "https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js";
       script.defer = true;
@@ -91,25 +100,28 @@ export interface OneSignalPushState {
 
 /**
  * Silently initialises OneSignal without requesting permissions.
- * No custom UI at all — just background SDK setup.
  */
 export async function initOneSignalSilently() {
+  if (initDone) return;
+
   await withOneSignal(async (OneSignal) => {
+    if (initDone) return;
+
     await OneSignal.init({
       appId: APP_ID,
       serviceWorkerParam: { scope: "/" },
       serviceWorkerPath: "/OneSignalSDKWorker.js",
-      serviceWorkerUpdaterPath: "/OneSignalSDKUpdaterWorker.js",
-      autoPrompt: false,
-      autoRegister: true,
       notifyButton: { enable: false },
     });
+
+    initDone = true;
 
     const isStandalone =
       (navigator as any).standalone === true ||
       window.matchMedia("(display-mode: standalone)").matches;
 
-    await OneSignal.User.addTag("device_type", isStandalone ? "pwa" : "browser");
+    // Fire-and-forget tag
+    OneSignal.User.addTag("device_type", isStandalone ? "pwa" : "browser").catch(() => {});
   });
 }
 
@@ -130,7 +142,6 @@ export async function getOneSignalPushState(): Promise<OneSignalPushState> {
 
 /**
  * Requests the native system push permission prompt.
- * Must be called from a user interaction (click/tap) for browser compliance.
  */
 export async function requestPushPermission(): Promise<boolean> {
   return withOneSignal(async (OneSignal) => {
