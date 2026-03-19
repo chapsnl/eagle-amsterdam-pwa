@@ -2,7 +2,7 @@ import { memo } from "react";
 import { Gift } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-const TOTAL_STAMPS = 9;
+const TOTAL_STAMPS = 6;
 
 interface StampCardProps {
   stamps: number;
@@ -41,13 +41,9 @@ const StampCard = memo(({ stamps, onRewardOpen }: StampCardProps) => {
             >
               {filled ? (
                 <svg viewBox="0 0 32 32" fill="currentColor" className="w-9 h-9">
-                  {/* Shaft */}
                   <rect x="13" y="4" width="6" height="18" rx="3" />
-                  {/* Head */}
                   <ellipse cx="16" cy="4" rx="4.2" ry="3.2" />
-                  {/* Left ball */}
                   <circle cx="12.5" cy="25.5" r="4" />
-                  {/* Right ball */}
                   <circle cx="19.5" cy="25.5" r="4" />
                 </svg>
               ) : (

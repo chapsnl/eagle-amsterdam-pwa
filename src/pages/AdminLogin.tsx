@@ -30,7 +30,7 @@ const AdminLogin = () => {
       try {
         const parsed = JSON.parse(stored);
         const elapsed = Date.now() - (parsed.lastActivity || parsed.timestamp || 0);
-        if (elapsed < 60 * 60 * 1000 && parsed.authenticated) {
+        if (elapsed < 4 * 60 * 60 * 1000 && parsed.authenticated) {
           navigate("/eagle-admin-dashboard", { replace: true });
           return;
         }

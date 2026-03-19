@@ -5,7 +5,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const TOTAL_STAMPS = 9;
+const TOTAL_STAMPS = 6;
 const COOLDOWN_MS = 160 * 60 * 60 * 1000; // 160 hours
 
 Deno.serve(async (req) => {
@@ -23,14 +23,12 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Validate QR code server-side — check active_loyalty_code table first, then fallback to secret
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     let validCode = Deno.env.get("LOYALTY_QR_CODE") || "EAGLE2027";
 
-    // Check if there's a dynamic code in the database (takes priority)
     const { data: activeCode } = await supabase
       .from("active_loyalty_code")
       .select("code")
@@ -49,14 +47,12 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Get current loyalty_stamps row
     const { data: loyalty } = await supabase
       .from("loyalty_stamps")
       .select("*")
       .eq("user_id", userId)
       .maybeSingle();
 
-    // Check cooldown
     if (loyalty?.last_scan_at) {
       const elapsed = Date.now() - new Date(loyalty.last_scan_at).getTime();
       if (elapsed < COOLDOWN_MS) {
@@ -68,7 +64,6 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Check if card is already full
     const currentStamps = loyalty?.stamps ?? 0;
     if (currentStamps >= TOTAL_STAMPS) {
       return new Response(
@@ -80,7 +75,6 @@ Deno.serve(async (req) => {
     const newStamps = Math.min(currentStamps + 1, TOTAL_STAMPS);
     const now = new Date().toISOString();
 
-    // Upsert loyalty_stamps
     if (loyalty) {
       await supabase
         .from("loyalty_stamps")
@@ -111,13 +105,75 @@ Deno.serve(async (req) => {
 
     await supabase.from("profiles").update(updates).eq("id", userId);
 
+    // Auto-grant FREE ENTRY voucher when card is full (6 stamps)
+    let voucherGranted = false;
+    if (newStamps >= TOTAL_STAMPS) {
+      // Check if user already has an unredeemed FREE ENTRY voucher
+      const { data: existingVoucher } = await supabase
+        .from("member_vouchers")
+        .select("id")
+        .eq("user_id", userId)
+        .eq("title", "FREE ENTRY SUNDAY SEX PARTY")
+        .eq("redeemed", false)
+        .limit(1);
+
+      if (!existingVoucher || existingVoucher.length === 0) {
+        await supabase.from("member_vouchers").insert({
+          user_id: userId,
+          title: "FREE ENTRY SUNDAY SEX PARTY",
+          description: "Free entry to a Sunday Sex Party — NcAdam, Horsemen and Knights, or Cum Hunks. Enjoy!",
+        });
+        voucherGranted = true;
+
+        // Reset the stamp card to 0
+        await supabase
+          .from("loyalty_stamps")
+          .update({ stamps: 0, redeemed: false })
+          .eq("user_id", userId);
+      }
+
+      // Send push notification about the voucher
+      if (voucherGranted) {
+        try {
+          const { data: userProfile } = await supabase
+            .from("profiles")
+            .select("email")
+            .eq("id", userId)
+            .maybeSingle();
+
+          if (userProfile?.email) {
+            const onesignalKey = Deno.env.get("ONESIGNAL_REST_API_KEY");
+            if (onesignalKey) {
+              await fetch("https://api.onesignal.com/notifications", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  "Authorization": `Key ${onesignalKey}`,
+                },
+                body: JSON.stringify({
+                  app_id: "e5e608d0-1fad-4e9a-84ca-9812ac96a3a1",
+                  include_aliases: { external_id: [userProfile.email] },
+                  target_channel: "push",
+                  headings: { en: "🎉 Free Entry Unlocked!" },
+                  contents: { en: "You've earned free entry to a Sunday Sex Party! Check your Member Deals." },
+                }),
+              });
+            }
+          }
+        } catch (e) {
+          console.error("[scan-loyalty-stamp] Push notification error:", e);
+        }
+      }
+    }
+
     return new Response(
       JSON.stringify({
         success: true,
-        stamps: newStamps,
+        stamps: voucherGranted ? 0 : newStamps,
         totalStampsEarned: newTotal,
         vipStatus: newStatus,
         levelUp: newStatus !== oldStatus ? newStatus : null,
+        voucherGranted,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );

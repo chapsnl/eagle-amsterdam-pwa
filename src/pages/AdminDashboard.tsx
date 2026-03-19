@@ -32,7 +32,7 @@ const VOUCHER_PRESETS = [
   { title: "FREE DRINK", description: "One free drink at the bar.", label: "Free Drink", icon: Beer },
 ];
 
-const SESSION_TIMEOUT = 60 * 60 * 1000; // 1 hour
+const SESSION_TIMEOUT = 4 * 60 * 60 * 1000; // 4 hours
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
