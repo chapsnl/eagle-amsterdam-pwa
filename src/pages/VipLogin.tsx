@@ -72,7 +72,7 @@ const VipLogin = () => {
                 type="email"
                 placeholder=" "
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => { setEmail(e.target.value); localStorage.setItem("remembered_email", e.target.value.trim().toLowerCase()); }}
                 className="bg-secondary border-2 border-border text-foreground rounded-xl h-14 pt-5 pb-2 px-4 peer"
                 maxLength={255}
               />
