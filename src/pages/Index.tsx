@@ -1,4 +1,5 @@
-import { MapPin, Settings } from "lucide-react";
+import { Calendar, MapPin, Settings } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 const heroImage = "https://www.eagleamsterdam.com/wp-content/uploads/2025/12/Header-3b-copy.webp";
 import eagleLogo from "@/assets/eagle-logo-white.webp";
@@ -41,6 +42,12 @@ const Index = () => {
         </div>
       </div>
 
+      <div className="p-6 pb-0 flex flex-col gap-4 max-w-lg mx-auto w-full">
+        <Button variant="eagle" size="lg" className="w-full" onClick={() => navigate("/agenda")}>
+          <Calendar className="w-5 h-5 mr-2" />
+          UPCOMING EVENTS
+        </Button>
+      </div>
     </div>
   );
 };
