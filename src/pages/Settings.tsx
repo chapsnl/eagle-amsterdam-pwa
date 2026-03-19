@@ -130,60 +130,6 @@ const Settings = () => {
             ))}
           </div>
 
-          {/* PIN Lock */}
-          <div className="border border-border rounded-xl bg-card neon-border p-5 space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                {pinEnabled ? (
-                  <Shield className="w-5 h-5 text-primary" />
-                ) : (
-                  <ShieldOff className="w-5 h-5 text-muted-foreground" />
-                )}
-                <div>
-                  <p className="text-foreground text-sm font-semibold">App Lock</p>
-                  <p className="text-muted-foreground text-xs">Require a 6-digit PIN to open the app</p>
-                </div>
-              </div>
-              <button
-                onClick={handlePinToggle}
-                className={`relative w-12 h-7 rounded-full transition-colors ${pinEnabled ? "bg-primary" : "bg-secondary"}`}
-              >
-                <span
-                  className={`absolute top-0.5 w-6 h-6 rounded-full bg-foreground transition-transform ${pinEnabled ? "left-[22px]" : "left-0.5"}`}
-                />
-              </button>
-            </div>
-
-            {showPinSetup && (
-              <div className="space-y-3 pt-2">
-                <p className="text-muted-foreground text-xs text-center">Enter a 6-digit PIN</p>
-                <div className="flex justify-center gap-3">
-                  {pinDigits.map((d, i) => (
-                    <input
-                      key={i}
-                      id={`pin-setup-${i}`}
-                      type="text"
-                      inputMode="numeric"
-                      maxLength={1}
-                      value={d}
-                      onChange={(e) => handlePinDigitChange(i, e.target.value)}
-                      onKeyDown={(e) => handlePinKeyDown(i, e)}
-                      className="w-10 h-14 text-center text-2xl font-bold bg-secondary border-2 border-border text-foreground rounded-xl focus:border-primary focus:outline-none transition-colors"
-                    />
-                  ))}
-                </div>
-                <Button
-                  variant="eagle"
-                  className="w-full rounded-xl"
-                  disabled={pinDigits.join("").length !== 6}
-                  onClick={savePin}
-                >
-                  SET PIN
-                </Button>
-              </div>
-            )}
-          </div>
-
           {/* Logout */}
           <button
             onClick={handleLogout}
