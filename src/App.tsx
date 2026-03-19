@@ -8,7 +8,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import BottomNav from "@/components/BottomNav";
 import DevModeIndicator from "@/components/DevModeIndicator";
 import PwaGate from "@/components/PwaGate";
-import PinLockScreen from "@/components/PinLockScreen";
+
 import { useActivityHeartbeat } from "@/hooks/useActivityHeartbeat";
 
 // Lazy-loaded pages
