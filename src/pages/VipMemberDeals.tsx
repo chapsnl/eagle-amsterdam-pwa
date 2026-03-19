@@ -81,9 +81,19 @@ const VipMemberDeals = () => {
   const handleEnablePush = async () => {
     setPushRequesting(true);
     try {
-      const { requestPushPermission } = await import("@/lib/onesignal");
+      const { requestPushPermission, setOneSignalExternalId } = await import("@/lib/onesignal");
       const granted = await requestPushPermission();
       setPushStatus(granted ? "granted" : "denied");
+
+      if (granted) {
+        const stored = localStorage.getItem("vip_session");
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (parsed?.email) {
+            await setOneSignalExternalId(parsed.email);
+          }
+        }
+      }
     } catch {
       setPushStatus("denied");
     } finally {
