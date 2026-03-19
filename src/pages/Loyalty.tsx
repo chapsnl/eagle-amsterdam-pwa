@@ -142,7 +142,11 @@ const Loyalty = () => {
       localStorage.setItem(STORAGE_KEY, JSON.stringify({ stamps: data.stamps, redeemed: false }));
       localStorage.setItem(LIFETIME_STAMPS_KEY, String(data.totalStampsEarned));
 
-      setSuccessMsg("Loyalty scan successful!");
+      if (data.voucherGranted) {
+        setSuccessMsg("🎉 You earned FREE ENTRY! Check your Member Deals.");
+      } else {
+        setSuccessMsg("Loyalty scan successful!");
+      }
       setSuccessOpen(true);
 
       if (data.levelUp) {
