@@ -82,21 +82,34 @@ Deno.serve(async (req) => {
       if (targetProfile?.email) {
         const onesignalKey = Deno.env.get("ONESIGNAL_REST_API_KEY");
         if (onesignalKey) {
-          await fetch("https://onesignal.com/api/v1/notifications", {
+          const pushPayload = {
+            app_id: ONESIGNAL_APP_ID,
+            include_aliases: { external_id: [targetProfile.email] },
+            target_channel: "push",
+            headings: { en: "New Voucher! 🎁" },
+            contents: { en: `You received a new voucher: ${voucherTitle}!` },
+            web_push_topic: `voucher-${Date.now()}`,
+          };
+
+          console.log("[admin-dispatch-voucher] Sending push to:", targetProfile.email);
+
+          const pushRes = await fetch("https://api.onesignal.com/notifications", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
-              Authorization: `Basic ${onesignalKey}`,
+              Authorization: `Key ${onesignalKey}`,
+              Accept: "application/json",
             },
-            body: JSON.stringify({
-              app_id: ONESIGNAL_APP_ID,
-              include_aliases: { external_id: [targetProfile.email] },
-              target_channel: "push",
-              headings: { en: "New Voucher! 🎁" },
-              contents: { en: `You received a new voucher: ${voucherTitle}!` },
-            }),
+            body: JSON.stringify(pushPayload),
           });
+
+          const pushBody = await pushRes.text();
+          console.log("[admin-dispatch-voucher] OneSignal response:", pushRes.status, pushBody);
+        } else {
+          console.log("[admin-dispatch-voucher] ONESIGNAL_REST_API_KEY not set");
         }
+      } else {
+        console.log("[admin-dispatch-voucher] No email found for target user");
       }
     } catch (pushErr) {
       console.error("[admin-dispatch-voucher] Push notification error:", pushErr);
