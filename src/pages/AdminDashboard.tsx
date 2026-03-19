@@ -174,7 +174,29 @@ const AdminDashboard = () => {
       });
       if (!error && data?.success) {
         showSuccess(`${preset.title} sent!`);
-        if (adminUserId) await loadData(adminUserId);
+        // Optimistic UI update — add title to active list without re-fetching
+        setMembers((prev) =>
+          prev.map((m) =>
+            m.id === targetUserId
+              ? {
+                  ...m,
+                  active_vouchers: m.active_vouchers + 1,
+                  active_voucher_titles: [...m.active_voucher_titles, preset.title],
+                }
+              : m
+          )
+        );
+        if (scannedMember?.id === targetUserId) {
+          setScannedMember((prev) =>
+            prev
+              ? {
+                  ...prev,
+                  active_vouchers: prev.active_vouchers + 1,
+                  active_voucher_titles: [...prev.active_voucher_titles, preset.title],
+                }
+              : prev
+          );
+        }
       } else {
         setWarning({ open: true, title: "Error", message: data?.error || "Failed to send voucher." });
       }
