@@ -62,7 +62,7 @@ const VipVerify = () => {
 
     try {
       const { data, error: fnError } = await supabase.functions.invoke("verify-otp", { body: { email, code } });
-      if (fnError) { setError("You entered an invalid code, try again!"); setLoading(false); return; }
+      if (fnError) { setError("Verification failed. Please request a new code and try again."); setLoading(false); return; }
       if (!data?.success) { setError(data?.error || "Invalid or expired code."); setLoading(false); return; }
 
       if (data.verification_url) {

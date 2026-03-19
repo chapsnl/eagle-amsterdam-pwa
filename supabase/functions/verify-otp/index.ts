@@ -44,8 +44,8 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Mark OTP as verified (fire-and-forget)
-    supabase.from("otp_codes").update({ verified: true }).eq("id", otpRecord.id).then(() => {});
+    // Do not mark the OTP as used yet.
+    // Only consume it after the full login flow succeeds, so transient failures can be retried.
 
     // Use getUserByEmail instead of listUsers — much faster
     const { data: userData } = await supabase.auth.admin.getUserByEmail(targetEmail);
@@ -122,7 +122,7 @@ Deno.serve(async (req) => {
       await Promise.all([profilePromise, newsletterPromise]);
     }
 
-    // Generate magic link + fetch profile + cleanup OTP in parallel
+    // Generate magic link + fetch profile in parallel
     const [signInResult, profileResult] = await Promise.all([
       supabase.auth.admin.generateLink({
         type: "magiclink",
@@ -135,11 +135,11 @@ Deno.serve(async (req) => {
         .single(),
     ]);
 
-    // Fire-and-forget OTP cleanup
-    supabase.from("otp_codes").delete().eq("email", targetEmail).then(() => {});
-
     const profile = profileResult.data;
     const resolvedName = (profile?.name && profile.name.trim() !== "") ? profile.name : otpRecord.name;
+
+    // Only consume the OTP after everything above succeeded.
+    await supabase.from("otp_codes").delete().eq("id", otpRecord.id);
 
     return new Response(
       JSON.stringify({
