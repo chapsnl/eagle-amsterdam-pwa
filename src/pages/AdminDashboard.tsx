@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Crown, Users, QrCode, Gift, RefreshCw, Check, Send, ChevronDown, ChevronUp, LogOut, ScanLine, Search } from "lucide-react";
+import { Crown, Users, QrCode, Gift, RefreshCw, Check, Send, ChevronDown, ChevronUp, LogOut, ScanLine, Search, Shirt, Ticket, Beer } from "lucide-react";
 import MemberScannerSection from "@/components/admin/MemberScannerSection";
 import { supabase } from "@/integrations/supabase/client";
 import { QRCodeSVG } from "qrcode.react";
@@ -27,9 +27,9 @@ const isOnline = (lastActive: string | null): boolean => {
 };
 
 const VOUCHER_PRESETS = [
-  { title: "FREE COAT CHECK", description: "Complimentary coat check.", label: "🧥 Coat Check" },
-  { title: "FREE ENTRY SUNDAY SEX PARTY", description: "Free entry to Sunday Sex Party.", label: "🎉 Free Entry" },
-  { title: "FREE DRINK", description: "One free drink at the bar.", label: "🍺 Free Drink" },
+  { title: "FREE COAT CHECK", description: "Complimentary coat check.", label: "Coat Check", icon: Shirt },
+  { title: "FREE ENTRY SUNDAY SEX PARTY", description: "Free entry to Sunday Sex Party.", label: "Free Entry", icon: Ticket },
+  { title: "FREE DRINK", description: "One free drink at the bar.", label: "Free Drink", icon: Beer },
 ];
 
 const SESSION_TIMEOUT = 60 * 60 * 1000; // 1 hour
@@ -295,7 +295,10 @@ const AdminDashboard = () => {
                         : "bg-secondary hover:bg-secondary/80 text-foreground"
                     }`}
                   >
-                    <span>{preset.label}{hasUnredeemed ? " (active)" : ""}</span>
+                    <span className="flex items-center gap-2">
+                      <preset.icon className="w-4 h-4" />
+                      {preset.label}{hasUnredeemed ? " (active)" : ""}
+                    </span>
                     {isSending ? (
                       <RefreshCw className="w-3.5 h-3.5 animate-spin text-primary" />
                     ) : (
