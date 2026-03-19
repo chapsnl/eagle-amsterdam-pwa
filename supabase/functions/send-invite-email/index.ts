@@ -77,6 +77,8 @@ Deno.serve(async (req) => {
       socketTimeout: 15000,
     });
 
+    const appUrl = "https://app.eagleamsterdam.com";
+
     const htmlContent = `
 <!DOCTYPE html>
 <html>
@@ -84,94 +86,112 @@ Deno.serve(async (req) => {
 <body style="margin:0;padding:0;background-color:#f4f4f5;font-family:Arial,Helvetica,sans-serif;">
 <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f4f4f5;padding:32px 16px;">
 <tr><td align="center">
-<table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#ffffff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,0.08);overflow:hidden;">
-<tr><td style="background:#1a1a1a;padding:24px;text-align:center;">
-  <h1 style="margin:0;font-size:22px;font-weight:800;color:#ffffff;letter-spacing:1px;">EAGLE AMSTERDAM</h1>
+<table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#ffffff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,0.06);overflow:hidden;">
+
+<!-- Header -->
+<tr><td style="background:#1a1a1a;padding:32px 24px;text-align:center;">
+  <h1 style="margin:0;font-size:24px;font-weight:800;color:#ffffff;letter-spacing:2px;">EAGLE AMSTERDAM</h1>
+  <p style="margin:8px 0 0;font-size:13px;color:#999;letter-spacing:1px;">VIP MEMBER INVITATION</p>
 </td></tr>
-<tr><td style="padding:24px 24px 8px;">
-  <h2 style="font-size:18px;font-weight:700;color:#1a1a1a;border-bottom:2px solid #e0e0e0;padding-bottom:12px;margin:0 0 16px;">You're Invited!</h2>
-  <p style="font-size:14px;color:#1a1a1a;line-height:1.6;margin:0 0 16px;">
-    Welcome to the Eagle Amsterdam App — your VIP pass to exclusive perks, free vouchers, and loyalty rewards.
+
+<!-- Intro -->
+<tr><td style="padding:32px 32px 24px;">
+  <p style="font-size:15px;color:#333;line-height:1.7;margin:0;">
+    You've been personally invited to join the <strong>Eagle Amsterdam App</strong> — your digital pass to exclusive perks, free vouchers, and loyalty rewards.
   </p>
 </td></tr>
-<tr><td style="padding:0 24px 8px;">
-  <h2 style="font-size:18px;font-weight:700;color:#1a1a1a;border-bottom:2px solid #e0e0e0;padding-bottom:12px;margin:0 0 16px;">What's In It For You?</h2>
+
+<!-- Benefits -->
+<tr><td style="padding:0 32px 24px;">
+  <h2 style="font-size:16px;font-weight:700;color:#1a1a1a;margin:0 0 16px;padding-bottom:8px;border-bottom:1px solid #e5e5e5;">Member Benefits</h2>
   <table width="100%" cellpadding="0" cellspacing="0">
-    <tr><td style="padding:8px 0;"><span style="width:140px;display:inline-block;font-size:14px;font-weight:600;color:#555;">Free Coat Check</span><span style="font-size:14px;color:#1a1a1a;">Get a free coat check voucher when you sign up</span></td></tr>
-    <tr><td style="padding:8px 0;"><span style="width:140px;display:inline-block;font-size:14px;font-weight:600;color:#555;">Free Token</span><span style="font-size:14px;color:#1a1a1a;">Start with a free loyalty token towards free entry</span></td></tr>
-    <tr><td style="padding:8px 0;"><span style="width:140px;display:inline-block;font-size:14px;font-weight:600;color:#555;">Free Entry</span><span style="font-size:14px;color:#1a1a1a;">Collect 6 tokens for free entry to Sunday Sex Parties — NcAdam, Horsemen and Knights, Cum Hunks</span></td></tr>
-    <tr><td style="padding:8px 0;"><span style="width:140px;display:inline-block;font-size:14px;font-weight:600;color:#555;">Free Drinks</span><span style="font-size:14px;color:#1a1a1a;">Earn free drink vouchers as rewards</span></td></tr>
-    <tr><td style="padding:8px 0;"><span style="width:140px;display:inline-block;font-size:14px;font-weight:600;color:#555;">Notifications</span><span style="font-size:14px;color:#1a1a1a;">Get notified instantly when you receive a free voucher in your Member Deals</span></td></tr>
+    <tr><td style="padding:10px 0;border-bottom:1px solid #f0f0f0;"><span style="font-size:20px;vertical-align:middle;">🧥</span> <span style="font-size:14px;color:#333;margin-left:8px;"><strong>Free Coat Check</strong> voucher on sign-up</span></td></tr>
+    <tr><td style="padding:10px 0;border-bottom:1px solid #f0f0f0;"><span style="font-size:20px;vertical-align:middle;">⭐</span> <span style="font-size:14px;color:#333;margin-left:8px;"><strong>Free Loyalty Token</strong> to start collecting</span></td></tr>
+    <tr><td style="padding:10px 0;border-bottom:1px solid #f0f0f0;"><span style="font-size:20px;vertical-align:middle;">🎟️</span> <span style="font-size:14px;color:#333;margin-left:8px;"><strong>Free Entry</strong> after 6 tokens (Sunday Sex Parties)</span></td></tr>
+    <tr><td style="padding:10px 0;border-bottom:1px solid #f0f0f0;"><span style="font-size:20px;vertical-align:middle;">🍺</span> <span style="font-size:14px;color:#333;margin-left:8px;"><strong>Free Drinks</strong> as loyalty rewards</span></td></tr>
+    <tr><td style="padding:10px 0;"><span style="font-size:20px;vertical-align:middle;">🔔</span> <span style="font-size:14px;color:#333;margin-left:8px;"><strong>Push Notifications</strong> for new vouchers</span></td></tr>
   </table>
 </td></tr>
-<tr><td style="padding:0 24px 8px;">
-  <h2 style="font-size:18px;font-weight:700;color:#1a1a1a;border-bottom:2px solid #e0e0e0;padding-bottom:12px;margin:0 0 16px;">Climb the VIP Ranks</h2>
-  <p style="font-size:14px;color:#1a1a1a;line-height:1.6;margin:0 0 12px;">
-    The more you visit, the higher your status. Each level unlocks exclusive benefits:
-  </p>
+
+<!-- VIP Ranks -->
+<tr><td style="padding:0 32px 24px;">
+  <h2 style="font-size:16px;font-weight:700;color:#1a1a1a;margin:0 0 16px;padding-bottom:8px;border-bottom:1px solid #e5e5e5;">VIP Status Ranks</h2>
   <table width="100%" cellpadding="0" cellspacing="0">
-    <tr><td style="padding:8px 0;"><span style="font-size:14px;font-weight:600;color:#555;">Regular</span><span style="font-size:14px;color:#1a1a1a;"> — Your starting point. Collect tokens for free entry!</span></td></tr>
-    <tr><td style="padding:8px 0;"><span style="font-size:14px;font-weight:600;color:#555;">Party Boy</span><span style="font-size:14px;color:#1a1a1a;"> — Fast-Lane access at the door</span></td></tr>
-    <tr><td style="padding:8px 0;"><span style="font-size:14px;font-weight:600;color:#555;">Cruiser</span><span style="font-size:14px;color:#1a1a1a;"> — Priority access + free entry during Pride and city-wide events</span></td></tr>
-    <tr><td style="padding:8px 0;"><span style="font-size:14px;font-weight:600;color:#555;">Slut</span><span style="font-size:14px;color:#1a1a1a;"> — All of the above + lifetime free coat check and more surprises...</span></td></tr>
+    <tr><td style="padding:8px 12px;background:#f9f9f9;border-radius:6px;margin-bottom:4px;"><strong style="color:#555;">Regular</strong><span style="color:#666;font-size:13px;"> — Collect tokens for free entry</span></td></tr>
+    <tr><td style="height:4px;"></td></tr>
+    <tr><td style="padding:8px 12px;background:#f9f9f9;border-radius:6px;"><strong style="color:#555;">Party Boy</strong><span style="color:#666;font-size:13px;"> — Fast-lane access at the door</span></td></tr>
+    <tr><td style="height:4px;"></td></tr>
+    <tr><td style="padding:8px 12px;background:#f9f9f9;border-radius:6px;"><strong style="color:#555;">Cruiser</strong><span style="color:#666;font-size:13px;"> — Priority access + free entry during Pride</span></td></tr>
+    <tr><td style="height:4px;"></td></tr>
+    <tr><td style="padding:8px 12px;background:#f9f9f9;border-radius:6px;"><strong style="color:#555;">Slut</strong><span style="color:#666;font-size:13px;"> — All perks + lifetime free coat check & more</span></td></tr>
   </table>
 </td></tr>
-<tr><td style="padding:0 24px 8px;">
-  <h2 style="font-size:18px;font-weight:700;color:#1a1a1a;border-bottom:2px solid #e0e0e0;padding-bottom:12px;margin:0 0 16px;">Install on iPhone</h2>
-  <ol style="font-size:14px;color:#1a1a1a;line-height:1.8;margin:0;padding-left:20px;">
-    <li>Open <strong>Safari</strong> and go to <a href="https://eagle-app.lovable.app" style="color:#1a1a1a;font-weight:600;">eagle-app.lovable.app</a></li>
-    <li>Tap the <strong>Share</strong> button at the bottom</li>
-    <li>Scroll down and tap <strong>Add to Home Screen</strong></li>
-    <li>Tap <strong>Add</strong> in the top right</li>
-    <li>Open the app from your home screen and sign up</li>
-  </ol>
-  <p style="font-size:14px;color:#1a1a1a;margin:12px 0 0;">
-    <strong>Watch the video:</strong>
-    <a href="https://www.eagleamsterdam.com/video/iphone.mp4" style="color:#1a1a1a;font-weight:600;">iPhone Install Guide</a>
-  </p>
+
+<!-- Install Instructions -->
+<tr><td style="padding:0 32px 24px;">
+  <h2 style="font-size:16px;font-weight:700;color:#1a1a1a;margin:0 0 16px;padding-bottom:8px;border-bottom:1px solid #e5e5e5;">How to Install</h2>
+  <table width="100%" cellpadding="0" cellspacing="0">
+    <tr>
+      <td style="padding:12px 16px;background:#f9f9f9;border-radius:8px;vertical-align:top;width:50%;">
+        <p style="margin:0 0 8px;font-size:14px;font-weight:700;color:#1a1a1a;">iPhone (Safari)</p>
+        <ol style="font-size:13px;color:#555;line-height:1.8;margin:0;padding-left:18px;">
+          <li>Open Safari → <a href="${appUrl}" style="color:#1a1a1a;font-weight:600;">app.eagleamsterdam.com</a></li>
+          <li>Tap <strong>Share</strong> → <strong>Add to Home Screen</strong></li>
+          <li>Open the app and sign up</li>
+        </ol>
+        <p style="margin:8px 0 0;font-size:12px;"><a href="https://www.eagleamsterdam.com/video/iphone.mp4" style="color:#555;">Watch video guide →</a></p>
+      </td>
+      <td style="width:12px;"></td>
+      <td style="padding:12px 16px;background:#f9f9f9;border-radius:8px;vertical-align:top;width:50%;">
+        <p style="margin:0 0 8px;font-size:14px;font-weight:700;color:#1a1a1a;">Android (Chrome)</p>
+        <ol style="font-size:13px;color:#555;line-height:1.8;margin:0;padding-left:18px;">
+          <li>Open Chrome → <a href="${appUrl}" style="color:#1a1a1a;font-weight:600;">app.eagleamsterdam.com</a></li>
+          <li>Tap <strong>⋮</strong> → <strong>Install app</strong></li>
+          <li>Open the app and sign up</li>
+        </ol>
+        <p style="margin:8px 0 0;font-size:12px;"><a href="https://www.eagleamsterdam.com/video/android.mp4" style="color:#555;">Watch video guide →</a></p>
+      </td>
+    </tr>
+  </table>
 </td></tr>
-<tr><td style="padding:0 24px 8px;">
-  <h2 style="font-size:18px;font-weight:700;color:#1a1a1a;border-bottom:2px solid #e0e0e0;padding-bottom:12px;margin:0 0 16px;">Install on Android</h2>
-  <ol style="font-size:14px;color:#1a1a1a;line-height:1.8;margin:0;padding-left:20px;">
-    <li>Open <strong>Chrome</strong> and go to <a href="https://eagle-app.lovable.app" style="color:#1a1a1a;font-weight:600;">eagle-app.lovable.app</a></li>
-    <li>Tap the <strong>three dots</strong> in the top right</li>
-    <li>Tap <strong>Add to Home screen</strong> or <strong>Install app</strong></li>
-    <li>Tap <strong>Add</strong> to confirm</li>
-    <li>Open the app from your home screen and sign up</li>
-  </ol>
-  <p style="font-size:14px;color:#1a1a1a;margin:12px 0 0;">
-    <strong>Watch the video:</strong>
-    <a href="https://www.eagleamsterdam.com/video/android.mp4" style="color:#1a1a1a;font-weight:600;">Android Install Guide</a>
-  </p>
-</td></tr>
-<tr><td style="padding:0 24px 16px;">
-  <h2 style="font-size:18px;font-weight:700;color:#1a1a1a;border-bottom:2px solid #e0e0e0;padding-bottom:12px;margin:0 0 16px;">Don't Miss Your Free Vouchers</h2>
-  <p style="font-size:14px;color:#1a1a1a;line-height:1.6;margin:0;">
-    Make sure to enable push notifications when you set up your profile. Whenever you receive a free voucher — like free drinks, free entry, or coat check — you'll get a notification instantly.
-  </p>
-</td></tr>
-<tr><td style="padding:0 24px 24px;text-align:center;">
-  <a href="https://eagle-app.lovable.app" style="display:inline-block;background:#1a1a1a;color:#ffffff;padding:10px 20px;border-radius:6px;font-weight:600;text-decoration:none;font-size:14px;">
+
+<!-- CTA -->
+<tr><td style="padding:0 32px 32px;text-align:center;">
+  <a href="${appUrl}" style="display:inline-block;background:#1a1a1a;color:#ffffff;padding:14px 32px;border-radius:8px;font-weight:700;text-decoration:none;font-size:15px;letter-spacing:0.5px;">
     Open Eagle App
   </a>
+  <p style="margin:12px 0 0;font-size:12px;color:#999;">Enable push notifications to never miss a free voucher!</p>
 </td></tr>
-<tr><td style="background:#f9f9f9;border-top:1px solid #e0e0e0;padding:16px 24px;text-align:center;">
-  <p style="margin:0;font-size:12px;color:#999;">Eagle Amsterdam · Warmoesstraat 90 · Amsterdam</p>
+
+<!-- Footer -->
+<tr><td style="background:#fafafa;border-top:1px solid #eee;padding:20px 32px;text-align:center;">
+  <p style="margin:0;font-size:11px;color:#aaa;">Eagle Amsterdam · Warmoesstraat 90 · Amsterdam</p>
 </td></tr>
+
 </table>
 </td></tr>
 </table>
 </body>
 </html>`;
 
-    const textContent = `You're invited to the Eagle Amsterdam App.
+    const textContent = `You're invited to the Eagle Amsterdam App!
 
-Open the app here: https://eagle-app.lovable.app
+Open the app: ${appUrl}
 
-Benefits include a free coat check voucher, loyalty rewards, free entry rewards, free drinks, and push notifications for vouchers.
+Benefits:
+- Free coat check voucher on sign-up
+- Free loyalty token to start collecting
+- Free entry after 6 tokens (Sunday Sex Parties)
+- Free drink vouchers as rewards
+- Push notifications for new vouchers
 
-Install on iPhone: https://www.eagleamsterdam.com/video/iphone.mp4
-Install on Android: https://www.eagleamsterdam.com/video/android.mp4`;
+VIP Ranks: Regular → Party Boy → Cruiser → Slut
+
+Install on iPhone: Open Safari → ${appUrl} → Share → Add to Home Screen
+Video guide: https://www.eagleamsterdam.com/video/iphone.mp4
+
+Install on Android: Open Chrome → ${appUrl} → Menu → Install app
+Video guide: https://www.eagleamsterdam.com/video/android.mp4`;
 
     const info = await transporter.sendMail({
       from: smtpUser,
