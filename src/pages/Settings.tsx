@@ -63,47 +63,6 @@ const Settings = () => {
     navigate("/");
   };
 
-  const handlePinToggle = () => {
-    if (pinEnabled) {
-      // Disable PIN
-      localStorage.removeItem("app_pin_enabled");
-      localStorage.removeItem("app_pin_code");
-      setPinEnabled(false);
-      setShowPinSetup(false);
-    } else {
-      // Show PIN setup
-      setPinDigits(["", "", "", "", "", ""]);
-      setShowPinSetup(true);
-    }
-  };
-
-  const handlePinDigitChange = (index: number, value: string) => {
-    const digit = value.replace(/\D/g, "").slice(-1);
-    const next = [...pinDigits];
-    next[index] = digit;
-    setPinDigits(next);
-    if (digit && index < 5) {
-      const nextInput = document.getElementById(`pin-setup-${index + 1}`);
-      nextInput?.focus();
-    }
-  };
-
-  const handlePinKeyDown = (index: number, e: React.KeyboardEvent) => {
-    if (e.key === "Backspace" && !pinDigits[index] && index > 0) {
-      const prevInput = document.getElementById(`pin-setup-${index - 1}`);
-      prevInput?.focus();
-    }
-  };
-
-  const savePin = () => {
-    const code = pinDigits.join("");
-    if (code.length !== 6) return;
-    localStorage.setItem("app_pin_code", code);
-    localStorage.setItem("app_pin_enabled", "true");
-    setPinEnabled(true);
-    setShowPinSetup(false);
-  };
-
   const formatDate = (dateStr: string) => {
     return new Date(dateStr).toLocaleDateString("en-GB", {
       day: "numeric", month: "short", year: "numeric",
