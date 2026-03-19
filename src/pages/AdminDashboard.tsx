@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Crown, Users, QrCode, Gift, RefreshCw, Check, Send, ChevronDown, ChevronUp, LogOut, ScanLine, Search, Shirt, Ticket, Beer } from "lucide-react";
 import MemberScannerSection from "@/components/admin/MemberScannerSection";
+import InviteUserSection from "@/components/admin/InviteUserSection";
 import { supabase } from "@/integrations/supabase/client";
 import { QRCodeSVG } from "qrcode.react";
 import { Input } from "@/components/ui/input";
@@ -32,7 +33,7 @@ const VOUCHER_PRESETS = [
   { title: "FREE DRINK", description: "One free drink at the bar.", label: "Free Drink", icon: Beer },
 ];
 
-const SESSION_TIMEOUT = 60 * 60 * 1000; // 1 hour
+const SESSION_TIMEOUT = 4 * 60 * 60 * 1000; // 4 hours
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -426,6 +427,9 @@ const AdminDashboard = () => {
 
         {/* ═══ SCAN MEMBER PASS ═══ */}
         <MemberScannerSection onMemberFound={handleMemberScanned} />
+
+        {/* ═══ INVITE USER ═══ */}
+        <InviteUserSection adminUserId={adminUserId} />
 
         {/* ═══ SEARCH MEMBER ═══ */}
         <section className="space-y-3">

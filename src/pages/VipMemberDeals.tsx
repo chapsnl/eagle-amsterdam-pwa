@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Tag, Gift } from "lucide-react";
+import { Tag, Gift, Bell, RefreshCw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import VoucherCard from "@/components/loyalty/VoucherCard";
 import WarningDialog from "@/components/shared/WarningDialog";
@@ -21,6 +21,8 @@ const VipMemberDeals = () => {
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
   const [warning, setWarning] = useState({ open: false, title: "", message: "" });
+  const [pushStatus, setPushStatus] = useState<"loading" | "granted" | "denied" | "default">("loading");
+  const [pushRequesting, setPushRequesting] = useState(false);
 
   useEffect(() => {
     const stored = localStorage.getItem("vip_session");
@@ -36,6 +38,14 @@ const VipMemberDeals = () => {
       navigate("/vip/login");
     }
   }, [navigate]);
+
+  useEffect(() => {
+    if ("Notification" in window) {
+      setPushStatus(Notification.permission as "granted" | "denied" | "default");
+    } else {
+      setPushStatus("denied");
+    }
+  }, []);
 
   const loadVouchers = async (uid: string) => {
     try {
@@ -65,12 +75,24 @@ const VipMemberDeals = () => {
       return;
     }
 
-    // Remove redeemed voucher from the list immediately
     setVouchers((prev) => prev.filter((v) => v.id !== voucher.id));
   };
 
-  // Only show unredeemed vouchers
+  const handleEnablePush = async () => {
+    setPushRequesting(true);
+    try {
+      const { requestPushPermission } = await import("@/lib/onesignal");
+      const granted = await requestPushPermission();
+      setPushStatus(granted ? "granted" : "denied");
+    } catch {
+      setPushStatus("denied");
+    } finally {
+      setPushRequesting(false);
+    }
+  };
+
   const activeVouchers = vouchers.filter((v) => !v.redeemed);
+  const showPushCTA = pushStatus === "default";
 
   return (
     <div className="flex flex-col min-h-screen pb-24">
@@ -83,6 +105,27 @@ const VipMemberDeals = () => {
             Your exclusive vouchers and rewards
           </p>
         </div>
+
+        {/* Push notification CTA */}
+        {showPushCTA && (
+          <button
+            onClick={handleEnablePush}
+            disabled={pushRequesting}
+            className="w-full flex items-center gap-3 bg-primary/10 hover:bg-primary/20 border border-primary/30 rounded-xl p-4 transition-colors disabled:opacity-60"
+          >
+            {pushRequesting ? (
+              <RefreshCw className="w-5 h-5 text-primary animate-spin flex-shrink-0" />
+            ) : (
+              <Bell className="w-5 h-5 text-primary flex-shrink-0" />
+            )}
+            <div className="text-left flex-1">
+              <p className="text-foreground text-sm font-bold">Let me know!</p>
+              <p className="text-muted-foreground text-xs leading-snug">
+                Get notified instantly when you receive a free voucher
+              </p>
+            </div>
+          </button>
+        )}
 
         {loading ? (
           <div className="flex justify-center py-12">
@@ -110,7 +153,6 @@ const VipMemberDeals = () => {
                 ))}
               </div>
             )}
-
           </>
         )}
       </div>

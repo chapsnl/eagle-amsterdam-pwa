@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,6 +11,8 @@ const VipProfileSetup = () => {
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [showPushPrompt, setShowPushPrompt] = useState(false);
+  const [pushRequesting, setPushRequesting] = useState(false);
 
   const handleSave = async () => {
     if (!name.trim()) { setError("Please enter your name."); return; }
@@ -39,13 +41,85 @@ const VipProfileSetup = () => {
       // Preserve created_at in session
       session.name = name.trim();
       localStorage.setItem("vip_session", JSON.stringify(session));
-      navigate("/vip/dashboard");
+
+      // Check if push notifications already granted or previously asked
+      const alreadyAsked = localStorage.getItem("eagle-push-asked");
+      const pushGranted = "Notification" in window && Notification.permission === "granted";
+
+      if (!alreadyAsked && !pushGranted && "Notification" in window && Notification.permission !== "denied") {
+        setShowPushPrompt(true);
+      } else {
+        navigate("/vip/dashboard");
+      }
     } catch (err: any) {
       setError(err.message || "Something went wrong.");
     } finally {
       setLoading(false);
     }
   };
+
+  const handleEnablePush = async () => {
+    setPushRequesting(true);
+    try {
+      const { requestPushPermission } = await import("@/lib/onesignal");
+      await requestPushPermission();
+    } catch {
+      // silently fail
+    } finally {
+      localStorage.setItem("eagle-push-asked", "true");
+      setPushRequesting(false);
+      navigate("/vip/dashboard");
+    }
+  };
+
+  const handleSkipPush = () => {
+    localStorage.setItem("eagle-push-asked", "true");
+    navigate("/vip/dashboard");
+  };
+
+  if (showPushPrompt) {
+    return (
+      <div className="flex flex-col min-h-screen pb-24">
+        <div className="flex-1 flex flex-col items-center justify-center px-4">
+          <div className="w-full max-w-[90%] mx-auto space-y-6">
+            <div className="text-center space-y-3">
+              <Bell className="w-12 h-12 text-primary mx-auto" />
+              <h1 className="text-2xl text-foreground">STAY IN THE LOOP</h1>
+              <p className="text-muted-foreground text-xs leading-relaxed">
+                Enable push notifications so you'll know instantly when you receive a free voucher — like free drinks, free entry, or coat check!
+              </p>
+            </div>
+
+            <div className="space-y-3">
+              <Button
+                variant="eagle"
+                size="lg"
+                className="w-full h-12 text-lg rounded-xl"
+                onClick={handleEnablePush}
+                disabled={pushRequesting}
+              >
+                {pushRequesting ? (
+                  <div className="w-5 h-5 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <>
+                    <Bell className="w-5 h-5 mr-2" />
+                    Enable Notifications
+                  </>
+                )}
+              </Button>
+
+              <button
+                onClick={handleSkipPush}
+                className="w-full text-muted-foreground text-sm py-2 hover:text-foreground transition-colors"
+              >
+                Maybe later
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col min-h-screen pb-24">
