@@ -46,10 +46,10 @@ const VipProfileSetup = () => {
       const alreadyAsked = localStorage.getItem("eagle-push-asked");
       const pushGranted = "Notification" in window && Notification.permission === "granted";
 
-      if (!alreadyAsked && !pushGranted && "Notification" in window && Notification.permission !== "denied") {
-        setShowPushPrompt(true);
-      } else {
+      if (pushGranted || alreadyAsked || !("Notification" in window) || Notification.permission === "denied") {
         navigate("/vip/dashboard");
+      } else {
+        setShowPushPrompt(true);
       }
     } catch (err: any) {
       setError(err.message || "Something went wrong.");

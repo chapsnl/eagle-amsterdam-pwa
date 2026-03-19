@@ -138,9 +138,8 @@ const VipVerify = () => {
         if (!data.name || data.name.trim() === "") {
           navigate("/vip/profile-setup");
         } else {
-          toast.success(`Welcome Back, ${data.name}!`);
-          const next = redirect.startsWith("/") ? redirect : "/vip/member-pass";
-          navigate(next === "/vip" ? "/vip/member-pass" : next);
+          const next = redirect.startsWith("/") ? redirect : "/vip/dashboard";
+          navigate(next === "/vip" ? "/vip/dashboard" : next);
         }
       } catch (err: any) {
         if (DEV) console.error("[VipVerify] Unhandled:", err);
