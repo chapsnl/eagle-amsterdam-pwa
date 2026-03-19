@@ -27,9 +27,9 @@ const isOnline = (lastActive: string | null): boolean => {
 };
 
 const VOUCHER_PRESETS = [
-  { title: "FREE COAT CHECK", description: "Complimentary coat check.", label: "🧥 Coat Check" },
-  { title: "FREE ENTRY SUNDAY SEX PARTY", description: "Free entry to Sunday Sex Party.", label: "🎉 Free Entry" },
-  { title: "FREE DRINK", description: "One free drink at the bar.", label: "🍺 Free Drink" },
+  { title: "FREE COAT CHECK", description: "Complimentary coat check.", label: "Coat Check", icon: Shirt },
+  { title: "FREE ENTRY SUNDAY SEX PARTY", description: "Free entry to Sunday Sex Party.", label: "Free Entry", icon: Ticket },
+  { title: "FREE DRINK", description: "One free drink at the bar.", label: "Free Drink", icon: Beer },
 ];
 
 const SESSION_TIMEOUT = 60 * 60 * 1000; // 1 hour
