@@ -428,6 +428,9 @@ const AdminDashboard = () => {
         {/* ═══ SCAN MEMBER PASS ═══ */}
         <MemberScannerSection onMemberFound={handleMemberScanned} />
 
+        {/* ═══ INVITE USER ═══ */}
+        <InviteUserSection adminUserId={adminUserId} />
+
         {/* ═══ SEARCH MEMBER ═══ */}
         <section className="space-y-3">
           <h2 className="text-foreground font-bold text-lg flex items-center gap-2">
