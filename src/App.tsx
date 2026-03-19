@@ -8,6 +8,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import BottomNav from "@/components/BottomNav";
 import DevModeIndicator from "@/components/DevModeIndicator";
 import PwaGate from "@/components/PwaGate";
+import ErrorBoundary from "@/components/shared/ErrorBoundary";
+import OfflineNotice from "@/components/shared/OfflineNotice";
 
 import { useActivityHeartbeat } from "@/hooks/useActivityHeartbeat";
 
