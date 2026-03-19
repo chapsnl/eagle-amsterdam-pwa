@@ -198,15 +198,15 @@ const AdminDashboard = () => {
     }
   };
 
-  const handleMemberScanned = useCallback((memberNumber: string) => {
+  const handleMemberScanned = useCallback((memberNumber: string): boolean => {
     const found = members.find((m) => m.member_number === memberNumber);
     if (found) {
       setScannedMember(found);
       setExpandedMember(found.id);
       showSuccess(`Found: ${found.name || found.email}`);
-    } else {
-      setWarning({ open: true, title: "Not Found", message: `No member found with number ${memberNumber}.` });
+      return true;
     }
+    return false;
   }, [members]);
 
   const filteredMembers = members.filter((m) => {
