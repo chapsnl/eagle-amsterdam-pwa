@@ -1,4 +1,4 @@
-import { lazy, Suspense, useState, useEffect } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -8,7 +8,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import BottomNav from "@/components/BottomNav";
 import DevModeIndicator from "@/components/DevModeIndicator";
 import PwaGate from "@/components/PwaGate";
-import PinLockScreen from "@/components/PinLockScreen";
+
 import { useActivityHeartbeat } from "@/hooks/useActivityHeartbeat";
 
 // Lazy-loaded pages
@@ -47,10 +47,6 @@ const PageLoader = () => (
 );
 
 const App = () => {
-  const [pinUnlocked, setPinUnlocked] = useState(() => {
-    return localStorage.getItem("app_pin_enabled") !== "true";
-  });
-
   useEffect(() => {
     import("@/lib/onesignal")
       .then(({ initOneSignalSilently }) => initOneSignalSilently())
@@ -59,9 +55,6 @@ const App = () => {
 
   useActivityHeartbeat();
 
-  if (!pinUnlocked) {
-    return <PinLockScreen onUnlock={() => setPinUnlocked(true)} />;
-  }
 
   return (
     <QueryClientProvider client={queryClient}>
