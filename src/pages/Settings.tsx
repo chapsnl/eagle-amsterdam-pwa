@@ -19,11 +19,6 @@ const Settings = () => {
   const [loading, setLoading] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  // PIN lock state
-  const [pinEnabled, setPinEnabled] = useState(() => localStorage.getItem("app_pin_enabled") === "true");
-  const [showPinSetup, setShowPinSetup] = useState(false);
-  const [pinDigits, setPinDigits] = useState<string[]>(["", "", "", "", "", ""]);
-
   useEffect(() => {
     const stored = localStorage.getItem("vip_session");
     if (stored) {
