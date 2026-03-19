@@ -44,8 +44,8 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Mark OTP as verified (fire-and-forget)
-    supabase.from("otp_codes").update({ verified: true }).eq("id", otpRecord.id).then(() => {});
+    // Do not mark the OTP as used yet.
+    // Only consume it after the full login flow succeeds, so transient failures can be retried.
 
     // Use getUserByEmail instead of listUsers — much faster
     const { data: userData } = await supabase.auth.admin.getUserByEmail(targetEmail);
