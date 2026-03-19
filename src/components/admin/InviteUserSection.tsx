@@ -17,7 +17,7 @@ const InviteUserSection = ({ adminUserId }: InviteUserSectionProps) => {
   const [error, setError] = useState("");
 
   const handleOpen = () => {
-    setEmail(localStorage.getItem("remembered_invite_email") || "");
+    setEmail("");
     setError("");
     setSent(false);
     setOpen(true);
@@ -46,7 +46,6 @@ const InviteUserSection = ({ adminUserId }: InviteUserSectionProps) => {
       if (fnError || !data?.success) {
         setError(data?.error || "Failed to send invite.");
       } else {
-        localStorage.setItem("remembered_invite_email", trimmed);
         setSent(true);
         setTimeout(() => {
           setOpen(false);
