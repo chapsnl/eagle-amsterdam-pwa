@@ -49,7 +49,19 @@ const PageLoader = () => (
 const App = () => {
   useEffect(() => {
     import("@/lib/onesignal")
-      .then(({ initOneSignalSilently }) => initOneSignalSilently())
+      .then(async ({ initOneSignalSilently, setOneSignalExternalId }) => {
+        await initOneSignalSilently();
+        // Auto-relink external_id on every app start if push is granted
+        if ("Notification" in window && Notification.permission === "granted") {
+          const stored = localStorage.getItem("vip_session");
+          if (stored) {
+            try {
+              const { email } = JSON.parse(stored);
+              if (email) setOneSignalExternalId(email).catch(() => {});
+            } catch {}
+          }
+        }
+      })
       .catch(() => {/* OneSignal unavailable */});
   }, []);
 
