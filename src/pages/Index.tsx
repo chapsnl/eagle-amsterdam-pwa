@@ -1,6 +1,5 @@
-import { Button } from "@/components/ui/button";
+import { MapPin, Settings } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { Calendar, MapPin, Settings } from "lucide-react";
 const heroImage = "https://www.eagleamsterdam.com/wp-content/uploads/2025/12/Header-3b-copy.webp";
 import eagleLogo from "@/assets/eagle-logo-white.webp";
 
