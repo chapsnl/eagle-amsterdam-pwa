@@ -40,15 +40,30 @@ Deno.serve(async (req) => {
       );
     }
 
+    const smtpHost = Deno.env.get("SMTP_HOST");
+    const smtpPort = Deno.env.get("SMTP_PORT") || "465";
+    const smtpUser = Deno.env.get("SMTP_USER");
+    const smtpPass = Deno.env.get("SMTP_PASS");
+
+    if (!smtpHost || !smtpUser || !smtpPass) {
+      return new Response(
+        JSON.stringify({ success: false, error: "Email service not configured" }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const port = parseInt(smtpPort);
     const transporter = nodemailer.createTransport({
-      host: Deno.env.get("SMTP_HOST"),
-      port: Number(Deno.env.get("SMTP_PORT") || 465),
-      secure: true,
+      host: smtpHost,
+      port,
+      secure: port === 465,
       auth: {
-        user: Deno.env.get("SMTP_USER"),
-        pass: Deno.env.get("SMTP_PASS"),
+        user: smtpUser,
+        pass: smtpPass,
       },
     });
+
+    await transporter.verify();
 
     const htmlContent = `
 <!DOCTYPE html>
