@@ -74,23 +74,47 @@ Deno.serve(async (req) => {
     console.log("[verify-otp] MATCH — processing login");
 
     // Find or create user
-    const { data: userData } = await supabase.auth.admin.getUserByEmail(targetEmail);
-    const existingUser = userData?.user ?? null;
     let userId: string;
 
-    if (existingUser) {
-      userId = existingUser.id;
-      console.log(`[verify-otp] Existing user: ${userId}`);
+    const { data: existingProfile, error: profileLookupError } = await supabase
+      .from("profiles")
+      .select("id, name")
+      .eq("email", targetEmail)
+      .maybeSingle();
 
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("name")
-        .eq("id", userId)
-        .maybeSingle();
+    if (profileLookupError) {
+      console.error("[verify-otp] Profile lookup failed:", profileLookupError.message);
+      return json({ success: false, error: "Failed to load account" }, 500);
+    }
 
-      if (!profile) {
+    if (existingProfile?.id) {
+      const { data: existingUserData, error: userLookupError } = await supabase.auth.admin.getUserById(existingProfile.id);
+
+      if (!userLookupError && existingUserData?.user) {
+        userId = existingUserData.user.id;
+        console.log(`[verify-otp] Existing user: ${userId}`);
+
+        if ((!existingProfile.name || existingProfile.name.trim() === "") && otpRecord.name) {
+          await supabase.from("profiles").update({ name: otpRecord.name }).eq("id", userId);
+        }
+      } else {
+        console.log("[verify-otp] Profile exists but auth user missing, creating auth user");
+        const { data: newUser, error: createError } = await supabase.auth.admin.createUser({
+          email: targetEmail,
+          password: crypto.randomUUID(),
+          email_confirm: true,
+          user_metadata: { name: otpRecord.name },
+        });
+
+        if (createError || !newUser.user) {
+          console.error("[verify-otp] Create user failed:", createError?.message);
+          return json({ success: false, error: "Failed to create account" }, 500);
+        }
+
+        userId = newUser.user.id;
+
         await supabase.from("profiles").upsert(
-          { id: userId, name: otpRecord.name || "", email: targetEmail },
+          { id: userId, name: otpRecord.name || existingProfile.name || "", email: targetEmail },
           { onConflict: "id" }
         );
       }
@@ -103,14 +127,13 @@ Deno.serve(async (req) => {
         user_metadata: { name: otpRecord.name },
       });
 
-      if (createError) {
-        console.error("[verify-otp] Create user failed:", createError.message);
+      if (createError || !newUser.user) {
+        console.error("[verify-otp] Create user failed:", createError?.message);
         return json({ success: false, error: "Failed to create account" }, 500);
       }
 
       userId = newUser.user.id;
 
-      // Profile + newsletter in parallel
       await Promise.all([
         supabase.from("profiles").upsert(
           { id: userId, name: otpRecord.name || "", email: targetEmail },
