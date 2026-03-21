@@ -11,16 +11,29 @@ function isStandalone(): boolean {
 }
 
 function isIOS(): boolean {
-  return /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+  return (
+    (/iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream) ||
+    isIPadOS()
+  );
+}
+
+function isIPadOS(): boolean {
+  // iPadOS 13+ reports as Mac in user agent but has touch support
+  return (
+    navigator.platform === "MacIntel" &&
+    navigator.maxTouchPoints > 1 &&
+    !(window as any).MSStream
+  );
 }
 
 function isAndroid(): boolean {
   return /Android/i.test(navigator.userAgent);
 }
 
-function isMobile(): boolean {
-  return /Android|iPhone|iPad|iPod|webOS|BlackBerry|IEMobile|Opera Mini/i.test(
-    navigator.userAgent
+function isMobileOrTablet(): boolean {
+  return (
+    /Android|iPhone|iPad|iPod|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+    isIPadOS()
   );
 }
 
@@ -179,7 +192,7 @@ const PwaGate = ({ children }: { children: React.ReactNode }) => {
       return;
     }
 
-    if (!isMobile()) {
+    if (!isMobileOrTablet()) {
       setPlatform("desktop");
       setAllowed(false);
       return;
