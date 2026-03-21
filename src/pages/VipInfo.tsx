@@ -9,6 +9,14 @@ const VIP_INFO_SEEN_KEY = "eagle_vip_info_seen";
 const VipInfo = () => {
   const navigate = useNavigate();
   const [showBonus, setShowBonus] = useState(false);
+  const [pushStatus, setPushStatus] = useState<"granted" | "denied" | "default">("granted");
+  const [pushLoading, setPushLoading] = useState(false);
+
+  useEffect(() => {
+    if ("Notification" in window) {
+      setPushStatus(Notification.permission as "granted" | "denied" | "default");
+    }
+  }, []);
 
   useEffect(() => {
     const stored = localStorage.getItem("vip_session");
