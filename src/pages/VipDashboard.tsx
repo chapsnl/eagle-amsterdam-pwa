@@ -100,7 +100,7 @@ const VipDashboard = () => {
 
   return (
     <div className="flex flex-col min-h-screen pb-24">
-      <div className="pt-8 px-4 max-w-[90%] mx-auto w-full">
+      <div className="pt-8 px-4 max-w-lg mx-auto w-full">
         {/* Header */}
         <div className="text-center mb-8 space-y-2">
           <Crown className="w-10 h-10 text-primary mx-auto" />
