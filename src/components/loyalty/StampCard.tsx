@@ -40,7 +40,7 @@ const StampCard = memo(({ stamps, onRewardOpen }: StampCardProps) => {
               }`}
             >
               {filled ? (
-                <svg viewBox="0 0 32 32" fill="currentColor" className="w-9 h-9">
+                <svg viewBox="0 0 32 32" fill="currentColor" className="w-10 h-10">
                   <rect x="13" y="4" width="6" height="18" rx="3" />
                   <ellipse cx="16" cy="4" rx="4.2" ry="3.2" />
                   <circle cx="12.5" cy="25.5" r="4" />
