@@ -192,7 +192,7 @@ const PwaGate = ({ children }: { children: React.ReactNode }) => {
       return;
     }
 
-    if (!isMobile()) {
+    if (!isMobileOrTablet()) {
       setPlatform("desktop");
       setAllowed(false);
       return;
