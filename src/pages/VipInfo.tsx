@@ -1,12 +1,22 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Info, Star, Gift, ShieldCheck } from "lucide-react";
+import { Info, Star, Gift, ShieldCheck, Bell } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { requestPushPermission, setOneSignalExternalId } from "@/lib/onesignal";
 
 const VIP_INFO_SEEN_KEY = "eagle_vip_info_seen";
 
 const VipInfo = () => {
   const navigate = useNavigate();
   const [showBonus, setShowBonus] = useState(false);
+  const [pushStatus, setPushStatus] = useState<"granted" | "denied" | "default">("granted");
+  const [pushLoading, setPushLoading] = useState(false);
+
+  useEffect(() => {
+    if ("Notification" in window) {
+      setPushStatus(Notification.permission as "granted" | "denied" | "default");
+    }
+  }, []);
 
   useEffect(() => {
     const stored = localStorage.getItem("vip_session");
@@ -63,6 +73,38 @@ const VipInfo = () => {
           <p className="text-muted-foreground text-[16px] leading-relaxed">
             Get automatic vouchers for free cloakroom, drinks, or event entry. Rewards are added every time your status levels up. Plus, we drop surprise vouchers for everyone! Check your Member Deals regularly so you don't miss out!
           </p>
+          <p className="text-foreground text-[16px] leading-relaxed font-bold">
+            Turn on Push Notifications when you receive a free voucher!
+          </p>
+          {pushStatus === "default" && (
+            <Button
+              variant="eagle"
+              className="w-full mt-2"
+              disabled={pushLoading}
+              onClick={async () => {
+                setPushLoading(true);
+                try {
+                  const granted = await requestPushPermission();
+                  if (granted) {
+                    setPushStatus("granted");
+                    const sessionRaw = localStorage.getItem("vip_session");
+                    if (sessionRaw) {
+                      const session = JSON.parse(sessionRaw);
+                      if (session.email) {
+                        await setOneSignalExternalId(session.email);
+                      }
+                    }
+                  } else {
+                    setPushStatus(Notification.permission as any);
+                  }
+                } catch {}
+                setPushLoading(false);
+              }}
+            >
+              <Bell className="w-4 h-4 mr-2" />
+              {pushLoading ? "Enabling..." : "Turn on now!"}
+            </Button>
+          )}
         </div>
 
         {/* Status Levels */}
