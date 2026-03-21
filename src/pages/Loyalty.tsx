@@ -205,7 +205,7 @@ const Loyalty = () => {
         </h1>
       </div>
 
-      <div className="px-4 max-w-[90%] mx-auto w-full">
+      <div className="px-4 max-w-lg mx-auto w-full">
         <StampCard stamps={stamps} onRewardOpen={() => setRewardOpen(true)} />
 
 
