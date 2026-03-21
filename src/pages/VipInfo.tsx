@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Info, Star, Gift, ShieldCheck } from "lucide-react";
+import { Info, Star, Gift, ShieldCheck, Bell } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { requestPushPermission, setOneSignalExternalId } from "@/lib/onesignal";
 
 const VIP_INFO_SEEN_KEY = "eagle_vip_info_seen";
 
