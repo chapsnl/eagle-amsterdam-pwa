@@ -73,9 +73,11 @@ const VipInfo = () => {
           <p className="text-muted-foreground text-[16px] leading-relaxed">
             Get automatic vouchers for free cloakroom, drinks, or event entry. Rewards are added every time your status levels up. Plus, we drop surprise vouchers for everyone! Check your Member Deals regularly so you don't miss out!
           </p>
-          <p className="text-foreground text-[16px] leading-relaxed font-bold">
-            Turn on Push Notifications when you receive a free voucher!
-          </p>
+          {pushStatus !== "granted" && (
+            <p className="text-foreground text-[16px] leading-relaxed font-bold">
+              Turn on Push Notifications when you receive a free voucher!
+            </p>
+          )}
           {pushStatus === "default" && (
             <Button
               variant="eagle"
