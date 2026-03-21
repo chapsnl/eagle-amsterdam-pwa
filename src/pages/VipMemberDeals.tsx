@@ -106,7 +106,7 @@ const VipMemberDeals = () => {
 
   return (
     <div className="flex flex-col min-h-screen pb-24">
-      <div className="pt-8 px-4 max-w-[90%] mx-auto w-full space-y-6">
+      <div className="pt-8 px-4 max-w-lg mx-auto w-full space-y-6">
         {/* Header */}
         <div className="text-center space-y-2">
           <Tag className="w-10 h-10 text-primary mx-auto" />
