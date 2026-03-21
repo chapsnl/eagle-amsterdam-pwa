@@ -124,7 +124,7 @@ const VipProfileSetup = () => {
   return (
     <div className="flex flex-col min-h-screen pb-24">
       <div className="flex-1 flex flex-col items-center justify-center px-4">
-        <div className="w-full max-w-[90%] mx-auto space-y-6">
+        <div className="w-full max-w-lg mx-auto space-y-6">
 
           <div className="text-center space-y-2">
             <h1 className="text-2xl text-foreground">ONE LAST STEP</h1>

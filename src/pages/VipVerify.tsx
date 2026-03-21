@@ -226,7 +226,7 @@ const VipVerify = () => {
       />
 
       <div className="flex-1 flex flex-col items-center justify-center px-4">
-        <div className="w-full max-w-[90%] mx-auto space-y-8">
+        <div className="w-full max-w-lg mx-auto space-y-8">
           <div className="text-center space-y-3">
             <ShieldCheck className="w-12 h-12 text-primary mx-auto" />
             <h1 className="text-3xl text-foreground">VERIFY CODE</h1>
