@@ -65,6 +65,44 @@ export type Database = {
         }
         Relationships: []
       }
+      community_posts: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          nickname: string
+          parent_id: string | null
+          topic: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          nickname: string
+          parent_id?: string | null
+          topic: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          nickname?: string
+          parent_id?: string | null
+          topic?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_posts_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "community_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       loyalty_stamps: {
         Row: {
           created_at: string
