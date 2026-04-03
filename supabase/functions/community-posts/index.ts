@@ -131,6 +131,45 @@ Deno.serve(async (req) => {
       );
     }
 
+    // DELETE post (admin only)
+    if (action === "delete") {
+      const { postId } = body;
+
+      if (!postId) {
+        return new Response(
+          JSON.stringify({ error: "postId is required" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      // Check if user is admin
+      const { data: isAdmin } = await supabaseAdmin.rpc("is_admin", { _user_id: userId });
+      if (!isAdmin) {
+        return new Response(
+          JSON.stringify({ error: "Unauthorized" }),
+          { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      // Delete post and its replies (CASCADE handles replies)
+      const { error } = await supabaseAdmin
+        .from("community_posts")
+        .delete()
+        .eq("id", postId);
+
+      if (error) {
+        return new Response(
+          JSON.stringify({ error: error.message }),
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      return new Response(
+        JSON.stringify({ success: true }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     return new Response(
       JSON.stringify({ error: "Unknown action" }),
       { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
