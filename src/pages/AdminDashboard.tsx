@@ -175,6 +175,7 @@ const AdminDashboard = () => {
     }
   };
 
+  const handleSaveCode = async () => {
     if (!adminUserId || !newCode.trim()) return;
     setSavingCode(true);
     try {
