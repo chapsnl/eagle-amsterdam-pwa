@@ -177,7 +177,7 @@ const TheBackroom = () => {
               placeholder="Your nickname"
               value={nickname}
               onChange={(e) => setNickname(e.target.value.slice(0, 30))}
-              className="w-full bg-secondary text-foreground rounded-lg px-3 py-2 text-sm placeholder:text-muted-foreground outline-none"
+              className="w-full bg-secondary text-foreground rounded-lg px-3 py-2 text-base placeholder:text-muted-foreground outline-none"
             />
             <input
               type="text"
