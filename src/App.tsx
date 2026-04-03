@@ -28,6 +28,7 @@ const VipMemberPass = lazy(() => import("./pages/VipMemberPass"));
 const VipProfileSetup = lazy(() => import("./pages/VipProfileSetup"));
 const VipInfo = lazy(() => import("./pages/VipInfo"));
 const VipMemberDeals = lazy(() => import("./pages/VipMemberDeals"));
+const TheBackroom = lazy(() => import("./pages/TheBackroom"));
 const Settings = lazy(() => import("./pages/Settings"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const AdminLogin = lazy(() => import("./pages/AdminLogin"));
