@@ -55,7 +55,7 @@ const TheBackroom = () => {
     if (!session) return;
     try {
       const { data, error } = await supabase.functions.invoke("community-posts", {
-        body: { action: "list" },
+        body: { action: "list", userId: session.userId },
       });
       if (!error && data?.success) {
         setPosts(data.posts || []);
@@ -94,7 +94,7 @@ const TheBackroom = () => {
     setSubmitting(true);
     try {
       await supabase.functions.invoke("community-posts", {
-        body: { action: "create", nickname: nickname.trim(), topic: topic.trim(), content: content.trim() },
+        body: { action: "create", userId: session!.userId, nickname: nickname.trim(), topic: topic.trim(), content: content.trim() },
       });
       setTopic("");
       setContent("");
@@ -114,6 +114,7 @@ const TheBackroom = () => {
       await supabase.functions.invoke("community-posts", {
         body: {
           action: "create",
+          userId: session!.userId,
           nickname: nickname.trim(),
           topic: parentTopic,
           content: replyContent.trim(),
