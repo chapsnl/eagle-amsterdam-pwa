@@ -96,6 +96,13 @@ const VipDashboard = () => {
       disabled: false,
       isDeal: false,
     },
+    {
+      label: "BACKROOM",
+      icon: DoorOpen,
+      onClick: () => navigate("/vip/backroom"),
+      disabled: false,
+      isDeal: false,
+    },
   ];
 
   return (
