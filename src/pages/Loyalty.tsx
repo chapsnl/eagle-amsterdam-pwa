@@ -37,6 +37,7 @@ const Loyalty = () => {
   const [redeemFading, setRedeemFading] = useState(false);
   const [cameraBlocked, setCameraBlocked] = useState(false);
   const [invalidOpen, setInvalidOpen] = useState(false);
+  const [noActiveCodeOpen, setNoActiveCodeOpen] = useState(false);
   const [totalStampsEarned, setTotalStampsEarned] = useState<number>(0);
 
   useEffect(() => {
@@ -132,6 +133,8 @@ const Loyalty = () => {
           setLimitOpen(true);
         } else if (errCode === "card_full") {
           setRewardOpen(true);
+        } else if (errCode === "no_active_code") {
+          setNoActiveCodeOpen(true);
         } else {
           setInvalidOpen(true);
         }
@@ -264,6 +267,13 @@ const Loyalty = () => {
         title="Already Scanned"
         message="Already scanned, see you next time at the party."
         onClose={() => setLimitOpen(false)}
+      />
+
+      <WarningDialog
+        open={noActiveCodeOpen}
+        title="No Active QR Code"
+        message="No loyalty QR code is currently active. Please ask staff to set one up."
+        onClose={() => setNoActiveCodeOpen(false)}
       />
 
       {redeemSuccessOpen && (
