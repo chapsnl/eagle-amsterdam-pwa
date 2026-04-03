@@ -269,6 +269,13 @@ const Loyalty = () => {
         onClose={() => setLimitOpen(false)}
       />
 
+      <WarningDialog
+        open={noActiveCodeOpen}
+        title="No Active QR Code"
+        message="No loyalty QR code is currently active. Please ask staff to set one up."
+        onClose={() => setNoActiveCodeOpen(false)}
+      />
+
       {redeemSuccessOpen && (
         <div className={`fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm transition-opacity duration-300 ${redeemFading ? "opacity-0" : "opacity-100"}`}>
           <div className={`max-w-[400px] w-[90%] rounded-xl bg-card border border-primary p-8 text-center shadow-[var(--shadow-red-intense)] transition-all duration-300 ${redeemFading ? "scale-95 opacity-0" : "animate-scale-in scale-100 opacity-100"}`}>

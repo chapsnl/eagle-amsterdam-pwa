@@ -45,18 +45,29 @@ Deno.serve(async (req) => {
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    let validCode = Deno.env.get("LOYALTY_QR_CODE") || "EAGLE2027";
-
-    const { data: activeCode } = await supabase
+    const { data: activeCode, error: codeReadError } = await supabase
       .from("active_loyalty_code")
       .select("code")
       .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle();
 
-    if (activeCode?.code) {
-      validCode = activeCode.code;
+    if (codeReadError) {
+      console.error("[scan-loyalty-stamp] DB read error:", codeReadError.message);
+      return new Response(
+        JSON.stringify({ success: false, error: "server_error" }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
+
+    if (!activeCode?.code) {
+      return new Response(
+        JSON.stringify({ success: false, error: "no_active_code" }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const validCode = activeCode.code;
 
     if (code.trim().toUpperCase() !== validCode.toUpperCase()) {
       return new Response(
