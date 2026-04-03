@@ -55,7 +55,7 @@ const TheBackroom = () => {
     if (!session) return;
     try {
       const { data, error } = await supabase.functions.invoke("community-posts", {
-        body: { action: "list" },
+        body: { action: "list", userId: session.userId },
       });
       if (!error && data?.success) {
         setPosts(data.posts || []);
