@@ -94,7 +94,7 @@ const TheBackroom = () => {
     setSubmitting(true);
     try {
       await supabase.functions.invoke("community-posts", {
-        body: { action: "create", nickname: nickname.trim(), topic: topic.trim(), content: content.trim() },
+        body: { action: "create", userId: session!.userId, nickname: nickname.trim(), topic: topic.trim(), content: content.trim() },
       });
       setTopic("");
       setContent("");
