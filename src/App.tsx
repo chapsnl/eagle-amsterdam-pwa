@@ -28,6 +28,7 @@ const VipMemberPass = lazy(() => import("./pages/VipMemberPass"));
 const VipProfileSetup = lazy(() => import("./pages/VipProfileSetup"));
 const VipInfo = lazy(() => import("./pages/VipInfo"));
 const VipMemberDeals = lazy(() => import("./pages/VipMemberDeals"));
+const TheBackroom = lazy(() => import("./pages/TheBackroom"));
 const Settings = lazy(() => import("./pages/Settings"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const AdminLogin = lazy(() => import("./pages/AdminLogin"));
@@ -101,6 +102,7 @@ const App = () => {
                   <Route path="/vip/profile-setup" element={<VipProfileSetup />} />
                   <Route path="/vip/info" element={<VipInfo />} />
                   <Route path="/vip/member-deals" element={<VipMemberDeals />} />
+                  <Route path="/vip/backroom" element={<TheBackroom />} />
                   <Route path="/eagle-admin-dashboard" element={<AdminDashboard />} />
                   <Route path="/settings" element={<Settings />} />
                   <Route path="*" element={<NotFound />} />

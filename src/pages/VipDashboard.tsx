@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Crown, Star, Tag, Info, IdCard } from "lucide-react";
+import { Crown, Star, Tag, Info, IdCard, DoorOpen } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { calculateVipStatus, trackAppOpen, type VipStatusLevel } from "@/lib/vipStatus";
 
@@ -93,6 +93,13 @@ const VipDashboard = () => {
       label: "MEMBER PASS",
       icon: IdCard,
       onClick: () => navigate("/vip/member-pass"),
+      disabled: false,
+      isDeal: false,
+    },
+    {
+      label: "BACKROOM",
+      icon: DoorOpen,
+      onClick: () => navigate("/vip/backroom"),
       disabled: false,
       isDeal: false,
     },
