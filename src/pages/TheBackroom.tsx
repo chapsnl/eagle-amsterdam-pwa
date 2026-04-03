@@ -148,7 +148,7 @@ const TheBackroom = () => {
   if (!session) return null;
 
   return (
-    <div className="flex flex-col min-h-screen pb-24">
+    <div className="flex flex-col min-h-screen pb-24 overflow-x-hidden">
       <div className="pt-6 px-4 max-w-lg mx-auto w-full">
         {/* Header */}
         <div className="flex items-center gap-3 mb-6">
