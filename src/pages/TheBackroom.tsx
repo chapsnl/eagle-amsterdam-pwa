@@ -191,7 +191,7 @@ const TheBackroom = () => {
               value={content}
               onChange={(e) => handleContentChange(e.target.value)}
               rows={5}
-              className="w-full bg-secondary text-foreground rounded-lg px-3 py-2 text-sm placeholder:text-muted-foreground outline-none resize-none"
+              className="w-full bg-secondary text-foreground rounded-lg px-3 py-2 text-base placeholder:text-muted-foreground outline-none resize-none"
             />
             <div className="flex gap-2">
               <button
