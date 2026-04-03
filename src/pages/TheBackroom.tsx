@@ -228,27 +228,27 @@ const TheBackroom = () => {
               const isExpanded = expandedPost === post.id;
 
               return (
-                <div key={post.id} className="overflow-hidden">
-                  {/* Post button */}
+                <div key={post.id} className="bg-card rounded-xl border border-border overflow-hidden">
+                  {/* Collapsed header */}
                   <button
                     onClick={() => setExpandedPost(isExpanded ? null : post.id)}
-                    className="w-full flex items-center justify-between px-4 py-3 rounded-xl bg-primary text-primary-foreground active:scale-[0.98] transition-all duration-200"
+                    className="w-full flex items-center justify-between p-4 text-left"
                   >
                     <div className="flex-1 min-w-0">
-                      <p className="font-bold text-sm truncate text-left">{post.topic}</p>
-                      <p className="text-primary-foreground/60 text-xs mt-0.5 text-left">
+                      <p className="text-foreground font-bold text-sm truncate">{post.topic}</p>
+                      <p className="text-muted-foreground text-xs mt-0.5">
                         {post.nickname} · {format(new Date(post.created_at), "dd MMM yyyy, HH:mm")}
                         {replies.length > 0 && (
-                          <span className="text-primary-foreground/80 ml-2">
+                          <span className="text-primary ml-2">
                             {replies.length} {replies.length === 1 ? "reply" : "replies"}
                           </span>
                         )}
                       </p>
                     </div>
                     {isExpanded ? (
-                      <ChevronUp className="w-5 h-5 text-primary-foreground/60 shrink-0 ml-2" />
+                      <ChevronUp className="w-5 h-5 text-muted-foreground shrink-0 ml-2" />
                     ) : (
-                      <ChevronDown className="w-5 h-5 text-primary-foreground/60 shrink-0 ml-2" />
+                      <ChevronDown className="w-5 h-5 text-muted-foreground shrink-0 ml-2" />
                     )}
                   </button>
 
