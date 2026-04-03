@@ -128,7 +128,7 @@ const VipDashboard = () => {
               key={label}
               onClick={disabled ? undefined : onClick}
               disabled={disabled}
-              className={`aspect-square flex flex-col items-center justify-center gap-3 rounded-xl border-0 transition-all duration-200 ${
+              className={`py-5 flex flex-col items-center justify-center gap-2 rounded-xl border-0 transition-all duration-200 ${
                 disabled
                   ? "bg-primary/30 text-primary-foreground/40 cursor-not-allowed"
                   : "bg-primary text-primary-foreground active:scale-95 hover:opacity-90"

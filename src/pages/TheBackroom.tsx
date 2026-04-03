@@ -217,7 +217,10 @@ const TheBackroom = () => {
           </div>
         ) : topLevelPosts.length === 0 ? (
           <p className="text-center text-muted-foreground py-12">No posts yet. Be the first!</p>
-        ) : (
+        ) : null}
+
+        {/* Posts always rendered below */}
+        {!loading && topLevelPosts.length > 0 && (
           <div className="space-y-3">
             {topLevelPosts.map((post) => {
               const replies = getReplies(post.id);
