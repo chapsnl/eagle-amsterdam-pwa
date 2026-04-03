@@ -133,6 +133,8 @@ const Loyalty = () => {
           setLimitOpen(true);
         } else if (errCode === "card_full") {
           setRewardOpen(true);
+        } else if (errCode === "no_active_code") {
+          setNoActiveCodeOpen(true);
         } else {
           setInvalidOpen(true);
         }
