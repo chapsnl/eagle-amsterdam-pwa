@@ -6,8 +6,6 @@ const corsHeaders = {
 };
 
 const ADMIN_EMAIL = "michael.roks@icloud.com";
-const MAX_FAILED_ATTEMPTS = 5;
-const LOCKOUT_MINUTES = 30;
 
 async function hashPassword(password: string): Promise<string> {
   const encoder = new TextEncoder();
@@ -27,6 +25,7 @@ Deno.serve(async (req) => {
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
+    // Verify this is the admin email
     if (!email || email.toLowerCase() !== ADMIN_EMAIL) {
       return new Response(
         JSON.stringify({ success: false, error: "Access denied." }),
@@ -36,6 +35,7 @@ Deno.serve(async (req) => {
 
     const normalizedEmail = email.toLowerCase();
 
+    // Check if admin user exists in profiles
     const { data: profile } = await supabase
       .from("profiles")
       .select("id")
@@ -51,7 +51,7 @@ Deno.serve(async (req) => {
 
     const adminUserId = profile.id;
 
-    // ACTION: check-setup
+    // ACTION: check-setup — does admin have a password set?
     if (action === "check-setup") {
       const { data: cred } = await supabase
         .from("admin_credentials")
@@ -65,7 +65,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    // ACTION: set-password
+    // ACTION: set-password — first-time password setup
     if (action === "set-password") {
       if (!password || password.length < 8) {
         return new Response(
@@ -99,7 +99,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    // ACTION: verify-password
+    // ACTION: verify-password — check password and send OTP
     if (action === "verify-password") {
       if (!password) {
         return new Response(
@@ -110,7 +110,7 @@ Deno.serve(async (req) => {
 
       const { data: cred } = await supabase
         .from("admin_credentials")
-        .select("password_hash, failed_attempts, locked_until")
+        .select("password_hash")
         .eq("user_id", adminUserId)
         .single();
 
@@ -121,36 +121,15 @@ Deno.serve(async (req) => {
         );
       }
 
-      // Check lockout
-      if (cred.locked_until && new Date(cred.locked_until) > new Date()) {
-        return new Response(
-          JSON.stringify({ success: false, error: "Too many failed attempts. Try again later." }),
-          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-
       const passwordHash = await hashPassword(password);
       if (passwordHash !== cred.password_hash) {
-        const newAttempts = (cred.failed_attempts || 0) + 1;
-        const updates: Record<string, unknown> = { failed_attempts: newAttempts };
-        if (newAttempts >= MAX_FAILED_ATTEMPTS) {
-          updates.locked_until = new Date(Date.now() + LOCKOUT_MINUTES * 60 * 1000).toISOString();
-          updates.failed_attempts = 0;
-        }
-        await supabase.from("admin_credentials").update(updates).eq("user_id", adminUserId);
-
         return new Response(
           JSON.stringify({ success: false, error: "Incorrect password." }),
           { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
 
-      // Password correct — reset counters
-      await supabase.from("admin_credentials")
-        .update({ failed_attempts: 0, locked_until: null })
-        .eq("user_id", adminUserId);
-
-      // Generate and send OTP
+      // Password correct — generate and send OTP
       const otpCode = Math.floor(1000 + Math.random() * 9000).toString();
 
       await supabase.from("otp_codes").delete().eq("email", normalizedEmail);
@@ -160,6 +139,7 @@ Deno.serve(async (req) => {
         name: "Admin",
       });
 
+      // Send OTP via SMTP
       const { default: nodemailer } = await import("npm:nodemailer@6.9.16");
       const SMTP_HOST = Deno.env.get("SMTP_HOST");
       const SMTP_PORT = Deno.env.get("SMTP_PORT") || "465";
@@ -220,7 +200,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    // ACTION: verify-otp
+    // ACTION: verify-otp — verify admin OTP code
     if (action === "verify-otp") {
       if (!code) {
         return new Response(

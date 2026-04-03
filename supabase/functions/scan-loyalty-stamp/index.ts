@@ -8,16 +8,6 @@ const corsHeaders = {
 const TOTAL_STAMPS = 6;
 const COOLDOWN_MS = 160 * 60 * 60 * 1000; // 160 hours
 
-function getCallerUserId(req: Request): string | null {
-  const authHeader = req.headers.get("authorization") || "";
-  const token = authHeader.replace("Bearer ", "");
-  if (!token) return null;
-  try {
-    const payload = JSON.parse(atob(token.split(".")[1]));
-    return payload.sub || null;
-  } catch { return null; }
-}
-
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -33,41 +23,22 @@ Deno.serve(async (req) => {
       );
     }
 
-    const callerUserId = getCallerUserId(req);
-    if (!callerUserId || callerUserId !== userId) {
-      return new Response(
-        JSON.stringify({ success: false, error: "Unauthorized" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const { data: activeCode, error: codeReadError } = await supabase
+    let validCode = Deno.env.get("LOYALTY_QR_CODE") || "EAGLE2027";
+
+    const { data: activeCode } = await supabase
       .from("active_loyalty_code")
       .select("code")
       .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle();
 
-    if (codeReadError) {
-      console.error("[scan-loyalty-stamp] DB read error:", codeReadError.message);
-      return new Response(
-        JSON.stringify({ success: false, error: "server_error" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+    if (activeCode?.code) {
+      validCode = activeCode.code;
     }
-
-    if (!activeCode?.code) {
-      return new Response(
-        JSON.stringify({ success: false, error: "no_active_code" }),
-        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    const validCode = activeCode.code;
 
     if (code.trim().toUpperCase() !== validCode.toUpperCase()) {
       return new Response(

@@ -37,7 +37,6 @@ const Loyalty = () => {
   const [redeemFading, setRedeemFading] = useState(false);
   const [cameraBlocked, setCameraBlocked] = useState(false);
   const [invalidOpen, setInvalidOpen] = useState(false);
-  const [noActiveCodeOpen, setNoActiveCodeOpen] = useState(false);
   const [totalStampsEarned, setTotalStampsEarned] = useState<number>(0);
 
   useEffect(() => {
@@ -111,36 +110,33 @@ const Loyalty = () => {
   const [levelUpFading, setLevelUpFading] = useState(false);
 
   const handleScanResult = useCallback(async (decodedText: string) => {
-    setScannerOpen(false);
-
     try {
       const sessionRaw = localStorage.getItem("vip_session");
       if (!sessionRaw) {
+        setScannerOpen(false);
         setInvalidOpen(true);
         return;
       }
 
       const session = JSON.parse(sessionRaw);
-      const { data, error } = await supabase.functions.invoke("scan-loyalty-stamp", {
+      const { data } = await supabase.functions.invoke("scan-loyalty-stamp", {
         body: { userId: session.userId, code: decodedText.trim() },
       });
 
-      if (error || !data?.success) {
-        const errCode = data?.error;
-        if (errCode === "invalid_code") {
+      setScannerOpen(false);
+
+      if (!data?.success) {
+        if (data?.error === "invalid_code") {
           setInvalidOpen(true);
-        } else if (errCode === "cooldown") {
+        } else if (data?.error === "cooldown") {
           setLimitOpen(true);
-        } else if (errCode === "card_full") {
+        } else if (data?.error === "card_full") {
           setRewardOpen(true);
-        } else if (errCode === "no_active_code") {
-          setNoActiveCodeOpen(true);
-        } else {
-          setInvalidOpen(true);
         }
         return;
       }
 
+      // Update local state from server response
       setStamps(data.stamps);
       setTotalStampsEarned(data.totalStampsEarned);
       localStorage.setItem(STORAGE_KEY, JSON.stringify({ stamps: data.stamps, redeemed: false }));
@@ -162,6 +158,7 @@ const Loyalty = () => {
         }, 3000);
       }
     } catch {
+      setScannerOpen(false);
       setInvalidOpen(true);
     }
   }, []);
@@ -267,13 +264,6 @@ const Loyalty = () => {
         title="Already Scanned"
         message="Already scanned, see you next time at the party."
         onClose={() => setLimitOpen(false)}
-      />
-
-      <WarningDialog
-        open={noActiveCodeOpen}
-        title="No Active QR Code"
-        message="No loyalty QR code is currently active. Please ask staff to set one up."
-        onClose={() => setNoActiveCodeOpen(false)}
       />
 
       {redeemSuccessOpen && (

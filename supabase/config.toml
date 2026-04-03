@@ -42,14 +42,14 @@ verify_jwt = false
 [functions.grant-welcome-voucher]
 verify_jwt = false
 
+[functions.get-profile]
+verify_jwt = false
+
 [functions.redeem-voucher]
 verify_jwt = false
 
+[functions.upload-profile-image]
+verify_jwt = false
+
 [functions.send-invite-email]
-verify_jwt = false
-
-[functions.get-tickets]
-verify_jwt = false
-
-[functions.admin-manage-tickets]
 verify_jwt = false

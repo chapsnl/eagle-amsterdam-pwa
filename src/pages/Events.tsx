@@ -3,6 +3,7 @@ import {
   Ticket,
   ExternalLink,
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -12,36 +13,38 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import CardSkeletonList from "@/components/shared/CardSkeletonList";
+import type { LucideIcon } from "lucide-react";
 
 interface TicketItem {
-  id: string;
   name: string;
   type: "popup" | "link";
-  url?: string | null;
-  popup_message?: string | null;
-  display_order: number;
+  url?: string;
+  popupMessage?: string;
+  icon: LucideIcon;
 }
+
+const tickets: TicketItem[] = [
+  { name: "Bear Bash", type: "popup", popupMessage: "This is a free event", icon: Ticket },
+  { name: "Horsemen & Knights", type: "popup", popupMessage: "Tickets only at the door for 8 Euro", icon: Ticket },
+  { name: "NcAdam", type: "popup", popupMessage: "Tickets only at the door for 8 Euro", icon: Ticket },
+  { name: "Cum Hunks", type: "popup", popupMessage: "Tickets only at the door for 8 Euro", icon: Ticket },
+  { name: "Horse Fair", type: "popup", popupMessage: "Tickets only at the door for 12,50 Euro", icon: Ticket },
+  { name: "XXXFetish", type: "popup", popupMessage: "Tickets only at the door for 8 Euro", icon: Ticket },
+  { name: "Ready2Play", type: "link", url: "https://www.ready-2-play.nl/#tickets", icon: Ticket },
+  { name: "Sneaky", type: "link", url: "https://www.sneaky-the-party.com/#tickets", icon: Ticket },
+  { name: "The Meantime", type: "link", url: "https://www.themeantime.nl/#tickets", icon: Ticket },
+  { name: "Pup Unleashed", type: "link", url: "https://www.puppyunleashed.nl/#tickets", icon: Ticket },
+  { name: "Corner Time", type: "link", url: "https://www.cornertime.nl/#tickets", icon: Ticket },
+  { name: "XXXFetish", type: "link", url: "https://www.cornertime.nl/#tickets", icon: Ticket },
+];
 
 const Events = () => {
   const [popupOpen, setPopupOpen] = useState(false);
   const [popupMessage, setPopupMessage] = useState("");
 
-  const { data: tickets = [], isLoading } = useQuery({
-    queryKey: ["tickets"],
-    queryFn: async () => {
-      const { data, error } = await supabase.functions.invoke("get-tickets");
-      if (error || !data?.success) throw new Error("Failed to fetch tickets");
-      return data.tickets as TicketItem[];
-    },
-    staleTime: 5 * 60 * 1000,
-  });
-
   const handleClick = (ticket: TicketItem) => {
     if (ticket.type === "popup") {
-      setPopupMessage(ticket.popup_message || "");
+      setPopupMessage(ticket.popupMessage || "");
       setPopupOpen(true);
     } else if (ticket.url) {
       window.open(ticket.url, "_blank", "noopener,noreferrer");
@@ -54,18 +57,16 @@ const Events = () => {
         <Ticket className="w-7 h-7 text-primary" />
         TICKETS
       </h1>
-
-      {isLoading ? (
-        <CardSkeletonList count={6} />
-      ) : (
-        <div className="grid gap-4" style={{ gridTemplateColumns: '1fr 1fr' }}>
-          {tickets.map((ticket) => (
+      <div className="grid gap-4" style={{ gridTemplateColumns: '1fr 1fr' }}>
+        {tickets.map((ticket, i) => {
+          const Icon = ticket.icon;
+          return (
             <button
-              key={ticket.id}
+              key={`${ticket.name}-${i}`}
               className="group relative flex flex-col items-center gap-3 rounded-lg border-2 border-border bg-secondary/50 py-6 px-4 text-foreground transition-all duration-300 active:border-primary active:bg-primary active:text-primary-foreground"
               onClick={() => handleClick(ticket)}
             >
-              <Ticket className="w-7 h-7 text-primary transition-all duration-300 group-active:scale-110 group-active:text-primary-foreground" />
+              <Icon className="w-7 h-7 text-primary transition-all duration-300 group-active:scale-110 group-active:text-primary-foreground" />
               <span className="font-display text-sm tracking-wider text-center leading-tight">
                 {ticket.name}
               </span>
@@ -77,9 +78,9 @@ const Events = () => {
                 )}
               </span>
             </button>
-          ))}
-        </div>
-      )}
+          );
+        })}
+      </div>
 
       <AlertDialog open={popupOpen} onOpenChange={setPopupOpen}>
         <AlertDialogContent className="bg-card border-border max-w-[calc(100vw-3rem)] sm:max-w-sm mx-auto">
