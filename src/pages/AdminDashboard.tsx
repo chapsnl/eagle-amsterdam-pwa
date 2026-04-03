@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Crown, Users, QrCode, Gift, RefreshCw, Check, Send, ChevronDown, ChevronUp, LogOut, ScanLine, Search, Shirt, Ticket, Beer } from "lucide-react";
 import MemberScannerSection from "@/components/admin/MemberScannerSection";
 import InviteUserSection from "@/components/admin/InviteUserSection";
+import AdminTicketsSection from "@/components/admin/AdminTicketsSection";
 import { supabase } from "@/integrations/supabase/client";
 import { QRCodeSVG } from "qrcode.react";
 import { Input } from "@/components/ui/input";
@@ -452,6 +453,9 @@ const AdminDashboard = () => {
 
         {/* ═══ INVITE USER ═══ */}
         <InviteUserSection adminUserId={adminUserId} />
+
+        {/* ═══ TICKETS MANAGEMENT ═══ */}
+        <AdminTicketsSection adminUserId={adminUserId} />
 
         {/* ═══ SEARCH MEMBER ═══ */}
         <section className="space-y-3">

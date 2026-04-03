@@ -38,21 +38,27 @@ export type Database = {
       admin_credentials: {
         Row: {
           created_at: string
+          failed_attempts: number
           id: string
+          locked_until: string | null
           password_hash: string
           updated_at: string
           user_id: string
         }
         Insert: {
           created_at?: string
+          failed_attempts?: number
           id?: string
+          locked_until?: string | null
           password_hash: string
           updated_at?: string
           user_id: string
         }
         Update: {
           created_at?: string
+          failed_attempts?: number
           id?: string
+          locked_until?: string | null
           password_hash?: string
           updated_at?: string
           user_id?: string
@@ -185,6 +191,39 @@ export type Database = {
           profile_image_url?: string | null
           total_stamps_earned?: number
           vip_status?: string
+        }
+        Relationships: []
+      }
+      tickets: {
+        Row: {
+          active: boolean
+          created_at: string
+          display_order: number
+          id: string
+          name: string
+          popup_message: string | null
+          type: string
+          url: string | null
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          display_order?: number
+          id?: string
+          name: string
+          popup_message?: string | null
+          type: string
+          url?: string | null
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          display_order?: number
+          id?: string
+          name?: string
+          popup_message?: string | null
+          type?: string
+          url?: string | null
         }
         Relationships: []
       }

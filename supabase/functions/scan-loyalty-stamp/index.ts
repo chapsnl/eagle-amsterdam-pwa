@@ -8,6 +8,16 @@ const corsHeaders = {
 const TOTAL_STAMPS = 6;
 const COOLDOWN_MS = 160 * 60 * 60 * 1000; // 160 hours
 
+function getCallerUserId(req: Request): string | null {
+  const authHeader = req.headers.get("authorization") || "";
+  const token = authHeader.replace("Bearer ", "");
+  if (!token) return null;
+  try {
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    return payload.sub || null;
+  } catch { return null; }
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -20,6 +30,14 @@ Deno.serve(async (req) => {
       return new Response(
         JSON.stringify({ success: false, error: "userId and code are required" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const callerUserId = getCallerUserId(req);
+    if (!callerUserId || callerUserId !== userId) {
+      return new Response(
+        JSON.stringify({ success: false, error: "Unauthorized" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
