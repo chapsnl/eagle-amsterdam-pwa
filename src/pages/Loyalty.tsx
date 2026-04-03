@@ -110,33 +110,34 @@ const Loyalty = () => {
   const [levelUpFading, setLevelUpFading] = useState(false);
 
   const handleScanResult = useCallback(async (decodedText: string) => {
+    setScannerOpen(false);
+
     try {
       const sessionRaw = localStorage.getItem("vip_session");
       if (!sessionRaw) {
-        setScannerOpen(false);
         setInvalidOpen(true);
         return;
       }
 
       const session = JSON.parse(sessionRaw);
-      const { data } = await supabase.functions.invoke("scan-loyalty-stamp", {
+      const { data, error } = await supabase.functions.invoke("scan-loyalty-stamp", {
         body: { userId: session.userId, code: decodedText.trim() },
       });
 
-      setScannerOpen(false);
-
-      if (!data?.success) {
-        if (data?.error === "invalid_code") {
+      if (error || !data?.success) {
+        const errCode = data?.error;
+        if (errCode === "invalid_code") {
           setInvalidOpen(true);
-        } else if (data?.error === "cooldown") {
+        } else if (errCode === "cooldown") {
           setLimitOpen(true);
-        } else if (data?.error === "card_full") {
+        } else if (errCode === "card_full") {
           setRewardOpen(true);
+        } else {
+          setInvalidOpen(true);
         }
         return;
       }
 
-      // Update local state from server response
       setStamps(data.stamps);
       setTotalStampsEarned(data.totalStampsEarned);
       localStorage.setItem(STORAGE_KEY, JSON.stringify({ stamps: data.stamps, redeemed: false }));
@@ -158,7 +159,6 @@ const Loyalty = () => {
         }, 3000);
       }
     } catch {
-      setScannerOpen(false);
       setInvalidOpen(true);
     }
   }, []);
