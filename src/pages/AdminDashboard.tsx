@@ -141,7 +141,40 @@ const AdminDashboard = () => {
     }
   }, []);
 
-  const handleSaveCode = async () => {
+  const loadCommunityPosts = useCallback(async () => {
+    if (!adminUserId) return;
+    setLoadingPosts(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("community-posts", {
+        body: { action: "list", userId: adminUserId },
+      });
+      if (!error && data?.success) {
+        setCommunityPosts(data.posts || []);
+      }
+    } catch {
+      // silent
+    } finally {
+      setLoadingPosts(false);
+    }
+  }, [adminUserId]);
+
+  const handleDeletePost = async (postId: string) => {
+    if (!adminUserId) return;
+    setDeletingPost(postId);
+    try {
+      const { data, error } = await supabase.functions.invoke("community-posts", {
+        body: { action: "delete", userId: adminUserId, postId },
+      });
+      if (!error && data?.success) {
+        setCommunityPosts((prev) => prev.filter((p) => p.id !== postId && p.parent_id !== postId));
+      }
+    } catch {
+      // silent
+    } finally {
+      setDeletingPost(null);
+    }
+  };
+
     if (!adminUserId || !newCode.trim()) return;
     setSavingCode(true);
     try {
