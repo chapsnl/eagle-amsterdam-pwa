@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Crown, Users, QrCode, Gift, RefreshCw, Check, Send, ChevronDown, ChevronUp, LogOut, ScanLine, Search, Shirt, Ticket, Beer } from "lucide-react";
+import { Crown, Users, QrCode, Gift, RefreshCw, Check, Send, ChevronDown, ChevronUp, LogOut, ScanLine, Search, Shirt, Ticket, Beer, MessageSquare, Trash2 } from "lucide-react";
 import MemberScannerSection from "@/components/admin/MemberScannerSection";
 import InviteUserSection from "@/components/admin/InviteUserSection";
 import { supabase } from "@/integrations/supabase/client";
@@ -51,6 +51,10 @@ const AdminDashboard = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [qrSectionOpen, setQrSectionOpen] = useState(false);
   const [scannedMember, setScannedMember] = useState<Member | null>(null);
+  const [communityPosts, setCommunityPosts] = useState<any[]>([]);
+  const [loadingPosts, setLoadingPosts] = useState(false);
+  const [deletingPost, setDeletingPost] = useState<string | null>(null);
+  const [moderationOpen, setModerationOpen] = useState(false);
   const activityTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const logout = useCallback(() => {
@@ -136,6 +140,40 @@ const AdminDashboard = () => {
       setLoading(false);
     }
   }, []);
+
+  const loadCommunityPosts = useCallback(async () => {
+    if (!adminUserId) return;
+    setLoadingPosts(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("community-posts", {
+        body: { action: "list", userId: adminUserId },
+      });
+      if (!error && data?.success) {
+        setCommunityPosts(data.posts || []);
+      }
+    } catch {
+      // silent
+    } finally {
+      setLoadingPosts(false);
+    }
+  }, [adminUserId]);
+
+  const handleDeletePost = async (postId: string) => {
+    if (!adminUserId) return;
+    setDeletingPost(postId);
+    try {
+      const { data, error } = await supabase.functions.invoke("community-posts", {
+        body: { action: "delete", userId: adminUserId, postId },
+      });
+      if (!error && data?.success) {
+        setCommunityPosts((prev) => prev.filter((p) => p.id !== postId && p.parent_id !== postId));
+      }
+    } catch {
+      // silent
+    } finally {
+      setDeletingPost(null);
+    }
+  };
 
   const handleSaveCode = async () => {
     if (!adminUserId || !newCode.trim()) return;
@@ -488,6 +526,81 @@ const AdminDashboard = () => {
             </div>
           </section>
         )}
+
+        {/* ═══ BACKROOM MODERATION ═══ */}
+        <section className="space-y-4">
+          <button
+            onClick={() => { setModerationOpen(!moderationOpen); if (!moderationOpen) loadCommunityPosts(); }}
+            className="w-full flex items-center justify-between"
+          >
+            <h2 className="text-foreground font-bold text-lg flex items-center gap-2">
+              <MessageSquare className="w-5 h-5 text-primary" />
+              Backroom Moderation
+            </h2>
+            {moderationOpen ? (
+              <ChevronUp className="w-5 h-5 text-muted-foreground" />
+            ) : (
+              <ChevronDown className="w-5 h-5 text-muted-foreground" />
+            )}
+          </button>
+
+          {moderationOpen && (
+            <div className="space-y-2">
+              {loadingPosts ? (
+                <div className="flex justify-center py-4">
+                  <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                </div>
+              ) : communityPosts.filter((p) => !p.parent_id).length === 0 ? (
+                <p className="text-muted-foreground text-sm text-center py-4">No posts to moderate.</p>
+              ) : (
+                communityPosts
+                  .filter((p) => !p.parent_id)
+                  .map((post) => {
+                    const replies = communityPosts.filter((r) => r.parent_id === post.id);
+                    return (
+                      <div key={post.id} className="bg-card rounded-xl border border-border p-3 space-y-2">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex-1 min-w-0">
+                            <p className="text-foreground font-bold text-sm">{post.topic}</p>
+                            <p className="text-muted-foreground text-xs">
+                              {post.nickname} · {new Date(post.created_at).toLocaleString()}
+                            </p>
+                            <p className="text-foreground text-sm mt-1 whitespace-pre-wrap">{post.content}</p>
+                          </div>
+                          <button
+                            onClick={() => handleDeletePost(post.id)}
+                            disabled={deletingPost === post.id}
+                            className="shrink-0 p-2 rounded-lg bg-destructive/20 text-destructive hover:bg-destructive/30 transition-colors disabled:opacity-40"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                        {replies.length > 0 && (
+                          <div className="pl-3 border-l-2 border-primary/30 space-y-1">
+                            {replies.map((reply) => (
+                              <div key={reply.id} className="flex items-start justify-between gap-2">
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-foreground text-xs whitespace-pre-wrap">{reply.content}</p>
+                                  <p className="text-muted-foreground text-xs">{reply.nickname} · {new Date(reply.created_at).toLocaleString()}</p>
+                                </div>
+                                <button
+                                  onClick={() => handleDeletePost(reply.id)}
+                                  disabled={deletingPost === reply.id}
+                                  className="shrink-0 p-1.5 rounded-lg bg-destructive/20 text-destructive hover:bg-destructive/30 transition-colors disabled:opacity-40"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })
+              )}
+            </div>
+          )}
+        </section>
 
       </div>
 
