@@ -114,6 +114,7 @@ const TheBackroom = () => {
       await supabase.functions.invoke("community-posts", {
         body: {
           action: "create",
+          userId: session!.userId,
           nickname: nickname.trim(),
           topic: parentTopic,
           content: replyContent.trim(),
