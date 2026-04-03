@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Crown, Star, Tag, Info, IdCard } from "lucide-react";
+import { Crown, Star, Tag, Info, IdCard, DoorOpen } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { calculateVipStatus, trackAppOpen, type VipStatusLevel } from "@/lib/vipStatus";
 
