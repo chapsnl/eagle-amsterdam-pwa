@@ -184,7 +184,7 @@ const TheBackroom = () => {
               placeholder="Topic / Subject"
               value={topic}
               onChange={(e) => setTopic(e.target.value.slice(0, 100))}
-              className="w-full bg-secondary text-foreground rounded-lg px-3 py-2 text-sm placeholder:text-muted-foreground outline-none"
+              className="w-full bg-secondary text-foreground rounded-lg px-3 py-2 text-base placeholder:text-muted-foreground outline-none"
             />
             <textarea
               placeholder="Write your message (max 5 lines)..."
