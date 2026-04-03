@@ -20,7 +20,6 @@ const VipVerify = () => {
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const verifyingRef = useRef(false);
 
-  // Recover email from session/local storage
   const getLoginState = () => {
     const sEmail = sessionStorage.getItem("vip_otp_email");
     const sRedirect = sessionStorage.getItem("vip_redirect_after_verify") || "/vip";
@@ -51,7 +50,6 @@ const VipVerify = () => {
     setWarningOpen(true);
   };
 
-  // Core verification logic
   const doVerify = useCallback(
     async (code: string) => {
       if (verifyingRef.current) return;
@@ -67,7 +65,6 @@ const VipVerify = () => {
 
         if (DEV) console.log("[VipVerify] Response:", { data, fnError });
 
-        // Connection / CORS error
         if (fnError) {
           if (DEV) console.error("[VipVerify] fnError:", fnError);
           showWarning("Connection error. Please try again.");
@@ -76,7 +73,6 @@ const VipVerify = () => {
           return;
         }
 
-        // Invalid code
         if (!data?.success) {
           if (DEV) console.log("[VipVerify] Failed:", data?.error);
           showWarning("Invalid or expired code. Please try again.");
@@ -95,34 +91,21 @@ const VipVerify = () => {
             type: "magiclink",
           });
           if (DEV) console.log("[VipVerify] Auth result:", { authError });
-          if (authError) {
-            localStorage.setItem(
-              "vip_session",
-              JSON.stringify({
-                userId: data.userId,
-                email: data.email,
-                name: data.name || "",
-                member_number: data.member_number || "",
-                created_at: data.created_at || "",
-                verified: true,
-                timestamp: Date.now(),
-              })
-            );
-          }
-        } else {
-          localStorage.setItem(
-            "vip_session",
-            JSON.stringify({
-              userId: data.userId,
-              email: data.email,
-              name: data.name || "",
-              member_number: data.member_number || "",
-              created_at: data.created_at || "",
-              verified: true,
-              timestamp: Date.now(),
-            })
-          );
         }
+
+        // Always store vip_session — this is what the rest of the app relies on
+        localStorage.setItem(
+          "vip_session",
+          JSON.stringify({
+            userId: data.userId,
+            email: data.email,
+            name: data.name || "",
+            member_number: data.member_number || "",
+            created_at: data.created_at || "",
+            verified: true,
+            timestamp: Date.now(),
+          })
+        );
 
         // Post-login
         await migrateLoyaltyStamps(data.userId, data.email);
@@ -154,7 +137,6 @@ const VipVerify = () => {
     [email, redirect, navigate]
   );
 
-  // Auto-focus next + auto-submit on 4th digit
   const handleChange = useCallback(
     (index: number, value: string) => {
       const digit = value.replace(/\D/g, "").slice(-1);
