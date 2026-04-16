@@ -238,7 +238,13 @@ Deno.serve(async (req) => {
 
     return new Response(
       JSON.stringify({ success: true, events: futureEvents, count: futureEvents.length }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      {
+        headers: {
+          ...corsHeaders,
+          'Content-Type': 'application/json',
+          'Cache-Control': 'public, max-age=300, stale-while-revalidate=86400',
+        },
+      }
     );
   } catch (error) {
     console.error('Error fetching events:', error);
