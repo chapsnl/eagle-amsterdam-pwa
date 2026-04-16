@@ -41,11 +41,23 @@ function stripHtml(html: string): string {
     .trim();
 }
 
-async function fetchMediaUrl(mediaId: number): Promise<string | null> {
-  if (!mediaId) return null;
+function pickMediaUrl(media: WPMedia | undefined): string | null {
+  if (!media) return null;
+  const sizes = media.media_details?.sizes;
+  return sizes?.medium_large?.source_url
+    || sizes?.large?.source_url
+    || sizes?.medium?.source_url
+    || media.source_url
+    || null;
+}
+
+/** Fetch ALL media in a single request using ?include=id1,id2,... */
+async function fetchMediaBatch(ids: number[]): Promise<Map<number, WPMedia>> {
+  const uniqueIds = Array.from(new Set(ids.filter(Boolean)));
+  if (uniqueIds.length === 0) return new Map();
   try {
     const res = await fetch(
-      `https://www.eagleamsterdam.com/wp-json/wp/v2/media/${mediaId}?_fields=source_url,media_details`,
+      `https://www.eagleamsterdam.com/wp-json/wp/v2/media?include=${uniqueIds.join(',')}&per_page=${uniqueIds.length}&_fields=id,source_url,media_details`,
       {
         headers: {
           'User-Agent': 'Mozilla/5.0 (compatible; EaglePWA/1.0)',
@@ -53,16 +65,13 @@ async function fetchMediaUrl(mediaId: number): Promise<string | null> {
         },
       }
     );
-    if (!res.ok) return null;
-    const media: WPMedia = await res.json();
-    const sizes = media.media_details?.sizes;
-    return sizes?.medium_large?.source_url
-      || sizes?.large?.source_url
-      || sizes?.medium?.source_url
-      || media.source_url
-      || null;
+    if (!res.ok) return new Map();
+    const items: (WPMedia & { id: number })[] = await res.json();
+    const map = new Map<number, WPMedia>();
+    for (const m of items) map.set(m.id, m);
+    return map;
   } catch {
-    return null;
+    return new Map();
   }
 }
 
@@ -87,24 +96,29 @@ Deno.serve(async (req) => {
 
     const posts: WPPost[] = await response.json();
 
-    // Fetch all media URLs in parallel
-    const mediaUrls = await Promise.all(
-      posts.map(post => fetchMediaUrl(post.featured_media))
-    );
+    // Fetch all media in ONE batched request (was N sequential calls)
+    const mediaMap = await fetchMediaBatch(posts.map(p => p.featured_media));
 
-    const formatted = posts.map((post, i) => ({
+    const formatted = posts.map((post) => ({
       id: post.id,
       title: stripHtml(post.title.rendered),
       excerpt: stripHtml(post.excerpt.rendered),
       content: post.content.rendered,
       date: post.date,
       link: post.link,
-      imageUrl: mediaUrls[i],
+      imageUrl: pickMediaUrl(mediaMap.get(post.featured_media)),
     }));
 
     return new Response(
       JSON.stringify({ success: true, posts: formatted }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      {
+        headers: {
+          ...corsHeaders,
+          'Content-Type': 'application/json',
+          // Allow browser/CDN to revalidate every 5 min instead of re-running this function
+          'Cache-Control': 'public, max-age=300, stale-while-revalidate=86400',
+        },
+      }
     );
   } catch (error) {
     console.error('Error fetching posts:', error);

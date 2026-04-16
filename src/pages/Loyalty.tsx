@@ -16,6 +16,8 @@ import ScannerDialog from "@/components/loyalty/ScannerDialog";
 import RewardDialog from "@/components/loyalty/RewardDialog";
 import WarningDialog from "@/components/shared/WarningDialog";
 import { supabase } from "@/integrations/supabase/client";
+import { useProfile } from "@/hooks/useProfile";
+import { useMemberVouchers } from "@/hooks/useMemberVouchers";
 
 const STORAGE_KEY = "eagle-loyalty-stamps";
 const VALID_CODE = "EAGLE2026";
@@ -39,64 +41,41 @@ const Loyalty = () => {
   const [invalidOpen, setInvalidOpen] = useState(false);
   const [totalStampsEarned, setTotalStampsEarned] = useState<number>(0);
 
+  // Hydrate immediately from cache so UI is never blank
   useEffect(() => {
-    const loadStamps = async () => {
-      try {
-        const saved = localStorage.getItem(STORAGE_KEY);
-        if (saved) {
-          const data = JSON.parse(saved);
-          setStamps(data.stamps || 0);
-          setRedeemed(data.redeemed || false);
-        }
-
-        const sessionRaw = localStorage.getItem("vip_session");
-        if (!sessionRaw) return;
-
-        const session = JSON.parse(sessionRaw);
-        const { data } = await supabase.functions.invoke("get-profile", {
-          body: { userId: session.userId },
-        });
-
-        if (data?.success && data.profile) {
-          const syncedStamps = data.profile.current_stamps ?? 0;
-          const syncedRedeemed = data.profile.current_redeemed ?? false;
-          setStamps(syncedStamps);
-          setRedeemed(syncedRedeemed);
-          localStorage.setItem(STORAGE_KEY, JSON.stringify({ stamps: syncedStamps, redeemed: syncedRedeemed }));
-        }
-      } catch {}
-    };
-    loadStamps();
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const data = JSON.parse(saved);
+        setStamps(data.stamps || 0);
+        setRedeemed(data.redeemed || false);
+      }
+      const cachedTotal = localStorage.getItem(LIFETIME_STAMPS_KEY);
+      if (cachedTotal !== null) {
+        const parsed = Number(cachedTotal);
+        if (Number.isFinite(parsed) && parsed >= 0) setTotalStampsEarned(parsed);
+      }
+    } catch {}
   }, []);
 
+  // Single shared get-profile call (was 2 separate ones in this page)
+  const { data: profile, refresh: refreshProfile } = useProfile();
+
   useEffect(() => {
-    const loadTotalStamps = async () => {
-      try {
-        const cachedTotal = localStorage.getItem(LIFETIME_STAMPS_KEY);
-        if (cachedTotal !== null) {
-          const parsedTotal = Number(cachedTotal);
-          if (Number.isFinite(parsedTotal) && parsedTotal >= 0) {
-            setTotalStampsEarned(parsedTotal);
-          }
-        }
+    if (!profile) return;
+    const syncedStamps = profile.current_stamps ?? 0;
+    const syncedRedeemed = profile.current_redeemed ?? false;
+    const lifetimeTotal = profile.total_stamps_earned ?? 0;
 
-        const sessionRaw = localStorage.getItem("vip_session");
-        if (!sessionRaw) return;
+    setStamps(syncedStamps);
+    setRedeemed(syncedRedeemed);
+    setTotalStampsEarned(lifetimeTotal);
 
-        const session = JSON.parse(sessionRaw);
-        const { data } = await supabase.functions.invoke("get-profile", {
-          body: { userId: session.userId },
-        });
-
-        if (data?.success && data.profile) {
-          const lifetimeTotal = data.profile.total_stamps_earned ?? 0;
-          setTotalStampsEarned(lifetimeTotal);
-          localStorage.setItem(LIFETIME_STAMPS_KEY, String(lifetimeTotal));
-        }
-      } catch {}
-    };
-    loadTotalStamps();
-  }, []);
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ stamps: syncedStamps, redeemed: syncedRedeemed }));
+      localStorage.setItem(LIFETIME_STAMPS_KEY, String(lifetimeTotal));
+    } catch {}
+  }, [profile]);
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({ stamps, redeemed }));
@@ -141,6 +120,8 @@ const Loyalty = () => {
       setTotalStampsEarned(data.totalStampsEarned);
       localStorage.setItem(STORAGE_KEY, JSON.stringify({ stamps: data.stamps, redeemed: false }));
       localStorage.setItem(LIFETIME_STAMPS_KEY, String(data.totalStampsEarned));
+      // Refresh shared profile cache so other pages pick up the new totals
+      refreshProfile();
 
       if (data.voucherGranted) {
         setSuccessMsg("🎉 You earned FREE ENTRY! Check your Member Deals.");
