@@ -51,6 +51,14 @@ const PageLoader = () => (
 
 const App = () => {
   useEffect(() => {
+    // Lazy-load OneSignal only when needed:
+    //  - User is signed in as VIP (push relevant), OR
+    //  - User is browsing a /vip/* route (may opt in)
+    // Saves ~80 KB of JS + a SW registration for casual visitors on Home/News/Agenda/Contact.
+    const hasVipSession = !!localStorage.getItem("vip_session");
+    const isVipRoute = window.location.pathname.startsWith("/vip");
+    if (!hasVipSession && !isVipRoute) return;
+
     import("@/lib/onesignal")
       .then(async ({ initOneSignalSilently, setOneSignalExternalId }) => {
         await initOneSignalSilently();

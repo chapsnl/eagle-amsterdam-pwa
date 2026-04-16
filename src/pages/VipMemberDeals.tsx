@@ -4,21 +4,10 @@ import { Tag, Gift, Bell, RefreshCw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import VoucherCard from "@/components/loyalty/VoucherCard";
 import WarningDialog from "@/components/shared/WarningDialog";
-
-interface Voucher {
-  id: string;
-  title: string;
-  description: string | null;
-  redeemed: boolean;
-  redeemed_at: string | null;
-  expires_at: string | null;
-  created_at: string;
-}
+import { useMemberVouchers, type Voucher } from "@/hooks/useMemberVouchers";
 
 const VipMemberDeals = () => {
   const navigate = useNavigate();
-  const [vouchers, setVouchers] = useState<Voucher[]>([]);
-  const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
   const [warning, setWarning] = useState({ open: false, title: "", message: "" });
   const [pushStatus, setPushStatus] = useState<"loading" | "granted" | "denied" | "default">("loading");
@@ -33,7 +22,6 @@ const VipMemberDeals = () => {
     try {
       const parsed = JSON.parse(stored);
       setUserId(parsed.userId);
-      loadVouchers(parsed.userId);
     } catch {
       navigate("/vip/login");
     }
@@ -47,21 +35,10 @@ const VipMemberDeals = () => {
     }
   }, []);
 
-  const loadVouchers = async (uid: string) => {
-    try {
-      const { data, error } = await supabase.functions.invoke("get-member-vouchers", {
-        body: { userId: uid },
-      });
-
-      if (!error && data?.success) {
-        setVouchers(data.vouchers || []);
-      }
-    } catch {
-      // silently fail
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Shared cached fetch — no extra round trip if dashboard already loaded it
+  const { data: vouchersData, isLoading, invalidate: invalidateVouchers } = useMemberVouchers();
+  const vouchers: Voucher[] = vouchersData || [];
+  const loading = isLoading && vouchers.length === 0;
 
   const handleRedeem = async (voucher: Voucher) => {
     if (!userId) return;
@@ -75,7 +52,8 @@ const VipMemberDeals = () => {
       return;
     }
 
-    setVouchers((prev) => prev.filter((v) => v.id !== voucher.id));
+    // Refresh shared cache so dashboard's "active vouchers" badge updates too
+    invalidateVouchers();
   };
 
   const handleEnablePush = async () => {

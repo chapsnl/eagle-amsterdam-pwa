@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Maximize2, Minimize2 } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
-import { supabase } from "@/integrations/supabase/client";
 import { calculateVipStatus, type VipStatusLevel } from "@/lib/vipStatus";
+import { useProfile } from "@/hooks/useProfile";
 
 import eagleLogo from "@/assets/eagle-logo-white.webp";
 
@@ -16,13 +16,16 @@ interface VipSession {
   verified: boolean;
 }
 
+const formatDate = (raw: string | null | undefined): string => {
+  if (!raw) return "";
+  const d = new Date(raw);
+  if (isNaN(d.getTime())) return "";
+  return `${String(d.getDate()).padStart(2, "0")}-${String(d.getMonth() + 1).padStart(2, "0")}-${d.getFullYear()}`;
+};
+
 const VipMemberPass = () => {
   const navigate = useNavigate();
   const [session, setSession] = useState<VipSession | null>(null);
-  const [profileImage, setProfileImage] = useState<string | null>(null);
-  const [memberNumber, setMemberNumber] = useState("");
-  const [memberSince, setMemberSince] = useState("");
-  const [vipStatus, setVipStatus] = useState<VipStatusLevel>("Regular");
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   useEffect(() => {
@@ -31,15 +34,6 @@ const VipMemberPass = () => {
       try {
         const parsed = JSON.parse(stored);
         setSession(parsed);
-        if (parsed.member_number) setMemberNumber(parsed.member_number);
-        // Use session created_at as initial fallback
-        if (parsed.created_at) {
-          const d = new Date(parsed.created_at);
-          setMemberSince(
-            `${String(d.getDate()).padStart(2, "0")}-${String(d.getMonth() + 1).padStart(2, "0")}-${d.getFullYear()}`
-          );
-        }
-        loadProfile(parsed.userId);
       } catch {
         navigate("/vip/login");
       }
@@ -48,48 +42,29 @@ const VipMemberPass = () => {
     }
   }, [navigate]);
 
-  const loadProfile = async (userId: string) => {
+  // Shared cached profile — no extra round trip if VipDashboard or Loyalty just loaded it
+  const { data: profile } = useProfile();
+
+  // Persist member_number to session once we have it (one-time hydration)
+  useEffect(() => {
+    if (!profile?.member_number) return;
+    const stored = localStorage.getItem("vip_session");
+    if (!stored) return;
     try {
-      const { data, error } = await supabase.functions.invoke("get-profile", {
-        body: { userId },
-      });
+      const parsed = JSON.parse(stored);
+      if (!parsed.member_number) {
+        parsed.member_number = profile.member_number;
+        localStorage.setItem("vip_session", JSON.stringify(parsed));
+      }
+    } catch {}
+  }, [profile?.member_number]);
 
-      if (error || !data?.success) {
-        // Don't wipe session on transient errors — just skip profile enrichment
-        console.warn("[MemberPass] Profile load failed, keeping session:", error || data?.error);
-        return;
-      }
-
-      const profile = data.profile;
-      if (profile.member_number) {
-        setMemberNumber(profile.member_number);
-        const stored = localStorage.getItem("vip_session");
-        if (stored) {
-          const parsed = JSON.parse(stored);
-          if (!parsed.member_number) {
-            parsed.member_number = profile.member_number;
-            localStorage.setItem("vip_session", JSON.stringify(parsed));
-          }
-        }
-      }
-      if (profile.profile_image_url) {
-        setProfileImage(profile.profile_image_url);
-      }
-      if (profile.created_at) {
-        const d = new Date(profile.created_at);
-        setMemberSince(
-          `${String(d.getDate()).padStart(2, "0")}-${String(d.getMonth() + 1).padStart(2, "0")}-${d.getFullYear()}`
-        );
-      }
-
-      // Calculate and display status
-      const totalStamps = profile.total_stamps_earned || 0;
-      const status = calculateVipStatus(totalStamps);
-      setVipStatus(status);
-    } catch {
-      // Profile load failed silently
-    }
-  };
+  const memberNumber = profile?.member_number || session?.member_number || "";
+  const profileImage = profile?.profile_image_url || null;
+  const memberSince = formatDate(profile?.created_at || session?.created_at);
+  const vipStatus: VipStatusLevel = profile
+    ? calculateVipStatus(profile.total_stamps_earned || 0)
+    : "Regular";
 
   const toggleFullscreen = () => setIsFullscreen(!isFullscreen);
 

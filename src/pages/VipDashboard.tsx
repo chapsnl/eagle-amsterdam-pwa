@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Crown, Star, Tag, Info, IdCard, DoorOpen } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 import { calculateVipStatus, trackAppOpen, type VipStatusLevel } from "@/lib/vipStatus";
+import { useProfile } from "@/hooks/useProfile";
+import { useMemberVouchers } from "@/hooks/useMemberVouchers";
 
 interface VipSession {
   userId: string;
@@ -14,8 +15,6 @@ interface VipSession {
 const VipDashboard = () => {
   const navigate = useNavigate();
   const [session, setSession] = useState<VipSession | null>(null);
-  const [vipStatus, setVipStatus] = useState<VipStatusLevel>("Regular");
-  const [hasActiveVouchers, setHasActiveVouchers] = useState(false);
 
   useEffect(() => {
     const stored = localStorage.getItem("vip_session");
@@ -24,8 +23,6 @@ const VipDashboard = () => {
         const parsed = JSON.parse(stored);
         setSession(parsed);
         trackAppOpen();
-        loadStatus(parsed.userId);
-        loadVoucherStatus(parsed.userId);
       } catch {
         navigate("/vip/login");
       }
@@ -34,34 +31,14 @@ const VipDashboard = () => {
     }
   }, [navigate]);
 
-  const loadStatus = async (userId: string) => {
-    try {
-      const { data } = await supabase.functions.invoke("get-profile", {
-        body: { userId },
-      });
-      if (data?.success && data.profile) {
-        const totalStamps = data.profile.total_stamps_earned || 0;
-        const status = calculateVipStatus(totalStamps);
-        setVipStatus(status);
-        // vip_status is updated server-side by edge functions only
-      }
-    } catch {
-      // Status load failed silently
-    }
-  };
+  // Shared cached fetches — dedupe across pages, no extra round trips
+  const { data: profile } = useProfile();
+  const { data: vouchers } = useMemberVouchers();
 
-  const loadVoucherStatus = async (userId: string) => {
-    try {
-      const { data, error } = await supabase.functions.invoke("get-member-vouchers", {
-        body: { userId },
-      });
-      if (!error && data?.success) {
-        setHasActiveVouchers((data.vouchers || []).length > 0);
-      }
-    } catch {
-      // silently fail
-    }
-  };
+  const vipStatus: VipStatusLevel = profile
+    ? calculateVipStatus(profile.total_stamps_earned || 0)
+    : "Regular";
+  const hasActiveVouchers = (vouchers || []).some((v) => !v.redeemed);
 
   if (!session) return null;
 
