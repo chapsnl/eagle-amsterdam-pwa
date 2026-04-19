@@ -122,6 +122,14 @@
     "somethingWrong": "Etwas ist schiefgelaufen. Versuche es erneut.",
     "fullCode": "Bitte gib den vollständigen 4-stelligen Code ein."
   },
+  "loyalty": {
+    "title": "LOYALTY",
+    "scanButton": "Für Token scannen",
+    "viewReward": "Belohnung ansehen",
+    "lifetimeTokens": "Gesamtzahl verdiente Token",
+    "infoTitle": "So funktioniert's",
+    "infoText": "Um Token zu sammeln, scanne den QR-Code an der Bar während des Events. Bei Erreichen von 6 Tokens wird automatisch ein kostenloser Gutschein im Member Deals Bereich platziert. Dieser Gutschein gewährt freien Eintritt zur Naked Party, Horsemen & Knights oder Cum Hunks."
+  },
   "pwa": {
     "mobileOnly": "Nur Mobil",
     "mobileOnlyDesc": "Bitte öffne diesen Link auf deinem Handy, um die Eagle VIP App zu installieren.",
@@ -131,9 +139,9 @@
     "step1DescIos": "Suche das Symbol unten in Safari. Manchmal ist der Teilen-Button hinter den 3 Punkten versteckt",
     "step1TitleAndroid": "Tippe auf die Menü-Taste",
     "step1DescAndroid": "Suche das Symbol in deinem Browser. Manchmal ist der Teilen-Button hinter den 3 Punkten versteckt",
-    "step2TitleIos": "Wähle „Zum Home-Bildschirm“",
+    "step2TitleIos": "Wähle \"Zum Home-Bildschirm\"",
     "step2DescIos": "Scrolle im Menü nach unten und tippe darauf",
-    "step2TitleAndroid": "Wähle „App installieren“ oder „Zum Startbildschirm hinzufügen“",
+    "step2TitleAndroid": "Wähle \"App installieren\" oder \"Zum Startbildschirm hinzufügen\"",
     "step2DescAndroid": "Tippe auf die Option im Menü",
     "step3Title": "Öffne die App von deinem Handy",
     "step3Desc": "Tippe auf das Eagle-Symbol auf deinem Startbildschirm"
