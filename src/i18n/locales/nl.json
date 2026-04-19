@@ -122,6 +122,14 @@
     "somethingWrong": "Er ging iets mis. Probeer opnieuw.",
     "fullCode": "Vul de volledige code van 4 cijfers in."
   },
+  "loyalty": {
+    "title": "LOYALTY",
+    "scanButton": "Scan voor token",
+    "viewReward": "Beloning bekijken",
+    "lifetimeTokens": "Totaal verdiende tokens",
+    "infoTitle": "Hoe het werkt",
+    "infoText": "Om tokens te verzamelen, scan je de QR-code bij de bar tijdens het event. Bij het bereiken van 6 tokens, wordt automatisch een gratis voucher geplaatst in de Member Deals sectie. Deze voucher geeft gratis toegang tot de Naked Party, Horsemen & Knights of Cum Hunks."
+  },
   "pwa": {
     "mobileOnly": "Alleen Mobiel",
     "mobileOnlyDesc": "Open deze link op je telefoon om de Eagle VIP app te installeren.",
