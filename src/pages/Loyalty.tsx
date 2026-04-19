@@ -27,6 +27,7 @@ const LIFETIME_STAMPS_KEY = "eagle-lifetime-stamps";
 const COOLDOWN_MS = 160 * 60 * 60 * 1000; // 160 hours
 
 const Loyalty = () => {
+  const { t } = useTranslation();
   const [stamps, setStamps] = useState(0);
   const [redeemed, setRedeemed] = useState(false);
   const [scannerOpen, setScannerOpen] = useState(false);
