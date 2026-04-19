@@ -170,7 +170,11 @@ function isLovablePreview(): boolean {
   const host = window.location.hostname;
   // Lovable in-editor preview iframes (id-preview--*.lovable.app) and sandbox dev hosts.
   // The published app (eagle-app.lovable.app) and custom domain are NOT bypassed.
-  return /^id-preview--.*\.lovable\.app$/.test(host) || host.endsWith(".sandbox.lovable.dev");
+  return (
+    /^id-preview--.*\.lovable\.app$/.test(host) ||
+    host.endsWith(".sandbox.lovable.dev") ||
+    host.endsWith(".lovableproject.com")
+  );
 }
 
 const PwaGate = ({ children }: { children: React.ReactNode }) => {
