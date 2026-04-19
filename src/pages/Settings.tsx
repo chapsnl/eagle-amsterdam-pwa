@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Settings as SettingsIcon, Crown, User, Mail, Hash, Calendar, Star, LogOut, Bell, BellOff, RefreshCw } from "lucide-react";
+import { ArrowLeft, Settings as SettingsIcon, Crown, User, Mail, Hash, Calendar, Star, LogOut, Bell, BellOff, RefreshCw, Languages } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
+import { useTranslation } from "react-i18next";
+import { SUPPORTED_LANGUAGES } from "@/i18n";
 
 interface ProfileData {
   name: string;
@@ -15,6 +17,7 @@ interface ProfileData {
 
 const Settings = () => {
   const navigate = useNavigate();
+  const { t, i18n } = useTranslation();
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [loading, setLoading] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -22,6 +25,8 @@ const Settings = () => {
   // Push notification state
   const [pushStatus, setPushStatus] = useState<"loading" | "granted" | "denied" | "default">("loading");
   const [pushRequesting, setPushRequesting] = useState(false);
+
+  const currentLang = (i18n.resolvedLanguage || i18n.language || "en").slice(0, 2);
 
   useEffect(() => {
     const stored = localStorage.getItem("vip_session");
@@ -93,6 +98,10 @@ const Settings = () => {
     navigate("/");
   };
 
+  const handleLanguageChange = (lng: string) => {
+    i18n.changeLanguage(lng);
+  };
+
   const formatDate = (dateStr: string) => {
     return new Date(dateStr).toLocaleDateString("en-GB", {
       day: "numeric", month: "short", year: "numeric",
@@ -101,14 +110,45 @@ const Settings = () => {
 
   const infoRows: { icon: React.ReactNode; label: string; value: string }[] = profile
     ? [
-        { icon: <User className="w-4 h-4 text-primary" />, label: "Name", value: profile.name || "—" },
-        { icon: <Mail className="w-4 h-4 text-primary" />, label: "Email", value: profile.email || "—" },
-        { icon: <Hash className="w-4 h-4 text-primary" />, label: "User Number", value: profile.member_number || "—" },
-        { icon: <Calendar className="w-4 h-4 text-primary" />, label: "Member Since", value: formatDate(profile.created_at) },
-        { icon: <Crown className="w-4 h-4 text-primary" />, label: "Status", value: profile.vip_status },
-        { icon: <Star className="w-4 h-4 text-primary" />, label: "Total Loyalty Tokens", value: String(profile.total_stamps_earned) },
+        { icon: <User className="w-4 h-4 text-primary" />, label: t("settings.name"), value: profile.name || "—" },
+        { icon: <Mail className="w-4 h-4 text-primary" />, label: t("settings.email"), value: profile.email || "—" },
+        { icon: <Hash className="w-4 h-4 text-primary" />, label: t("settings.userNumber"), value: profile.member_number || "—" },
+        { icon: <Calendar className="w-4 h-4 text-primary" />, label: t("settings.memberSince"), value: formatDate(profile.created_at) },
+        { icon: <Crown className="w-4 h-4 text-primary" />, label: t("settings.status"), value: profile.vip_status },
+        { icon: <Star className="w-4 h-4 text-primary" />, label: t("settings.totalTokens"), value: String(profile.total_stamps_earned) },
       ]
     : [];
+
+  // Language picker section (always visible, also for non-logged-in users)
+  const languageCard = (
+    <div className="border border-border rounded-xl bg-card neon-border p-5 space-y-3">
+      <div className="flex items-center gap-3">
+        <Languages className="w-5 h-5 text-primary" />
+        <div>
+          <p className="text-foreground text-sm font-semibold">{t("settings.language")}</p>
+          <p className="text-muted-foreground text-xs">{t("settings.languageDesc")}</p>
+        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-2">
+        {SUPPORTED_LANGUAGES.map((lng) => {
+          const active = currentLang === lng.code;
+          return (
+            <button
+              key={lng.code}
+              onClick={() => handleLanguageChange(lng.code)}
+              className={`rounded-xl py-2.5 text-sm font-semibold border transition-colors ${
+                active
+                  ? "bg-primary text-primary-foreground border-primary"
+                  : "bg-secondary text-foreground border-border hover:bg-secondary/80"
+              }`}
+            >
+              {lng.label}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
 
   return (
     <div className="flex flex-col min-h-screen pb-20 pt-8 px-4 max-w-lg mx-auto">
@@ -117,13 +157,13 @@ const Settings = () => {
         <button
           onClick={() => navigate(-1)}
           className="w-10 h-10 rounded-xl bg-secondary flex items-center justify-center hover:bg-secondary/80 transition-colors"
-          aria-label="Go back"
+          aria-label={t("settings.back")}
         >
           <ArrowLeft className="w-5 h-5 text-foreground" />
         </button>
         <h1 className="text-4xl font-display tracking-wider text-foreground flex items-center gap-3">
           <SettingsIcon className="w-7 h-7 text-primary" />
-          SETTINGS
+          {t("settings.title")}
         </h1>
       </div>
 
@@ -132,14 +172,17 @@ const Settings = () => {
           <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
         </div>
       ) : !isLoggedIn ? (
-        <div className="border border-border rounded-xl p-6 bg-card neon-border text-center space-y-4">
-          <Crown className="w-10 h-10 text-primary mx-auto" />
-          <p className="text-muted-foreground text-sm">
-            Log in as a VIP member to see your profile information.
-          </p>
-          <Button variant="eagle" className="rounded-xl" onClick={() => navigate("/vip/login")}>
-            VIP LOGIN
-          </Button>
+        <div className="space-y-4">
+          <div className="border border-border rounded-xl p-6 bg-card neon-border text-center space-y-4">
+            <Crown className="w-10 h-10 text-primary mx-auto" />
+            <p className="text-muted-foreground text-sm">
+              {t("settings.loginPrompt")}
+            </p>
+            <Button variant="eagle" className="rounded-xl" onClick={() => navigate("/vip/login")}>
+              {t("settings.vipLogin")}
+            </Button>
+          </div>
+          {languageCard}
         </div>
       ) : (
         <div className="space-y-4">
@@ -158,6 +201,9 @@ const Settings = () => {
             ))}
           </div>
 
+          {/* Language */}
+          {languageCard}
+
           {/* Push Notifications */}
           <div className="border border-border rounded-xl bg-card neon-border p-5 space-y-3">
             <div className="flex items-center justify-between">
@@ -168,26 +214,26 @@ const Settings = () => {
                   <BellOff className="w-5 h-5 text-muted-foreground" />
                 )}
                 <div>
-                  <p className="text-foreground text-sm font-semibold">Push Notifications</p>
+                  <p className="text-foreground text-sm font-semibold">{t("settings.pushNotifications")}</p>
                   <p className="text-muted-foreground text-xs">
                     {pushStatus === "loading"
-                      ? "Checking…"
+                      ? t("settings.pushChecking")
                       : pushStatus === "granted"
-                        ? "Notifications are enabled"
+                        ? t("settings.pushEnabled")
                         : pushStatus === "denied"
-                          ? "Notifications are blocked"
-                          : "Notifications are not enabled"}
+                          ? t("settings.pushBlocked")
+                          : t("settings.pushDefault")}
                   </p>
                 </div>
               </div>
 
               {pushStatus === "granted" ? (
                 <span className="px-3 py-1 rounded-full bg-primary/20 text-primary text-xs font-bold">
-                  Active
+                  {t("settings.active")}
                 </span>
               ) : pushStatus === "denied" ? (
                 <span className="px-3 py-1 rounded-full bg-destructive/20 text-destructive text-xs font-bold">
-                  Blocked
+                  {t("settings.blocked")}
                 </span>
               ) : null}
             </div>
@@ -203,13 +249,13 @@ const Settings = () => {
                 ) : (
                   <Bell className="w-4 h-4" />
                 )}
-                {pushRequesting ? "Requesting…" : "Enable Push Notifications"}
+                {pushRequesting ? t("settings.requesting") : t("settings.enablePush")}
               </button>
             )}
 
             {pushStatus === "denied" && (
               <p className="text-muted-foreground text-xs text-center">
-                Notifications were blocked. To enable them, open your browser or device settings and allow notifications for this app.
+                {t("settings.blockedHelp")}
               </p>
             )}
           </div>
@@ -220,7 +266,7 @@ const Settings = () => {
             className="w-full flex items-center justify-center gap-2 bg-destructive/20 hover:bg-destructive/30 text-destructive border border-destructive/30 rounded-xl py-3.5 font-bold text-sm transition-colors"
           >
             <LogOut className="w-4 h-4" />
-            LOGOUT AS VIP
+            {t("settings.logout")}
           </button>
         </div>
       )}
