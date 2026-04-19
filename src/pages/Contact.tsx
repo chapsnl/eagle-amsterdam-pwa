@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { MapPin, ExternalLink, Send, Loader2, Mail, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,21 +7,27 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { z } from "zod";
-
-const contactSchema = z.object({
-  name: z.string().trim().min(1, "Name is required").max(100, "Name is too long"),
-  email: z.string().trim().email("Enter a valid email address").max(255),
-  subject: z.string().trim().min(1, "Subject is required").max(200, "Subject is too long"),
-  question: z.string().trim().min(1, "Question is required").max(5000, "Message is too long"),
-});
+import { useTranslation } from "react-i18next";
 
 const Contact = () => {
+  const { t } = useTranslation();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [form, setForm] = useState({ name: "", email: "", subject: "", question: "" });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [newsletterEmail, setNewsletterEmail] = useState("");
   const [isSubscribing, setIsSubscribing] = useState(false);
+
+  const contactSchema = useMemo(
+    () =>
+      z.object({
+        name: z.string().trim().min(1, t("contact.validation.nameRequired")).max(100, t("contact.validation.nameTooLong")),
+        email: z.string().trim().email(t("contact.validation.emailInvalid")).max(255),
+        subject: z.string().trim().min(1, t("contact.validation.subjectRequired")).max(200, t("contact.validation.subjectTooLong")),
+        question: z.string().trim().min(1, t("contact.validation.questionRequired")).max(5000, t("contact.validation.questionTooLong")),
+      }),
+    [t]
+  );
 
   const handleChange = (field: string, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -53,14 +59,14 @@ const Contact = () => {
       }
 
       toast({
-        title: "Message sent!",
-        description: "We'll get back to you as soon as possible.",
+        title: t("contact.messageSent"),
+        description: t("contact.messageSentDesc"),
       });
       setForm({ name: "", email: "", subject: "", question: "" });
     } catch (err) {
       toast({
-        title: "Error",
-        description: (err as Error).message || "Something went wrong. Please try again.",
+        title: t("contact.error"),
+        description: (err as Error).message || t("contact.somethingWrong"),
         variant: "destructive",
       });
     } finally {
@@ -72,34 +78,34 @@ const Contact = () => {
     <div className="flex flex-col min-h-screen pb-20 pt-8 px-4 max-w-lg mx-auto">
       <h1 className="text-4xl font-display tracking-wider text-foreground mb-6 flex items-center gap-3">
         <MapPin className="w-7 h-7 text-primary" />
-        CONTACT
+        {t("contact.title")}
       </h1>
 
       {/* Opening Hours */}
       <div className="border border-border rounded-lg p-6 bg-card neon-border mb-4">
         <h2 className="font-display text-2xl tracking-wider text-foreground mb-4">
-          OPENING HOURS
+          {t("contact.openingHours")}
         </h2>
         <div className="flex flex-col gap-2 text-sm">
           <div className="flex justify-between">
-            <span className="text-muted-foreground">Mon – Wed</span>
-            <span className="text-foreground font-semibold">Closed</span>
+            <span className="text-muted-foreground">{t("contact.monWed")}</span>
+            <span className="text-foreground font-semibold">{t("contact.closed")}</span>
           </div>
           <div className="flex justify-between">
-            <span className="text-muted-foreground">Thursday</span>
+            <span className="text-muted-foreground">{t("contact.thursday")}</span>
             <span className="text-foreground font-semibold">22:00 – 04:00</span>
           </div>
           <div className="flex justify-between">
-            <span className="text-muted-foreground">Friday & Saturday</span>
+            <span className="text-muted-foreground">{t("contact.friSat")}</span>
             <span className="text-foreground font-semibold">22:00 – 05:00</span>
           </div>
           <div className="flex justify-between">
-            <span className="text-muted-foreground">Sunday</span>
+            <span className="text-muted-foreground">{t("contact.sunday")}</span>
             <span className="text-foreground font-semibold">22:00 – 04:00</span>
           </div>
         </div>
         <p className="text-foreground text-xs mt-4 font-bold italic">
-          For daytime parties and special events, please consult the agenda.
+          {t("contact.daytimeNote")}
         </p>
       </div>
 
@@ -115,24 +121,24 @@ const Contact = () => {
         }
       >
         <ExternalLink className="w-5 h-5 mr-2" />
-        OPEN IN GOOGLE MAPS
+        {t("contact.openMaps")}
       </Button>
 
       {/* Newsletter Signup */}
       <div className="border border-border rounded-lg p-6 bg-card neon-border mb-4">
         <h2 className="font-display text-2xl tracking-wider text-foreground mb-2 flex items-center gap-2">
           <Mail className="w-5 h-5 text-primary" />
-          MAILING LIST
+          {t("contact.mailingList")}
         </h2>
         <p className="text-muted-foreground text-sm mb-4">
-          Subscribe to our mailing list to stay updated only 4 times a year.
+          {t("contact.mailingListDesc")}
         </p>
         <form
           onSubmit={async (e) => {
             e.preventDefault();
             const parsed = z.string().trim().email().safeParse(newsletterEmail);
             if (!parsed.success) {
-              toast({ title: "Invalid email", description: "Please enter a valid email address.", variant: "destructive" });
+              toast({ title: t("contact.invalidEmail"), description: t("contact.invalidEmailDesc"), variant: "destructive" });
               return;
             }
             setIsSubscribing(true);
@@ -141,10 +147,10 @@ const Contact = () => {
                 body: { email: parsed.data },
               });
               if (error || !data?.success) throw new Error(data?.error || error?.message || "Failed to subscribe");
-              toast({ title: "Subscribed!", description: "You've been added to our mailing list." });
+              toast({ title: t("contact.subscribed"), description: t("contact.subscribedDesc") });
               setNewsletterEmail("");
             } catch (err) {
-              toast({ title: "Error", description: (err as Error).message || "Something went wrong.", variant: "destructive" });
+              toast({ title: t("contact.error"), description: (err as Error).message || t("contact.somethingWrong"), variant: "destructive" });
             } finally {
               setIsSubscribing(false);
             }
@@ -155,12 +161,12 @@ const Contact = () => {
             type="email"
             value={newsletterEmail}
             onChange={(e) => setNewsletterEmail(e.target.value)}
-            placeholder="your@email.com"
+            placeholder={t("contact.emailPlaceholder")}
             className="bg-secondary border-border text-foreground placeholder:text-muted-foreground flex-1"
             maxLength={255}
           />
           <Button type="submit" variant="eagle" disabled={isSubscribing} className="shrink-0">
-            {isSubscribing ? <Loader2 className="w-4 h-4 animate-spin" /> : "JOIN"}
+            {isSubscribing ? <Loader2 className="w-4 h-4 animate-spin" /> : t("contact.join")}
           </Button>
         </form>
       </div>
@@ -169,10 +175,10 @@ const Contact = () => {
       <div className="border border-border rounded-lg p-6 bg-card neon-border mb-4">
         <h2 className="font-display text-2xl tracking-wider text-foreground mb-2 flex items-center gap-2">
           <MessageCircle className="w-5 h-5 text-primary" />
-          OUR GROUP CHATS
+          {t("contact.groupChats")}
         </h2>
         <p className="text-muted-foreground text-sm mb-4">
-          Stay connected with the Eagle Amsterdam community.
+          {t("contact.groupChatsDesc")}
         </p>
         <div className="grid grid-cols-3 gap-3">
           <button
@@ -211,18 +217,18 @@ const Contact = () => {
       <div className="border border-border rounded-lg p-6 bg-card neon-border mb-4">
         <h2 className="font-display text-2xl tracking-wider text-foreground mb-4 flex items-center gap-2">
           <Mail className="w-5 h-5 text-primary" />
-          SEND US A MESSAGE
+          {t("contact.sendMessage")}
         </h2>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div>
             <Label htmlFor="name" className="text-foreground text-sm font-semibold">
-              Name *
+              {t("contact.name")} *
             </Label>
             <Input
               id="name"
               value={form.name}
               onChange={(e) => handleChange("name", e.target.value)}
-              placeholder="Your full name"
+              placeholder={t("contact.namePlaceholder")}
               className="mt-1 bg-secondary border-border text-foreground placeholder:text-muted-foreground"
               maxLength={100}
             />
@@ -231,14 +237,14 @@ const Contact = () => {
 
           <div>
             <Label htmlFor="email" className="text-foreground text-sm font-semibold">
-              Email Address *
+              {t("contact.email")} *
             </Label>
             <Input
               id="email"
               type="email"
               value={form.email}
               onChange={(e) => handleChange("email", e.target.value)}
-              placeholder="your@email.com"
+              placeholder={t("contact.emailPlaceholder")}
               className="mt-1 bg-secondary border-border text-foreground placeholder:text-muted-foreground"
               maxLength={255}
             />
@@ -247,13 +253,13 @@ const Contact = () => {
 
           <div>
             <Label htmlFor="subject" className="text-foreground text-sm font-semibold">
-              Subject *
+              {t("contact.subject")} *
             </Label>
             <Input
               id="subject"
               value={form.subject}
               onChange={(e) => handleChange("subject", e.target.value)}
-              placeholder="What is this about?"
+              placeholder={t("contact.subjectPlaceholder")}
               className="mt-1 bg-secondary border-border text-foreground placeholder:text-muted-foreground"
               maxLength={200}
             />
@@ -262,13 +268,13 @@ const Contact = () => {
 
           <div>
             <Label htmlFor="question" className="text-foreground text-sm font-semibold">
-              Question *
+              {t("contact.question")} *
             </Label>
             <Textarea
               id="question"
               value={form.question}
               onChange={(e) => handleChange("question", e.target.value)}
-              placeholder="Type your question or message here..."
+              placeholder={t("contact.questionPlaceholder")}
               className="mt-1 bg-secondary border-border text-foreground placeholder:text-muted-foreground min-h-[120px]"
               maxLength={5000}
             />
@@ -287,7 +293,7 @@ const Contact = () => {
             ) : (
               <Send className="w-5 h-5 mr-2" />
             )}
-            {isSubmitting ? "SENDING..." : "SUBMIT"}
+            {isSubmitting ? t("contact.sending") : t("contact.submit")}
           </Button>
         </form>
       </div>
