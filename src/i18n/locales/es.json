@@ -122,6 +122,14 @@
     "somethingWrong": "Algo salió mal. Inténtalo de nuevo.",
     "fullCode": "Introduce el código completo de 4 dígitos."
   },
+  "loyalty": {
+    "title": "LOYALTY",
+    "scanButton": "Escanear para token",
+    "viewReward": "Ver recompensa",
+    "lifetimeTokens": "Total de tokens ganados",
+    "infoTitle": "Cómo funciona",
+    "infoText": "Para coleccionar tokens, escanea el código QR en la barra durante el evento. Al alcanzar 6 tokens, un cupón gratuito se colocará automáticamente en la sección Member Deals. Este cupón te da acceso gratis a la Naked Party, Horsemen & Knights o Cum Hunks."
+  },
   "pwa": {
     "mobileOnly": "Solo Móvil",
     "mobileOnlyDesc": "Abre este enlace en tu teléfono para instalar la app Eagle VIP.",
