@@ -166,6 +166,13 @@ function getTranslations(lang: string): Translations {
 const BYPASS_PATHS = ["/eagle-admin-dashboard"];
 const BYPASS_HOSTS = ["admin.eagleamsterdam.com"];
 
+function isLovablePreview(): boolean {
+  const host = window.location.hostname;
+  // Lovable in-editor preview iframes (id-preview--*.lovable.app) and sandbox dev hosts.
+  // The published app (eagle-app.lovable.app) and custom domain are NOT bypassed.
+  return /^id-preview--.*\.lovable\.app$/.test(host) || host.endsWith(".sandbox.lovable.dev");
+}
+
 const PwaGate = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
   const [allowed, setAllowed] = useState<boolean | null>(null);
@@ -173,6 +180,7 @@ const PwaGate = ({ children }: { children: React.ReactNode }) => {
 
   // Use both React Router location and window.location for reliability
   const isBypassRoute = BYPASS_HOSTS.includes(window.location.hostname) ||
+    isLovablePreview() ||
     BYPASS_PATHS.some((p) =>
       location.pathname.startsWith(p) || window.location.pathname.startsWith(p)
     );
