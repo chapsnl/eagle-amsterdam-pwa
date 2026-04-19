@@ -10,7 +10,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { QrCode, Star, CheckCircle } from "lucide-react";
+import { QrCode, Star, CheckCircle, Info } from "lucide-react";
 import StampCard from "@/components/loyalty/StampCard";
 import ScannerDialog from "@/components/loyalty/ScannerDialog";
 import RewardDialog from "@/components/loyalty/RewardDialog";
@@ -18,7 +18,7 @@ import WarningDialog from "@/components/shared/WarningDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "@/hooks/useProfile";
 import { useMemberVouchers } from "@/hooks/useMemberVouchers";
-
+import { useTranslation } from "react-i18next";
 const STORAGE_KEY = "eagle-loyalty-stamps";
 const VALID_CODE = "EAGLE2026";
 const TOTAL_STAMPS = 6;
@@ -27,6 +27,7 @@ const LIFETIME_STAMPS_KEY = "eagle-lifetime-stamps";
 const COOLDOWN_MS = 160 * 60 * 60 * 1000; // 160 hours
 
 const Loyalty = () => {
+  const { t } = useTranslation();
   const [stamps, setStamps] = useState(0);
   const [redeemed, setRedeemed] = useState(false);
   const [scannerOpen, setScannerOpen] = useState(false);
@@ -182,7 +183,7 @@ const Loyalty = () => {
       <div className="pt-8 px-4 max-w-lg mx-auto w-full">
         <h1 className="text-4xl font-display tracking-wider text-foreground mb-2 flex items-center gap-3">
           <Star className="w-7 h-7 text-primary" />
-          LOYALTY
+          {t("loyalty.title")}
         </h1>
       </div>
 
@@ -193,15 +194,26 @@ const Loyalty = () => {
 
         <Button variant="eagle" size="lg" className="w-full mt-6 text-base py-4" onClick={handleScannerOpen}>
           <QrCode className="w-5 h-5 mr-2" />
-          {isComplete ? "View reward" : "Scan for token"}
+          {isComplete ? t("loyalty.viewReward") : t("loyalty.scanButton")}
         </Button>
         <p className="text-muted-foreground text-xs text-center mt-3 tracking-[-0.02em] leading-snug italic">
           *Not valid at events of Ready2Kink, Horse Fair or other external organized events.
         </p>
 
         <div className="mt-6 rounded-xl bg-card border border-border p-4 text-center">
-          <p className="text-muted-foreground text-xs uppercase tracking-widest mb-1">Lifetime Token Balance</p>
+          <p className="text-muted-foreground text-xs uppercase tracking-widest mb-1">{t("loyalty.lifetimeTokens")}</p>
           <p className="text-3xl font-bold text-primary">{totalStampsEarned}</p>
+        </div>
+
+        {/* Info box */}
+        <div className="mt-6 rounded-xl bg-card border border-border p-4">
+          <div className="flex items-start gap-3">
+            <Info className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-foreground font-bold text-sm mb-1">{t("loyalty.infoTitle")}</p>
+              <p className="text-muted-foreground text-sm leading-relaxed">{t("loyalty.infoText")}</p>
+            </div>
+          </div>
         </div>
       </div>
 
