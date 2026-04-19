@@ -45,8 +45,6 @@ const BYPASS_HOSTS = ["admin.eagleamsterdam.com"];
 
 function isLovablePreview(): boolean {
   const host = window.location.hostname;
-  // Lovable in-editor preview iframes (id-preview--*.lovable.app) and sandbox dev hosts.
-  // The published app (eagle-app.lovable.app) and custom domain are NOT bypassed.
   return (
     /^id-preview--.*\.lovable\.app$/.test(host) ||
     host.endsWith(".sandbox.lovable.dev") ||
@@ -56,20 +54,15 @@ function isLovablePreview(): boolean {
 
 const PwaGate = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
+  const { t } = useTranslation();
   const [allowed, setAllowed] = useState<boolean | null>(null);
   const [platform, setPlatform] = useState<Platform>("desktop");
 
-  // Use both React Router location and window.location for reliability
   const isBypassRoute = BYPASS_HOSTS.includes(window.location.hostname) ||
     isLovablePreview() ||
     BYPASS_PATHS.some((p) =>
       location.pathname.startsWith(p) || window.location.pathname.startsWith(p)
     );
-
-  const t = useMemo(() => {
-    const lang = navigator.language || "en";
-    return getTranslations(lang);
-  }, []);
 
   useEffect(() => {
     if (isBypassRoute) {
@@ -97,10 +90,8 @@ const PwaGate = ({ children }: { children: React.ReactNode }) => {
     setAllowed(false);
   }, [isBypassRoute]);
 
-  // Bypass for admin routes - immediate, no waiting
   if (isBypassRoute) return <>{children}</>;
 
-  // Still detecting
   if (allowed === null) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-background">
@@ -109,36 +100,33 @@ const PwaGate = ({ children }: { children: React.ReactNode }) => {
     );
   }
 
-  // Standalone — show full app
   if (allowed) return <>{children}</>;
 
-  // Desktop gate
   if (platform === "desktop") {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-background px-6 text-center font-['Manrope',sans-serif]">
         <img src={eagleLogo} alt="Eagle Amsterdam" className="w-48 mb-8" />
         <Monitor className="w-20 h-20 text-primary mb-5" />
         <h1 className="text-2xl font-extrabold text-foreground mb-3" style={{ letterSpacing: '-0.05em', lineHeight: 1.1 }}>
-          {t.mobileOnly}
+          {t("pwa.mobileOnly")}
         </h1>
         <p className="text-muted-foreground text-sm max-w-sm leading-relaxed" style={{ letterSpacing: '-0.02em' }}>
-          {t.mobileOnlyDesc}
+          {t("pwa.mobileOnlyDesc")}
         </p>
       </div>
     );
   }
 
-  // Mobile browser gate — iOS or Android
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-background px-6 text-center font-['Manrope',sans-serif]">
       <img src={eagleLogo} alt="Eagle Amsterdam" className="w-48 mb-10" />
 
       <h1 className="text-2xl font-extrabold text-foreground mb-3" style={{ letterSpacing: '-0.05em', lineHeight: 1.1 }}>
-        {t.installTitle}
+        {t("pwa.installTitle")}
       </h1>
 
       <p className="text-muted-foreground text-sm mb-10 max-w-xs leading-relaxed" style={{ letterSpacing: '-0.02em' }}>
-        {t.installDesc}
+        {t("pwa.installDesc")}
       </p>
 
       <div className="w-full max-w-xs space-y-6">
@@ -150,10 +138,10 @@ const PwaGate = ({ children }: { children: React.ReactNode }) => {
               </div>
               <div>
                 <p className="text-foreground font-bold text-base" style={{ letterSpacing: '-0.03em' }}>
-                  {t.step1TitleIos}
+                  {t("pwa.step1TitleIos")}
                 </p>
                 <p className="text-muted-foreground text-sm mt-1 flex items-center gap-1" style={{ letterSpacing: '-0.02em' }}>
-                  {t.step1DescIos} <Share className="inline w-7 h-7 text-primary" />
+                  {t("pwa.step1DescIos")} <Share className="inline w-7 h-7 text-primary" />
                 </p>
               </div>
             </div>
@@ -164,10 +152,10 @@ const PwaGate = ({ children }: { children: React.ReactNode }) => {
               </div>
               <div>
                 <p className="text-foreground font-bold text-base" style={{ letterSpacing: '-0.03em' }}>
-                  {t.step2TitleIos}
+                  {t("pwa.step2TitleIos")}
                 </p>
                 <p className="text-muted-foreground text-sm mt-1" style={{ letterSpacing: '-0.02em' }}>
-                  {t.step2DescIos}
+                  {t("pwa.step2DescIos")}
                 </p>
               </div>
             </div>
@@ -178,10 +166,10 @@ const PwaGate = ({ children }: { children: React.ReactNode }) => {
               </div>
               <div>
                 <p className="text-foreground font-bold text-base" style={{ letterSpacing: '-0.03em' }}>
-                  {t.step3Title}
+                  {t("pwa.step3Title")}
                 </p>
                 <p className="text-muted-foreground text-sm mt-1" style={{ letterSpacing: '-0.02em' }}>
-                  {t.step3Desc}
+                  {t("pwa.step3Desc")}
                 </p>
               </div>
             </div>
@@ -194,10 +182,10 @@ const PwaGate = ({ children }: { children: React.ReactNode }) => {
               </div>
               <div>
                 <p className="text-foreground font-bold text-base" style={{ letterSpacing: '-0.03em' }}>
-                  {t.step1TitleAndroid}
+                  {t("pwa.step1TitleAndroid")}
                 </p>
                 <p className="text-muted-foreground text-sm mt-1 flex items-center gap-1" style={{ letterSpacing: '-0.02em' }}>
-                  {t.step1DescAndroid} <MoreVertical className="inline w-7 h-7 text-primary" />
+                  {t("pwa.step1DescAndroid")} <MoreVertical className="inline w-7 h-7 text-primary" />
                 </p>
               </div>
             </div>
@@ -208,10 +196,10 @@ const PwaGate = ({ children }: { children: React.ReactNode }) => {
               </div>
               <div>
                 <p className="text-foreground font-bold text-base" style={{ letterSpacing: '-0.03em' }}>
-                  {t.step2TitleAndroid}
+                  {t("pwa.step2TitleAndroid")}
                 </p>
                 <p className="text-muted-foreground text-sm mt-1" style={{ letterSpacing: '-0.02em' }}>
-                  {t.step2DescAndroid}
+                  {t("pwa.step2DescAndroid")}
                 </p>
               </div>
             </div>
@@ -222,10 +210,10 @@ const PwaGate = ({ children }: { children: React.ReactNode }) => {
               </div>
               <div>
                 <p className="text-foreground font-bold text-base" style={{ letterSpacing: '-0.03em' }}>
-                  {t.step3Title}
+                  {t("pwa.step3Title")}
                 </p>
                 <p className="text-muted-foreground text-sm mt-1" style={{ letterSpacing: '-0.02em' }}>
-                  {t.step3Desc}
+                  {t("pwa.step3Desc")}
                 </p>
               </div>
             </div>
