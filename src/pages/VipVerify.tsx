@@ -7,12 +7,14 @@ import { setOneSignalExternalId } from "@/lib/onesignal";
 import { isDevMode } from "@/lib/devMode";
 import WarningDialog from "@/components/shared/WarningDialog";
 import { toast } from "sonner";
+import { useTranslation, Trans } from "react-i18next";
 
 const CODE_LENGTH = 4;
 const DEV = isDevMode();
 
 const VipVerify = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [digits, setDigits] = useState<string[]>(Array(CODE_LENGTH).fill(""));
   const [loading, setLoading] = useState(false);
   const [warningOpen, setWarningOpen] = useState(false);
@@ -70,7 +72,7 @@ const VipVerify = () => {
         // Connection / CORS error
         if (fnError) {
           if (DEV) console.error("[VipVerify] fnError:", fnError);
-          showWarning("Connection error. Please try again.");
+          showWarning(t("vipVerify.connectionError"));
           setDigits(Array(CODE_LENGTH).fill(""));
           setTimeout(() => inputRefs.current[0]?.focus(), 400);
           return;
@@ -79,7 +81,7 @@ const VipVerify = () => {
         // Invalid code
         if (!data?.success) {
           if (DEV) console.log("[VipVerify] Failed:", data?.error);
-          showWarning("Invalid or expired code. Please try again.");
+          showWarning(t("vipVerify.invalidCode"));
           setDigits(Array(CODE_LENGTH).fill(""));
           setTimeout(() => inputRefs.current[0]?.focus(), 400);
           return;
@@ -143,7 +145,7 @@ const VipVerify = () => {
         }
       } catch (err: any) {
         if (DEV) console.error("[VipVerify] Unhandled:", err);
-        showWarning("Something went wrong. Please try again.");
+        showWarning(t("vipVerify.somethingWrong"));
         setDigits(Array(CODE_LENGTH).fill(""));
         setTimeout(() => inputRefs.current[0]?.focus(), 400);
       } finally {
@@ -151,7 +153,7 @@ const VipVerify = () => {
         verifyingRef.current = false;
       }
     },
-    [email, redirect, navigate]
+    [email, redirect, navigate, t]
   );
 
   // Auto-focus next + auto-submit on 4th digit
@@ -210,7 +212,7 @@ const VipVerify = () => {
   const handleManualVerify = () => {
     const code = digits.join("");
     if (code.length !== CODE_LENGTH) {
-      showWarning("Please enter the full 4-digit code.");
+      showWarning(t("vipVerify.fullCode"));
       return;
     }
     doVerify(code);
@@ -220,7 +222,7 @@ const VipVerify = () => {
     <div className="flex flex-col min-h-screen pb-24">
       <WarningDialog
         open={warningOpen}
-        title="Verification Failed"
+        title={t("vipVerify.failedTitle")}
         message={warningMsg}
         onClose={() => setWarningOpen(false)}
       />
@@ -229,10 +231,9 @@ const VipVerify = () => {
         <div className="w-full max-w-lg mx-auto space-y-8">
           <div className="text-center space-y-3">
             <ShieldCheck className="w-12 h-12 text-primary mx-auto" />
-            <h1 className="text-3xl text-foreground">VERIFY CODE</h1>
+            <h1 className="text-3xl text-foreground">{t("vipVerify.title")}</h1>
             <p className="text-muted-foreground text-sm">
-              We sent a code to <strong className="text-foreground">{email}</strong>. Check your
-              inbox (and spam folder).
+              <Trans i18nKey="vipVerify.sentTo" values={{ email }} components={[<strong key="0" className="text-foreground" />]} />
             </p>
           </div>
 
@@ -269,7 +270,7 @@ const VipVerify = () => {
             ) : (
               <>
                 <ShieldCheck className="w-5 h-5 mr-2" />
-                VERIFY CODE
+                {t("vipVerify.verify")}
               </>
             )}
           </Button>
