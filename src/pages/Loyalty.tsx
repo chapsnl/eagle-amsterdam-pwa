@@ -10,7 +10,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { QrCode, Star, CheckCircle } from "lucide-react";
+import { QrCode, Star, CheckCircle, Info } from "lucide-react";
 import StampCard from "@/components/loyalty/StampCard";
 import ScannerDialog from "@/components/loyalty/ScannerDialog";
 import RewardDialog from "@/components/loyalty/RewardDialog";
@@ -18,7 +18,7 @@ import WarningDialog from "@/components/shared/WarningDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "@/hooks/useProfile";
 import { useMemberVouchers } from "@/hooks/useMemberVouchers";
-
+import { useTranslation } from "react-i18next";
 const STORAGE_KEY = "eagle-loyalty-stamps";
 const VALID_CODE = "EAGLE2026";
 const TOTAL_STAMPS = 6;
