@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { Calendar } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { useEagleEvents } from "@/hooks/useEagleEvents";
 import PullToRefresh from "@/components/shared/PullToRefresh";
 import EventCard from "@/components/agenda/EventCard";
 import FirstVisitLoader from "@/components/shared/FirstVisitLoader";
 
 const Agenda = () => {
+  const { t } = useTranslation();
   const { data: events, isLoading, isError, error, forceRefresh, isFetching, isPlaceholderData } = useEagleEvents();
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
@@ -22,20 +24,20 @@ const Agenda = () => {
         )}
         <h1 className="text-4xl font-display tracking-wider text-foreground mb-6 flex items-center gap-3">
           <Calendar className="w-7 h-7 text-primary" />
-          AGENDA
+          {t("agenda.title")}
         </h1>
 
         {showFirstVisitLoader && <FirstVisitLoader />}
 
         {isError && (
           <div className="border border-destructive/50 rounded-lg p-4 bg-destructive/10 text-destructive">
-            <p className="font-semibold">Failed to load events</p>
-            <p className="text-sm mt-1">{(error as Error)?.message || "Please try again later."}</p>
+            <p className="font-semibold">{t("agenda.loadFailed")}</p>
+            <p className="text-sm mt-1">{(error as Error)?.message || t("agenda.loadFailedDesc")}</p>
           </div>
         )}
 
         {events && events.length === 0 && !isLoading && (
-          <p className="text-muted-foreground text-center py-12">No upcoming events found.</p>
+          <p className="text-muted-foreground text-center py-12">{t("agenda.empty")}</p>
         )}
 
         {events && events.length > 0 && (
