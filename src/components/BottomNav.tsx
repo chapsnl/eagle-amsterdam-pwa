@@ -1,21 +1,23 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { Home, Calendar, Newspaper, Ticket, Crown, Mail } from "lucide-react";
-
-const navItems = [
-  { path: "/", label: "Home", icon: Home },
-  { path: "/agenda", label: "Agenda", icon: Calendar },
-  { path: "/vip", label: "VIP", icon: Crown },
-  { path: "/events", label: "Tickets", icon: Ticket },
-  { path: "/news", label: "News", icon: Newspaper },
-  { path: "/contact", label: "Contact", icon: Mail },
-];
+import { useTranslation } from "react-i18next";
 
 const BottomNav = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   // Hide bottom nav on admin subdomain
   if (window.location.hostname === "admin.eagleamsterdam.com") return null;
+
+  const navItems = [
+    { path: "/", label: t("nav.home"), icon: Home },
+    { path: "/agenda", label: t("nav.agenda"), icon: Calendar },
+    { path: "/vip", label: t("nav.vip"), icon: Crown },
+    { path: "/events", label: t("nav.tickets"), icon: Ticket },
+    { path: "/news", label: t("nav.news"), icon: Newspaper },
+    { path: "/contact", label: t("nav.contact"), icon: Mail },
+  ];
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-border bg-eagle-dark/95 backdrop-blur-md pb-[env(safe-area-inset-bottom)]">

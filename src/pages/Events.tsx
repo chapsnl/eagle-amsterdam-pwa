@@ -4,6 +4,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useTranslation } from "react-i18next";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -39,6 +40,7 @@ const tickets: TicketItem[] = [
 ];
 
 const Events = () => {
+  const { t } = useTranslation();
   const [popupOpen, setPopupOpen] = useState(false);
   const [popupMessage, setPopupMessage] = useState("");
 
@@ -55,7 +57,7 @@ const Events = () => {
     <div className="flex flex-col min-h-screen pb-20 pt-8 px-4 max-w-lg mx-auto">
       <h1 className="text-4xl font-display tracking-wider text-foreground mb-6 flex items-center gap-3">
         <Ticket className="w-7 h-7 text-primary" />
-        TICKETS
+        {t("events.title")}
       </h1>
       <div className="grid gap-4" style={{ gridTemplateColumns: '1fr 1fr' }}>
         {tickets.map((ticket, i) => {
@@ -86,7 +88,7 @@ const Events = () => {
         <AlertDialogContent className="bg-card border-border max-w-[calc(100vw-3rem)] sm:max-w-sm mx-auto">
           <AlertDialogHeader>
             <AlertDialogTitle className="font-display tracking-wider text-foreground">
-              Ticket Info
+              {t("events.ticketInfo")}
             </AlertDialogTitle>
             <AlertDialogDescription className="text-muted-foreground">
               {popupMessage}
@@ -94,7 +96,7 @@ const Events = () => {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogAction className="bg-primary text-primary-foreground hover:bg-primary/90">
-              OK
+              {t("events.ok")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

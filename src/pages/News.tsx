@@ -2,11 +2,13 @@ import { Newspaper } from "lucide-react";
 import { useEaglePosts } from "@/hooks/useEaglePosts";
 import { format } from "date-fns";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import EagleHtmlContent from "@/components/shared/EagleHtmlContent";
 import PullToRefresh from "@/components/shared/PullToRefresh";
 import FirstVisitLoader from "@/components/shared/FirstVisitLoader";
 
 const News = () => {
+  const { t } = useTranslation();
   const { data: posts, isLoading, error, forceRefresh, isFetching, isPlaceholderData } = useEaglePosts();
   const [expandedId, setExpandedId] = useState<number | null>(null);
 
@@ -23,20 +25,20 @@ const News = () => {
         )}
         <h1 className="text-4xl font-display tracking-wider text-foreground mb-6 flex items-center gap-3">
           <Newspaper className="w-7 h-7 text-primary" />
-          NEWS
+          {t("news.title")}
         </h1>
 
         {showFirstVisitLoader && <FirstVisitLoader />}
 
         {error && (
           <div className="border border-destructive/50 rounded-lg p-4 bg-destructive/10 text-destructive">
-            <p className="font-semibold">Failed to load news</p>
-            <p className="text-sm mt-1">Please try again later.</p>
+            <p className="font-semibold">{t("news.loadFailed")}</p>
+            <p className="text-sm mt-1">{t("news.loadFailedDesc")}</p>
           </div>
         )}
 
         {posts && posts.length === 0 && !isLoading && (
-          <p className="text-muted-foreground text-center py-12">No news posts available.</p>
+          <p className="text-muted-foreground text-center py-12">{t("news.empty")}</p>
         )}
 
         {posts && posts.length > 0 && (
@@ -66,7 +68,7 @@ const News = () => {
                         {post.title}
                       </h3>
                       <span className="text-primary text-xs mt-1 shrink-0">
-                        News Posted: {format(new Date(post.date), "MMM d, yyyy")}
+                        {t("news.posted", { date: format(new Date(post.date), "MMM d, yyyy") })}
                       </span>
                     </div>
                     {isExpanded ? (
