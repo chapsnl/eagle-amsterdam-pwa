@@ -55,6 +55,8 @@ const AdminDashboard = () => {
   const [loadingPosts, setLoadingPosts] = useState(false);
   const [deletingPost, setDeletingPost] = useState<string | null>(null);
   const [moderationOpen, setModerationOpen] = useState(false);
+  const [statsOpen, setStatsOpen] = useState(false);
+  const [allMembersOpen, setAllMembersOpen] = useState(false);
   const activityTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const logout = useCallback(() => {
