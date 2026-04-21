@@ -185,7 +185,7 @@ const PwaGate = ({ children }: { children: React.ReactNode }) => {
                   {t("pwa.step1TitleAndroid")}
                 </p>
                 <p className="text-muted-foreground text-sm mt-1 flex items-center gap-1" style={{ letterSpacing: '-0.02em' }}>
-                  {t("pwa.step1DescAndroid")} <MoreVertical className="inline w-7 h-7 text-primary" />
+                  {t("pwa.step1DescAndroid")} <MoreVertical className="inline text-primary" style={{ width: '31px', height: '31px' }} />
                 </p>
               </div>
             </div>
