@@ -294,6 +294,59 @@ const AdminDashboard = () => {
     return [...online, ...offline].slice(0, 5);
   })();
 
+  // Member stats
+  const stats = (() => {
+    const now = Date.now();
+    const dayMs = 24 * 60 * 60 * 1000;
+    const onlineCount = members.filter((m) => isOnline(m.last_active_at)).length;
+    const newToday = members.filter((m) => now - new Date(m.created_at).getTime() < dayMs).length;
+    const newThisWeek = members.filter((m) => now - new Date(m.created_at).getTime() < 7 * dayMs).length;
+    const newThisMonth = members.filter((m) => now - new Date(m.created_at).getTime() < 30 * dayMs).length;
+    const activeLast7Days = members.filter((m) => m.last_active_at && now - new Date(m.last_active_at).getTime() < 7 * dayMs).length;
+    const totalActiveVouchers = members.reduce((sum, m) => sum + (m.active_vouchers || 0), 0);
+    const tiers = {
+      Regular: members.filter((m) => m.vip_status === "Regular").length,
+      "Party Boy": members.filter((m) => m.vip_status === "Party Boy").length,
+      Cruiser: members.filter((m) => m.vip_status === "Cruiser").length,
+      Slut: members.filter((m) => m.vip_status === "Slut").length,
+    };
+    return {
+      total: members.length,
+      onlineCount,
+      newToday,
+      newThisWeek,
+      newThisMonth,
+      activeLast7Days,
+      totalActiveVouchers,
+      tiers,
+    };
+  })();
+
+  const handleExportCSV = () => {
+    const headers = ["Member #", "Name", "Email", "VIP Status", "Tokens", "Active Vouchers", "Created", "Last Active"];
+    const rows = members.map((m) => [
+      m.member_number || "",
+      m.name || "",
+      m.email,
+      m.vip_status,
+      m.total_stamps_earned,
+      m.active_vouchers,
+      new Date(m.created_at).toISOString(),
+      m.last_active_at ? new Date(m.last_active_at).toISOString() : "",
+    ]);
+    const csv = [headers, ...rows]
+      .map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(","))
+      .join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `eagle-members-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showSuccess("Members exported to CSV");
+  };
+
   if (!adminUserId) return null;
 
   const renderMemberRow = (member: Member) => {
