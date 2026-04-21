@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Crown, Users, QrCode, Gift, RefreshCw, Check, Send, ChevronDown, ChevronUp, LogOut, ScanLine, Search, Shirt, Ticket, Beer, MessageSquare, Trash2 } from "lucide-react";
+import { Crown, Users, QrCode, Gift, RefreshCw, Check, Send, ChevronDown, ChevronUp, LogOut, ScanLine, Search, Shirt, Ticket, Beer, MessageSquare, Trash2, UserCheck, Download, TrendingUp } from "lucide-react";
 import MemberScannerSection from "@/components/admin/MemberScannerSection";
 import InviteUserSection from "@/components/admin/InviteUserSection";
 import { supabase } from "@/integrations/supabase/client";
@@ -55,6 +55,8 @@ const AdminDashboard = () => {
   const [loadingPosts, setLoadingPosts] = useState(false);
   const [deletingPost, setDeletingPost] = useState<string | null>(null);
   const [moderationOpen, setModerationOpen] = useState(false);
+  const [statsOpen, setStatsOpen] = useState(false);
+  const [allMembersOpen, setAllMembersOpen] = useState(false);
   const activityTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const logout = useCallback(() => {
@@ -292,6 +294,59 @@ const AdminDashboard = () => {
     return [...online, ...offline].slice(0, 5);
   })();
 
+  // Member stats
+  const stats = (() => {
+    const now = Date.now();
+    const dayMs = 24 * 60 * 60 * 1000;
+    const onlineCount = members.filter((m) => isOnline(m.last_active_at)).length;
+    const newToday = members.filter((m) => now - new Date(m.created_at).getTime() < dayMs).length;
+    const newThisWeek = members.filter((m) => now - new Date(m.created_at).getTime() < 7 * dayMs).length;
+    const newThisMonth = members.filter((m) => now - new Date(m.created_at).getTime() < 30 * dayMs).length;
+    const activeLast7Days = members.filter((m) => m.last_active_at && now - new Date(m.last_active_at).getTime() < 7 * dayMs).length;
+    const totalActiveVouchers = members.reduce((sum, m) => sum + (m.active_vouchers || 0), 0);
+    const tiers = {
+      Regular: members.filter((m) => m.vip_status === "Regular").length,
+      "Party Boy": members.filter((m) => m.vip_status === "Party Boy").length,
+      Cruiser: members.filter((m) => m.vip_status === "Cruiser").length,
+      Slut: members.filter((m) => m.vip_status === "Slut").length,
+    };
+    return {
+      total: members.length,
+      onlineCount,
+      newToday,
+      newThisWeek,
+      newThisMonth,
+      activeLast7Days,
+      totalActiveVouchers,
+      tiers,
+    };
+  })();
+
+  const handleExportCSV = () => {
+    const headers = ["Member #", "Name", "Email", "VIP Status", "Tokens", "Active Vouchers", "Created", "Last Active"];
+    const rows = members.map((m) => [
+      m.member_number || "",
+      m.name || "",
+      m.email,
+      m.vip_status,
+      m.total_stamps_earned,
+      m.active_vouchers,
+      new Date(m.created_at).toISOString(),
+      m.last_active_at ? new Date(m.last_active_at).toISOString() : "",
+    ]);
+    const csv = [headers, ...rows]
+      .map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(","))
+      .join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `eagle-members-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showSuccess("Members exported to CSV");
+  };
+
   if (!adminUserId) return null;
 
   const renderMemberRow = (member: Member) => {
@@ -424,6 +479,141 @@ const AdminDashboard = () => {
             {successMsg}
           </div>
         )}
+
+        {/* ═══ MEMBER STATS ═══ */}
+        <section className="space-y-0">
+          <button
+            onClick={() => setStatsOpen(!statsOpen)}
+            className="w-full flex items-center justify-between bg-card border border-border rounded-xl px-4 py-3"
+          >
+            <h2 className="text-foreground font-bold text-lg flex items-center gap-2">
+              <Users className="w-5 h-5 text-primary" />
+              Member Stats
+              <span className="ml-2 bg-primary text-primary-foreground text-xs font-extrabold rounded-full px-2.5 py-0.5">
+                {loading ? "…" : stats.total}
+              </span>
+            </h2>
+            {statsOpen ? (
+              <ChevronUp className="w-5 h-5 text-muted-foreground" />
+            ) : (
+              <ChevronDown className="w-5 h-5 text-muted-foreground" />
+            )}
+          </button>
+
+          {statsOpen && (
+            <div className="bg-card rounded-b-xl px-4 pb-4 pt-2 space-y-4 border border-t-0 border-border -mt-2 rounded-t-none">
+              {/* Top KPIs */}
+              <div className="grid grid-cols-2 gap-2">
+                <div className="bg-secondary rounded-lg p-3">
+                  <p className="text-muted-foreground text-[10px] font-bold uppercase">Total Members</p>
+                  <p className="text-foreground text-2xl font-extrabold">{stats.total}</p>
+                </div>
+                <div className="bg-secondary rounded-lg p-3">
+                  <p className="text-muted-foreground text-[10px] font-bold uppercase flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                    Online Now
+                  </p>
+                  <p className="text-foreground text-2xl font-extrabold">{stats.onlineCount}</p>
+                </div>
+                <div className="bg-secondary rounded-lg p-3">
+                  <p className="text-muted-foreground text-[10px] font-bold uppercase">New Today</p>
+                  <p className="text-foreground text-2xl font-extrabold">{stats.newToday}</p>
+                </div>
+                <div className="bg-secondary rounded-lg p-3">
+                  <p className="text-muted-foreground text-[10px] font-bold uppercase">New This Week</p>
+                  <p className="text-foreground text-2xl font-extrabold">{stats.newThisWeek}</p>
+                </div>
+                <div className="bg-secondary rounded-lg p-3">
+                  <p className="text-muted-foreground text-[10px] font-bold uppercase">New This Month</p>
+                  <p className="text-foreground text-2xl font-extrabold">{stats.newThisMonth}</p>
+                </div>
+                <div className="bg-secondary rounded-lg p-3">
+                  <p className="text-muted-foreground text-[10px] font-bold uppercase flex items-center gap-1">
+                    <UserCheck className="w-3 h-3" />
+                    Active 7d
+                  </p>
+                  <p className="text-foreground text-2xl font-extrabold">{stats.activeLast7Days}</p>
+                </div>
+                <div className="bg-secondary rounded-lg p-3 col-span-2">
+                  <p className="text-muted-foreground text-[10px] font-bold uppercase flex items-center gap-1">
+                    <Gift className="w-3 h-3" />
+                    Total Active Vouchers
+                  </p>
+                  <p className="text-foreground text-2xl font-extrabold">{stats.totalActiveVouchers}</p>
+                </div>
+              </div>
+
+              {/* VIP tier breakdown */}
+              <div className="space-y-2">
+                <p className="text-muted-foreground text-[10px] font-bold uppercase flex items-center gap-1">
+                  <TrendingUp className="w-3 h-3" />
+                  VIP Tier Breakdown
+                </p>
+                <div className="space-y-1.5">
+                  {(Object.entries(stats.tiers) as [string, number][]).map(([tier, count]) => {
+                    const pct = stats.total > 0 ? (count / stats.total) * 100 : 0;
+                    return (
+                      <div key={tier} className="space-y-0.5">
+                        <div className="flex items-center justify-between text-xs">
+                          <span className={`font-bold ${getStatusColor(tier)}`}>{tier}</span>
+                          <span className="text-muted-foreground">{count} ({pct.toFixed(0)}%)</span>
+                        </div>
+                        <div className="w-full h-1.5 bg-secondary rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-primary rounded-full transition-all"
+                            style={{ width: `${pct}%` }}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Action buttons */}
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  onClick={handleExportCSV}
+                  disabled={loading || members.length === 0}
+                  className="flex items-center justify-center gap-2 bg-secondary hover:bg-secondary/80 text-foreground rounded-lg py-2.5 font-bold text-xs transition-colors disabled:opacity-40"
+                >
+                  <Download className="w-4 h-4" />
+                  Export CSV
+                </button>
+                <button
+                  onClick={() => adminUserId && loadData(adminUserId)}
+                  disabled={loading}
+                  className="flex items-center justify-center gap-2 bg-secondary hover:bg-secondary/80 text-foreground rounded-lg py-2.5 font-bold text-xs transition-colors disabled:opacity-40"
+                >
+                  <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
+                  Refresh
+                </button>
+              </div>
+
+              {/* All members list (toggle) */}
+              <div>
+                <button
+                  onClick={() => setAllMembersOpen(!allMembersOpen)}
+                  className="w-full flex items-center justify-between bg-secondary hover:bg-secondary/80 rounded-lg px-3 py-2.5 text-xs font-bold transition-colors"
+                >
+                  <span className="text-foreground">
+                    {allMembersOpen ? "Hide" : "Show"} All Members ({stats.total})
+                  </span>
+                  {allMembersOpen ? (
+                    <ChevronUp className="w-4 h-4 text-muted-foreground" />
+                  ) : (
+                    <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                  )}
+                </button>
+                {allMembersOpen && (
+                  <div className="space-y-2 mt-2 max-h-96 overflow-y-auto pr-1">
+                    {members.map(renderMemberRow)}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </section>
 
         {/* ═══ LOYALTY QR CODE ═══ */}
         <section className="space-y-0">
