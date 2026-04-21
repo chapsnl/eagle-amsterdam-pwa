@@ -480,6 +480,141 @@ const AdminDashboard = () => {
           </div>
         )}
 
+        {/* ═══ MEMBER STATS ═══ */}
+        <section className="space-y-0">
+          <button
+            onClick={() => setStatsOpen(!statsOpen)}
+            className="w-full flex items-center justify-between bg-card border border-border rounded-xl px-4 py-3"
+          >
+            <h2 className="text-foreground font-bold text-lg flex items-center gap-2">
+              <Users className="w-5 h-5 text-primary" />
+              Member Stats
+              <span className="ml-2 bg-primary text-primary-foreground text-xs font-extrabold rounded-full px-2.5 py-0.5">
+                {loading ? "…" : stats.total}
+              </span>
+            </h2>
+            {statsOpen ? (
+              <ChevronUp className="w-5 h-5 text-muted-foreground" />
+            ) : (
+              <ChevronDown className="w-5 h-5 text-muted-foreground" />
+            )}
+          </button>
+
+          {statsOpen && (
+            <div className="bg-card rounded-b-xl px-4 pb-4 pt-2 space-y-4 border border-t-0 border-border -mt-2 rounded-t-none">
+              {/* Top KPIs */}
+              <div className="grid grid-cols-2 gap-2">
+                <div className="bg-secondary rounded-lg p-3">
+                  <p className="text-muted-foreground text-[10px] font-bold uppercase">Total Members</p>
+                  <p className="text-foreground text-2xl font-extrabold">{stats.total}</p>
+                </div>
+                <div className="bg-secondary rounded-lg p-3">
+                  <p className="text-muted-foreground text-[10px] font-bold uppercase flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                    Online Now
+                  </p>
+                  <p className="text-foreground text-2xl font-extrabold">{stats.onlineCount}</p>
+                </div>
+                <div className="bg-secondary rounded-lg p-3">
+                  <p className="text-muted-foreground text-[10px] font-bold uppercase">New Today</p>
+                  <p className="text-foreground text-2xl font-extrabold">{stats.newToday}</p>
+                </div>
+                <div className="bg-secondary rounded-lg p-3">
+                  <p className="text-muted-foreground text-[10px] font-bold uppercase">New This Week</p>
+                  <p className="text-foreground text-2xl font-extrabold">{stats.newThisWeek}</p>
+                </div>
+                <div className="bg-secondary rounded-lg p-3">
+                  <p className="text-muted-foreground text-[10px] font-bold uppercase">New This Month</p>
+                  <p className="text-foreground text-2xl font-extrabold">{stats.newThisMonth}</p>
+                </div>
+                <div className="bg-secondary rounded-lg p-3">
+                  <p className="text-muted-foreground text-[10px] font-bold uppercase flex items-center gap-1">
+                    <UserCheck className="w-3 h-3" />
+                    Active 7d
+                  </p>
+                  <p className="text-foreground text-2xl font-extrabold">{stats.activeLast7Days}</p>
+                </div>
+                <div className="bg-secondary rounded-lg p-3 col-span-2">
+                  <p className="text-muted-foreground text-[10px] font-bold uppercase flex items-center gap-1">
+                    <Gift className="w-3 h-3" />
+                    Total Active Vouchers
+                  </p>
+                  <p className="text-foreground text-2xl font-extrabold">{stats.totalActiveVouchers}</p>
+                </div>
+              </div>
+
+              {/* VIP tier breakdown */}
+              <div className="space-y-2">
+                <p className="text-muted-foreground text-[10px] font-bold uppercase flex items-center gap-1">
+                  <TrendingUp className="w-3 h-3" />
+                  VIP Tier Breakdown
+                </p>
+                <div className="space-y-1.5">
+                  {(Object.entries(stats.tiers) as [string, number][]).map(([tier, count]) => {
+                    const pct = stats.total > 0 ? (count / stats.total) * 100 : 0;
+                    return (
+                      <div key={tier} className="space-y-0.5">
+                        <div className="flex items-center justify-between text-xs">
+                          <span className={`font-bold ${getStatusColor(tier)}`}>{tier}</span>
+                          <span className="text-muted-foreground">{count} ({pct.toFixed(0)}%)</span>
+                        </div>
+                        <div className="w-full h-1.5 bg-secondary rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-primary rounded-full transition-all"
+                            style={{ width: `${pct}%` }}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Action buttons */}
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  onClick={handleExportCSV}
+                  disabled={loading || members.length === 0}
+                  className="flex items-center justify-center gap-2 bg-secondary hover:bg-secondary/80 text-foreground rounded-lg py-2.5 font-bold text-xs transition-colors disabled:opacity-40"
+                >
+                  <Download className="w-4 h-4" />
+                  Export CSV
+                </button>
+                <button
+                  onClick={() => adminUserId && loadData(adminUserId)}
+                  disabled={loading}
+                  className="flex items-center justify-center gap-2 bg-secondary hover:bg-secondary/80 text-foreground rounded-lg py-2.5 font-bold text-xs transition-colors disabled:opacity-40"
+                >
+                  <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
+                  Refresh
+                </button>
+              </div>
+
+              {/* All members list (toggle) */}
+              <div>
+                <button
+                  onClick={() => setAllMembersOpen(!allMembersOpen)}
+                  className="w-full flex items-center justify-between bg-secondary hover:bg-secondary/80 rounded-lg px-3 py-2.5 text-xs font-bold transition-colors"
+                >
+                  <span className="text-foreground">
+                    {allMembersOpen ? "Hide" : "Show"} All Members ({stats.total})
+                  </span>
+                  {allMembersOpen ? (
+                    <ChevronUp className="w-4 h-4 text-muted-foreground" />
+                  ) : (
+                    <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                  )}
+                </button>
+                {allMembersOpen && (
+                  <div className="space-y-2 mt-2 max-h-96 overflow-y-auto pr-1">
+                    {members.map(renderMemberRow)}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </section>
+
         {/* ═══ LOYALTY QR CODE ═══ */}
         <section className="space-y-0">
           <button
