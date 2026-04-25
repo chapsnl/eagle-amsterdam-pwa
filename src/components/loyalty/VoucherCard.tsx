@@ -56,14 +56,14 @@ const VoucherCard = ({ title, description, expiresAt, redeemed, onRedeem }: Vouc
               )}
             </div>
             {/* Large blinking gift icon on the right */}
-            <div className="w-[88px] h-[88px] rounded-full flex items-center justify-center animate-[pulse_1.2s_ease-in-out_infinite]" style={{ backgroundColor: "hsl(5 64% 30%)" }}>
-              <Gift className="w-[60px] h-[60px] text-primary-foreground" />
+            <div className="w-[84px] h-[84px] rounded-full flex items-center justify-center animate-[pulse_1.2s_ease-in-out_infinite]" style={{ backgroundColor: "hsl(5 64% 30%)" }}>
+              <Gift className="w-[58px] h-[58px] text-primary-foreground" />
             </div>
           </div>
 
           {/* Title & description */}
           <div className="flex-1 flex flex-col justify-center py-1">
-            <h3 className="text-primary-foreground text-[26px] font-extrabold tracking-[-0.05em] leading-tight uppercase">
+            <h3 className="text-primary-foreground text-[24px] font-extrabold tracking-[-0.05em] leading-tight uppercase">
               {title}
             </h3>
             {description && (
