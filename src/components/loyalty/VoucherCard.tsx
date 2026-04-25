@@ -27,10 +27,10 @@ const VoucherCard = ({ title, description, expiresAt, redeemed, onRedeem }: Vouc
 
         {/* Eagle Amsterdam watermark */}
         <div
-          className="absolute inset-0 opacity-50 pointer-events-none bg-center bg-no-repeat"
+          className="absolute inset-0 opacity-20 pointer-events-none bg-center bg-no-repeat"
           style={{
             backgroundImage: `url(${eagleWatermark})`,
-            backgroundSize: "70%",
+            backgroundSize: "100% 100%",
           }}
         />
 
