@@ -30,7 +30,7 @@ const VoucherCard = ({ title, description, expiresAt, redeemed, onRedeem }: Vouc
           className="absolute inset-0 opacity-20 pointer-events-none bg-center bg-no-repeat"
           style={{
             backgroundImage: `url(${eagleWatermark})`,
-            backgroundSize: "contain",
+            backgroundSize: "cover",
           }}
         />
 
