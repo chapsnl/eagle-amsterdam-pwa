@@ -1,5 +1,6 @@
 import { Gift } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import eagleWatermark from "@/assets/eagle-watermark.png";
 
 interface VoucherCardProps {
   title: string;
@@ -23,6 +24,15 @@ const VoucherCard = ({ title, description, expiresAt, redeemed, onRedeem }: Vouc
         <div className="absolute inset-0 opacity-10" style={{
           backgroundImage: "radial-gradient(circle at 20% 80%, rgba(255,255,255,0.15) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(255,255,255,0.1) 0%, transparent 50%)",
         }} />
+
+        {/* Eagle Amsterdam watermark */}
+        <div
+          className="absolute inset-0 opacity-50 pointer-events-none bg-center bg-no-repeat"
+          style={{
+            backgroundImage: `url(${eagleWatermark})`,
+            backgroundSize: "70%",
+          }}
+        />
 
         <div className="relative z-10 flex flex-col justify-between h-full">
           {/* Top row: redeem button left, gift icon right */}
