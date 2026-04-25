@@ -16,9 +16,11 @@ export const useActivityHeartbeat = () => {
       try {
         const { userId } = JSON.parse(stored);
         if (!userId) return;
-        await supabase.functions.invoke("update-activity", {
-          body: { userId },
-        });
+        // Fire-and-forget: swallow ALL errors (including transient 503s from edge runtime)
+        // so a heartbeat hiccup never bubbles to the ErrorBoundary / blank screen.
+        supabase.functions
+          .invoke("update-activity", { body: { userId } })
+          .catch(() => {});
       } catch {}
     };
 
