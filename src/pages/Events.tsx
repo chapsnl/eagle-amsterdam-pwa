@@ -36,7 +36,7 @@ const tickets: TicketItem[] = [
   { name: "The Meantime", type: "link", url: "https://www.themeantime.nl/#tickets", icon: Ticket },
   { name: "Pup Unleashed", type: "link", url: "https://www.puppyunleashed.nl/#tickets", icon: Ticket },
   { name: "Corner Time", type: "link", url: "https://www.cornertime.nl/#tickets", icon: Ticket },
-  { name: "XXXFetish", type: "link", url: "https://www.cornertime.nl/#tickets", icon: Ticket },
+  { name: "Bottoms_Up", type: "link", url: "https://www.instagram.com/bottoms_dn/", icon: Ticket },
 ];
 
 const Events = () => {
