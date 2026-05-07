@@ -194,11 +194,11 @@ const VipMessageCenter = () => {
                     </div>
                     {!expanded && (
                       <p
-                        className={`text-xs line-clamp-2 whitespace-pre-wrap break-words ${
+                        className={`text-xs line-clamp-1 truncate ${
                           unread ? "text-foreground font-semibold" : "text-muted-foreground"
                         }`}
                       >
-                        {msg.content}
+                        {msg.content.replace(/\s+/g, " ").trim()}
                       </p>
                     )}
                   </button>
