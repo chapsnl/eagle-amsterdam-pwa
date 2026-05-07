@@ -1036,6 +1036,19 @@ const AdminDashboard = () => {
           )}
         </section>
 
+        {/* ═══ RECENT ACTIVITY ═══ */}
+        {!loading && recentMembers.length > 0 && (
+          <section className="space-y-4">
+            <h2 className="text-foreground font-bold text-lg flex items-center gap-2">
+              <Users className="w-5 h-5 text-primary" />
+              Recent Activity
+            </h2>
+            <div className="space-y-2">
+              {recentMembers.map(renderMemberRow)}
+            </div>
+          </section>
+        )}
+
       </div>
 
       <WarningDialog
