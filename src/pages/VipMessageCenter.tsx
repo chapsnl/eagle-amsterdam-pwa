@@ -175,7 +175,7 @@ const VipMessageCenter = () => {
                     onClick={() => handleOpen(msg)}
                     className="w-full text-left p-3 active:scale-[0.99] transition-transform"
                   >
-                    <div className="flex items-center justify-between gap-2 mb-1">
+                    <div className="flex items-center justify-between gap-2 mb-1.5">
                       <span className="flex items-center gap-2 min-w-0">
                         {unread && (
                           <span className="w-2 h-2 rounded-full bg-primary shrink-0" aria-hidden />
@@ -194,7 +194,7 @@ const VipMessageCenter = () => {
                     </div>
                     {!expanded && (
                       <p
-                        className={`text-xs line-clamp-1 ${
+                        className={`text-xs line-clamp-2 whitespace-pre-wrap break-words ${
                           unread ? "text-foreground font-semibold" : "text-muted-foreground"
                         }`}
                       >
@@ -204,8 +204,10 @@ const VipMessageCenter = () => {
                   </button>
                   {expanded && (
                     <div className="px-3 pb-3 space-y-3">
-                      <div className="bg-secondary rounded-lg p-3">
-                        <p className="text-foreground text-sm whitespace-pre-wrap break-words">{msg.content}</p>
+                      <div className="bg-secondary rounded-lg p-3 border border-border">
+                        <p className="text-foreground text-sm whitespace-pre-wrap break-words leading-relaxed">
+                          {msg.content}
+                        </p>
                       </div>
                       <div className="flex gap-2">
                         {msg.recipient_id === session.userId && (
