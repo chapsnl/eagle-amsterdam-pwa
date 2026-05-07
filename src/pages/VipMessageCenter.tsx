@@ -4,6 +4,7 @@ import { ArrowLeft, RefreshCw, Inbox, Send as SendIcon, Trash2, X } from "lucide
 import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { useDirectMessages, type DirectMessage } from "@/hooks/useDirectMessages";
+import { markSeen } from "@/lib/badgeSeen";
 
 interface VipSession {
   userId: string;
@@ -37,6 +38,10 @@ const VipMessageCenter = () => {
 
   const { data, isLoading, refresh, isFetching } = useDirectMessages();
   const messages = data?.messages || [];
+
+  useEffect(() => {
+    markSeen("messages", data?.unread || 0);
+  }, [data?.unread]);
 
   // Handle ?to=USERID&nickname=... deep link from Backroom
   useEffect(() => {

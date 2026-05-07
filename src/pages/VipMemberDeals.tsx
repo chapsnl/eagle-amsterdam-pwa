@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import VoucherCard from "@/components/loyalty/VoucherCard";
 import WarningDialog from "@/components/shared/WarningDialog";
 import { useMemberVouchers, type Voucher } from "@/hooks/useMemberVouchers";
+import { markSeen } from "@/lib/badgeSeen";
 
 const VipMemberDeals = () => {
   const navigate = useNavigate();
@@ -39,6 +40,11 @@ const VipMemberDeals = () => {
   const { data: vouchersData, isLoading, invalidate: invalidateVouchers } = useMemberVouchers();
   const vouchers: Voucher[] = vouchersData || [];
   const loading = isLoading && vouchers.length === 0;
+  const activeCount = vouchers.filter((v) => !v.redeemed).length;
+
+  useEffect(() => {
+    markSeen("vouchers", activeCount);
+  }, [activeCount]);
 
   const handleRedeem = async (voucher: Voucher) => {
     if (!userId) return;
