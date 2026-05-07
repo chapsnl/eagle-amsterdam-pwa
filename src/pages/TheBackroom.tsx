@@ -36,6 +36,9 @@ const TheBackroom = () => {
   const [content, setContent] = useState("");
   const [replyContent, setReplyContent] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [dmTarget, setDmTarget] = useState<{ userId: string; nickname: string } | null>(null);
+  const [dmContent, setDmContent] = useState("");
+  const [dmSending, setDmSending] = useState(false);
 
   useEffect(() => {
     const stored = localStorage.getItem("vip_session");
