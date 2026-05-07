@@ -359,20 +359,29 @@ const AdminDashboard = () => {
     if (!adminUserId) return;
     const { data } = await supabase
       .from("direct_messages")
-      .select("id, content, created_at, recipient_id")
+      .select("id, content, created_at, recipient_id, recipient_nickname")
       .eq("sender_id", adminUserId)
       .order("created_at", { ascending: false })
       .limit(500);
     // Group by content + minute as a "broadcast batch"
-    const groups = new Map<string, { id: string; content: string; created_at: string; recipients: number }>();
+    const groups = new Map<string, { id: string; content: string; created_at: string; recipients: number; recipient_id?: string; recipient_nickname?: string }>();
     (data || []).forEach((m) => {
       const minute = new Date(m.created_at).toISOString().slice(0, 16);
       const key = `${minute}::${m.content}`;
       const existing = groups.get(key);
       if (existing) {
         existing.recipients += 1;
+        existing.recipient_id = undefined;
+        existing.recipient_nickname = undefined;
       } else {
-        groups.set(key, { id: m.id, content: m.content, created_at: m.created_at, recipients: 1 });
+        groups.set(key, {
+          id: m.id,
+          content: m.content,
+          created_at: m.created_at,
+          recipients: 1,
+          recipient_id: m.recipient_id,
+          recipient_nickname: m.recipient_nickname,
+        });
       }
     });
     setSentBroadcasts(Array.from(groups.values()).slice(0, 20));
@@ -380,18 +389,35 @@ const AdminDashboard = () => {
 
   const handleBroadcast = async () => {
     if (!adminUserId || !broadcastText.trim()) return;
-    if (!confirm(`Send this message to all ${members.length} members?`)) return;
+    if (broadcastMode === "single" && !broadcastTarget) {
+      setWarning({ open: true, title: "Select a member", message: "Please select a member to send the message to." });
+      return;
+    }
+    const confirmMsg = broadcastMode === "all"
+      ? `Send this message to all ${members.length} members?`
+      : `Send this message to ${broadcastTarget?.name || "this member"}?`;
+    if (!confirm(confirmMsg)) return;
     setBroadcasting(true);
     try {
-      const { data, error } = await supabase.functions.invoke("direct-messages", {
-        body: { action: "broadcast", userId: adminUserId, content: broadcastText.trim().slice(0, 1000) },
-      });
-      if (!error && data?.success) {
-        showSuccess(`Broadcast sent to ${data.count} members.`);
+      const body = broadcastMode === "all"
+        ? { action: "broadcast", userId: adminUserId, content: broadcastText.trim().slice(0, 1000) }
+        : {
+            action: "send",
+            userId: adminUserId,
+            recipientId: broadcastTarget!.id,
+            recipientNickname: broadcastTarget!.name || "Member",
+            content: broadcastText.trim().slice(0, 1000),
+          };
+      const { data, error } = await supabase.functions.invoke("direct-messages", { body });
+      if (!error && (data?.success || data?.message)) {
+        const count = broadcastMode === "all" ? data.count : 1;
+        showSuccess(broadcastMode === "all" ? `Broadcast sent to ${count} members.` : `Message sent to ${broadcastTarget?.name}.`);
         setBroadcastText("");
+        setBroadcastTarget(null);
+        setBroadcastSearch("");
         loadSentBroadcasts();
       } else {
-        setWarning({ open: true, title: "Error", message: data?.error || "Broadcast failed." });
+        setWarning({ open: true, title: "Error", message: data?.error || "Send failed." });
       }
     } finally {
       setBroadcasting(false);
