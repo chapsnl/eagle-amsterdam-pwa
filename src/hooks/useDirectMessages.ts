@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 export interface DirectMessage {
@@ -39,7 +39,10 @@ async function fetchMessages(userId: string) {
   };
 }
 
-/** 24h cache. Manual refresh via `refresh()`. */
+/**
+ * 24h cache for low data usage. Realtime websocket pushes new/deleted messages
+ * instantly (no extra HTTP). Manual refresh via `refresh()`.
+ */
 export function useDirectMessages() {
   const userId = getSessionUserId();
   const queryClient = useQueryClient();
@@ -59,6 +62,27 @@ export function useDirectMessages() {
     if (!userId) return;
     await queryClient.invalidateQueries({ queryKey: ["direct-messages", userId] });
   }, [queryClient, userId]);
+
+  // Realtime: invalidate cache whenever a message touching this user changes.
+  useEffect(() => {
+    if (!userId) return;
+    const channel = supabase
+      .channel(`dm-${userId}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "direct_messages", filter: `recipient_id=eq.${userId}` },
+        () => queryClient.invalidateQueries({ queryKey: ["direct-messages", userId] })
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "direct_messages", filter: `sender_id=eq.${userId}` },
+        () => queryClient.invalidateQueries({ queryKey: ["direct-messages", userId] })
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [userId, queryClient]);
 
   return { ...query, refresh };
 }
