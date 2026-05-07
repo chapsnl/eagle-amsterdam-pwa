@@ -372,7 +372,7 @@ const AdminDashboard = () => {
         groups.set(key, { id: m.id, content: m.content, created_at: m.created_at, recipients: 1 });
       }
     });
-    setSentBroadcasts(Array.from(groups.values()).filter((g) => g.recipients > 1).slice(0, 20));
+    setSentBroadcasts(Array.from(groups.values()).slice(0, 20));
   }, [adminUserId]);
 
   const handleBroadcast = async () => {
