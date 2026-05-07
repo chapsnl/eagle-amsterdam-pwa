@@ -57,6 +57,11 @@ const AdminDashboard = () => {
   const [moderationOpen, setModerationOpen] = useState(false);
   const [statsOpen, setStatsOpen] = useState(false);
   const [allMembersOpen, setAllMembersOpen] = useState(false);
+  const [broadcastOpen, setBroadcastOpen] = useState(false);
+  const [broadcastText, setBroadcastText] = useState("");
+  const [broadcasting, setBroadcasting] = useState(false);
+  const [sentBroadcasts, setSentBroadcasts] = useState<{ id: string; content: string; created_at: string; recipients: number }[]>([]);
+  const [recalling, setRecalling] = useState<string | null>(null);
   const activityTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const logout = useCallback(() => {
