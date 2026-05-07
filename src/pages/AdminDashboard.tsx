@@ -444,7 +444,24 @@ const AdminDashboard = () => {
     }
   };
 
-  if (!adminUserId) return null;
+  const handleHide = async (msgId: string) => {
+    if (!adminUserId) return;
+    if (!confirm("Delete this from your sent list? Recipients will still see the message.")) return;
+    setRecalling(msgId);
+    try {
+      const { data, error } = await supabase.functions.invoke("direct-messages", {
+        body: { action: "admin_hide", userId: adminUserId, messageId: msgId, hideAll: true },
+      });
+      if (!error && data?.success) {
+        showSuccess("Removed from your sent list.");
+        setSentBroadcasts((prev) => prev.filter((b) => b.id !== msgId));
+      } else {
+        setWarning({ open: true, title: "Error", message: data?.error || "Delete failed." });
+      }
+    } finally {
+      setRecalling(null);
+    }
+  };
 
   const renderMemberRow = (member: Member) => {
     const isExpanded = expandedMember === member.id;
