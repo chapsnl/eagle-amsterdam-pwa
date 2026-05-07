@@ -370,6 +370,53 @@ const TheBackroom = () => {
           </div>
         )}
       </div>
+
+      {/* Inline DM composer */}
+      {dmTarget && (
+        <div
+          className="fixed inset-0 z-50 bg-black/70 flex items-end sm:items-center justify-center p-4"
+          onClick={() => !dmSending && setDmTarget(null)}
+        >
+          <div
+            className="bg-card border border-border rounded-xl w-full max-w-lg p-4 space-y-3"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between">
+              <p className="text-foreground font-bold text-sm">
+                DM to <span className="text-primary">{dmTarget.nickname}</span>
+              </p>
+              <button onClick={() => setDmTarget(null)} disabled={dmSending} className="text-muted-foreground">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <textarea
+              autoFocus
+              placeholder="Write your message..."
+              value={dmContent}
+              onChange={(e) => setDmContent(e.target.value.slice(0, 1000))}
+              rows={5}
+              className="w-full bg-secondary text-foreground rounded-lg px-3 py-2 text-base placeholder:text-muted-foreground outline-none resize-none"
+            />
+            <div className="flex gap-2">
+              <button
+                onClick={() => setDmTarget(null)}
+                disabled={dmSending}
+                className="flex-1 py-2 rounded-lg bg-secondary text-muted-foreground font-bold text-sm"
+              >
+                CANCEL
+              </button>
+              <button
+                onClick={handleSendDm}
+                disabled={dmSending || !dmContent.trim()}
+                className="flex-1 py-2 rounded-lg bg-primary text-primary-foreground font-bold text-sm disabled:opacity-40 flex items-center justify-center gap-1 active:scale-95 transition-transform"
+              >
+                <Send className="w-3.5 h-3.5" />
+                {dmSending ? "SENDING..." : "SEND"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
