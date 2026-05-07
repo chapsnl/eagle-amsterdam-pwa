@@ -103,6 +103,45 @@ export type Database = {
           },
         ]
       }
+      direct_messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          read_at: string | null
+          recipient_deleted: boolean
+          recipient_id: string
+          recipient_nickname: string
+          sender_deleted: boolean
+          sender_id: string
+          sender_nickname: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          read_at?: string | null
+          recipient_deleted?: boolean
+          recipient_id: string
+          recipient_nickname?: string
+          sender_deleted?: boolean
+          sender_id: string
+          sender_nickname?: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          read_at?: string | null
+          recipient_deleted?: boolean
+          recipient_id?: string
+          recipient_nickname?: string
+          sender_deleted?: boolean
+          sender_id?: string
+          sender_nickname?: string
+        }
+        Relationships: []
+      }
       loyalty_stamps: {
         Row: {
           created_at: string
