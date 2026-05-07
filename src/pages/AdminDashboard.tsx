@@ -831,11 +831,75 @@ const AdminDashboard = () => {
           </button>
           {broadcastOpen && (
             <div className="bg-card rounded-b-xl px-4 pb-4 pt-2 space-y-3 border border-t-0 border-border -mt-2 rounded-t-none">
-              <p className="text-muted-foreground text-xs">Send a direct message to all {members.length} members at once.</p>
+              {/* Mode toggle */}
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  onClick={() => { setBroadcastMode("all"); setBroadcastTarget(null); }}
+                  className={`py-2 rounded-lg font-bold text-xs ${broadcastMode === "all" ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground"}`}
+                >
+                  ALL MEMBERS
+                </button>
+                <button
+                  onClick={() => setBroadcastMode("single")}
+                  className={`py-2 rounded-lg font-bold text-xs ${broadcastMode === "single" ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground"}`}
+                >
+                  SINGLE MEMBER
+                </button>
+              </div>
+
+              {broadcastMode === "single" && (
+                <div className="space-y-2">
+                  {broadcastTarget ? (
+                    <div className="flex items-center justify-between bg-secondary rounded-lg px-3 py-2">
+                      <div className="min-w-0">
+                        <p className="text-foreground text-sm font-bold truncate">{broadcastTarget.name || "Member"}</p>
+                        <p className="text-muted-foreground text-[10px] truncate">{broadcastTarget.email}</p>
+                      </div>
+                      <button onClick={() => setBroadcastTarget(null)} className="text-muted-foreground text-xs underline">Change</button>
+                    </div>
+                  ) : (
+                    <>
+                      <input
+                        type="text"
+                        value={broadcastSearch}
+                        onChange={(e) => setBroadcastSearch(e.target.value)}
+                        placeholder="Search member by name or email..."
+                        className="w-full bg-secondary text-foreground rounded-lg px-3 py-2 text-sm placeholder:text-muted-foreground outline-none border border-border"
+                      />
+                      {broadcastSearch.trim().length > 0 && (
+                        <div className="max-h-40 overflow-y-auto rounded-lg border border-border divide-y divide-border">
+                          {members
+                            .filter((m) => {
+                              const q = broadcastSearch.toLowerCase();
+                              return (m.name || "").toLowerCase().includes(q) || (m.email || "").toLowerCase().includes(q);
+                            })
+                            .slice(0, 20)
+                            .map((m) => (
+                              <button
+                                key={m.id}
+                                onClick={() => { setBroadcastTarget(m); setBroadcastSearch(""); }}
+                                className="w-full text-left bg-secondary/50 hover:bg-secondary px-3 py-2"
+                              >
+                                <p className="text-foreground text-sm font-bold truncate">{m.name || "Member"}</p>
+                                <p className="text-muted-foreground text-[10px] truncate">{m.email}</p>
+                              </button>
+                            ))}
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+              )}
+
+              <p className="text-muted-foreground text-xs">
+                {broadcastMode === "all"
+                  ? `Send a direct message to all ${members.length} members at once.`
+                  : "Send a private message to one selected member."}
+              </p>
               <textarea
                 value={broadcastText}
                 onChange={(e) => setBroadcastText(e.target.value.slice(0, 1000))}
-                placeholder="Write your broadcast message..."
+                placeholder="Write your message..."
                 rows={4}
                 className="w-full bg-secondary text-foreground rounded-lg px-3 py-2 text-sm placeholder:text-muted-foreground outline-none resize-none border border-border"
               />
@@ -845,22 +909,33 @@ const AdminDashboard = () => {
               </div>
               <button
                 onClick={handleBroadcast}
-                disabled={broadcasting || !broadcastText.trim() || members.length === 0}
+                disabled={
+                  broadcasting ||
+                  !broadcastText.trim() ||
+                  (broadcastMode === "all" ? members.length === 0 : !broadcastTarget)
+                }
                 className="w-full flex items-center justify-center gap-2 bg-primary text-primary-foreground rounded-lg py-2.5 font-bold text-sm disabled:opacity-40 transition-all"
               >
                 {broadcasting ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-                {broadcasting ? "SENDING..." : `SEND TO ALL (${members.length})`}
+                {broadcasting
+                  ? "SENDING..."
+                  : broadcastMode === "all"
+                    ? `SEND TO ALL (${members.length})`
+                    : `SEND TO ${broadcastTarget?.name?.toUpperCase() || "MEMBER"}`}
               </button>
 
               {sentBroadcasts.length > 0 && (
                 <div className="space-y-2 pt-2 border-t border-border">
-                  <p className="text-muted-foreground text-[10px] font-bold uppercase">Recent Broadcasts (recall to delete from all)</p>
+                  <p className="text-muted-foreground text-[10px] font-bold uppercase">Sent Messages (recall to delete from recipients)</p>
                   {sentBroadcasts.map((b) => (
                     <div key={b.id} className="bg-secondary rounded-lg p-2.5 space-y-1.5">
-                      <p className="text-foreground text-xs whitespace-pre-wrap line-clamp-3">{b.content}</p>
+                      <p className="text-foreground text-xs whitespace-pre-wrap break-words line-clamp-3">{b.content}</p>
                       <div className="flex items-center justify-between gap-2">
                         <span className="text-muted-foreground text-[10px]">
-                          {new Date(b.created_at).toLocaleString()} · {b.recipients} recipient{b.recipients !== 1 ? "s" : ""}
+                          {new Date(b.created_at).toLocaleString()} ·{" "}
+                          {b.recipients === 1 && b.recipient_nickname
+                            ? `to ${b.recipient_nickname}`
+                            : `${b.recipients} recipient${b.recipients !== 1 ? "s" : ""}`}
                         </span>
                         <button
                           onClick={() => handleRecall(b.id)}
