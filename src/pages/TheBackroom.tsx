@@ -1,8 +1,9 @@
 import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Plus, ChevronDown, ChevronUp, MessageSquare, Send, Mail } from "lucide-react";
+import { ArrowLeft, Plus, ChevronDown, ChevronUp, MessageSquare, Send, Mail, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
+import { toast } from "@/hooks/use-toast";
 
 interface Post {
   id: string;
