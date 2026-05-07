@@ -359,8 +359,9 @@ const AdminDashboard = () => {
     if (!adminUserId) return;
     const { data } = await supabase
       .from("direct_messages")
-      .select("id, content, created_at, recipient_id, recipient_nickname")
+      .select("id, content, created_at, recipient_id, recipient_nickname, sender_deleted")
       .eq("sender_id", adminUserId)
+      .eq("sender_deleted", false)
       .order("created_at", { ascending: false })
       .limit(500);
     // Group by content + minute as a "broadcast batch"
