@@ -39,6 +39,10 @@ const VipMessageCenter = () => {
   const { data, isLoading, refresh, isFetching } = useDirectMessages();
   const messages = data?.messages || [];
 
+  useEffect(() => {
+    markSeen("messages", data?.unread || 0);
+  }, [data?.unread]);
+
   // Handle ?to=USERID&nickname=... deep link from Backroom
   useEffect(() => {
     const to = params.get("to");
