@@ -60,7 +60,10 @@ const AdminDashboard = () => {
   const [broadcastOpen, setBroadcastOpen] = useState(false);
   const [broadcastText, setBroadcastText] = useState("");
   const [broadcasting, setBroadcasting] = useState(false);
-  const [sentBroadcasts, setSentBroadcasts] = useState<{ id: string; content: string; created_at: string; recipients: number }[]>([]);
+  const [broadcastMode, setBroadcastMode] = useState<"all" | "single">("all");
+  const [broadcastTarget, setBroadcastTarget] = useState<Member | null>(null);
+  const [broadcastSearch, setBroadcastSearch] = useState("");
+  const [sentBroadcasts, setSentBroadcasts] = useState<{ id: string; content: string; created_at: string; recipients: number; recipient_id?: string; recipient_nickname?: string }[]>([]);
   const [recalling, setRecalling] = useState<string | null>(null);
   const activityTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
