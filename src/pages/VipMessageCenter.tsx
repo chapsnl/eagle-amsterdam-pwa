@@ -58,8 +58,9 @@ const VipMessageCenter = () => {
   );
 
   const handleOpen = async (msg: DirectMessage) => {
-    setOpenMessage(msg);
-    if (msg.recipient_id === session?.userId && !msg.read_at) {
+    const isOpen = expandedId === msg.id;
+    setExpandedId(isOpen ? null : msg.id);
+    if (!isOpen && msg.recipient_id === session?.userId && !msg.read_at) {
       await supabase.functions.invoke("direct-messages", {
         body: { action: "mark_read", userId: session.userId, messageId: msg.id },
       });
@@ -73,7 +74,7 @@ const VipMessageCenter = () => {
     await supabase.functions.invoke("direct-messages", {
       body: { action: "delete", userId: session.userId, messageId: msg.id },
     });
-    setOpenMessage(null);
+    setExpandedId(null);
     refresh();
   };
 
