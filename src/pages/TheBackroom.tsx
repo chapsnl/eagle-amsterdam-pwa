@@ -149,6 +149,30 @@ const TheBackroom = () => {
     }
   };
 
+  const handleSendDm = async () => {
+    if (!dmTarget || !dmContent.trim() || !session) return;
+    setDmSending(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("direct-messages", {
+        body: {
+          action: "send",
+          userId: session.userId,
+          recipientId: dmTarget.userId,
+          recipientNickname: dmTarget.nickname,
+          content: dmContent.trim().slice(0, 1000),
+        },
+      });
+      if (error || !data?.success) throw new Error(error?.message || data?.error || "Failed");
+      toast({ title: "Message sent" });
+      setDmContent("");
+      setDmTarget(null);
+    } catch (e: any) {
+      toast({ title: "Failed to send", description: e.message, variant: "destructive" });
+    } finally {
+      setDmSending(false);
+    }
+  };
+
   if (!session) return null;
 
   return (
