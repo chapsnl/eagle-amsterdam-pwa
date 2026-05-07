@@ -311,9 +311,10 @@ const TheBackroom = () => {
                                 </p>
                                 {reply.user_id !== session.userId && (
                                   <button
-                                    onClick={() =>
-                                      navigate(`/vip/messages?to=${reply.user_id}&nickname=${encodeURIComponent(reply.nickname)}`)
-                                    }
+                                    onClick={() => {
+                                      setDmTarget({ userId: reply.user_id, nickname: reply.nickname });
+                                      setDmContent("");
+                                    }}
                                     className="inline-flex items-center gap-1 text-primary text-xs font-bold active:scale-95 transition-transform shrink-0"
                                   >
                                     <Mail className="w-3 h-3" /> DM
