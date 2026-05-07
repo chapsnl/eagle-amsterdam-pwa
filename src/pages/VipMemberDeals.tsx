@@ -40,6 +40,11 @@ const VipMemberDeals = () => {
   const { data: vouchersData, isLoading, invalidate: invalidateVouchers } = useMemberVouchers();
   const vouchers: Voucher[] = vouchersData || [];
   const loading = isLoading && vouchers.length === 0;
+  const activeCount = vouchers.filter((v) => !v.redeemed).length;
+
+  useEffect(() => {
+    markSeen("vouchers", activeCount);
+  }, [activeCount]);
 
   const handleRedeem = async (voucher: Voucher) => {
     if (!userId) return;
