@@ -246,8 +246,8 @@ const VipMessageCenter = () => {
 
       {/* Compose overlay */}
       {composing && (
-        <div className="fixed inset-0 bg-background/95 z-40 flex items-end sm:items-center justify-center p-4">
-          <div className="bg-card border border-border rounded-xl w-full max-w-lg p-4 space-y-3">
+        <div className="fixed inset-0 bg-background/95 z-40 flex items-start justify-center p-4 pt-6 overflow-y-auto">
+          <div className="bg-card border border-border rounded-xl w-full max-w-lg p-3 space-y-2 max-h-[calc(100dvh-3rem)] overflow-y-auto">
             <div className="flex items-center justify-between">
               <p className="text-foreground font-bold text-sm">NEW MESSAGE</p>
               <button
