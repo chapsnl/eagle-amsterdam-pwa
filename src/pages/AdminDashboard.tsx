@@ -352,6 +352,68 @@ const AdminDashboard = () => {
     showSuccess("Members exported to CSV");
   };
 
+  const loadSentBroadcasts = useCallback(async () => {
+    if (!adminUserId) return;
+    const { data } = await supabase
+      .from("direct_messages")
+      .select("id, content, created_at, recipient_id")
+      .eq("sender_id", adminUserId)
+      .order("created_at", { ascending: false })
+      .limit(500);
+    // Group by content + minute as a "broadcast batch"
+    const groups = new Map<string, { id: string; content: string; created_at: string; recipients: number }>();
+    (data || []).forEach((m) => {
+      const minute = new Date(m.created_at).toISOString().slice(0, 16);
+      const key = `${minute}::${m.content}`;
+      const existing = groups.get(key);
+      if (existing) {
+        existing.recipients += 1;
+      } else {
+        groups.set(key, { id: m.id, content: m.content, created_at: m.created_at, recipients: 1 });
+      }
+    });
+    setSentBroadcasts(Array.from(groups.values()).filter((g) => g.recipients > 1).slice(0, 20));
+  }, [adminUserId]);
+
+  const handleBroadcast = async () => {
+    if (!adminUserId || !broadcastText.trim()) return;
+    if (!confirm(`Send this message to all ${members.length} members?`)) return;
+    setBroadcasting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("direct-messages", {
+        body: { action: "broadcast", userId: adminUserId, content: broadcastText.trim().slice(0, 1000) },
+      });
+      if (!error && data?.success) {
+        showSuccess(`Broadcast sent to ${data.count} members.`);
+        setBroadcastText("");
+        loadSentBroadcasts();
+      } else {
+        setWarning({ open: true, title: "Error", message: data?.error || "Broadcast failed." });
+      }
+    } finally {
+      setBroadcasting(false);
+    }
+  };
+
+  const handleRecall = async (msgId: string) => {
+    if (!adminUserId) return;
+    if (!confirm("Recall this broadcast? It will be deleted from all recipients.")) return;
+    setRecalling(msgId);
+    try {
+      const { data, error } = await supabase.functions.invoke("direct-messages", {
+        body: { action: "admin_recall", userId: adminUserId, messageId: msgId, recallAll: true },
+      });
+      if (!error && data?.success) {
+        showSuccess("Broadcast recalled.");
+        setSentBroadcasts((prev) => prev.filter((b) => b.id !== msgId));
+      } else {
+        setWarning({ open: true, title: "Error", message: data?.error || "Recall failed." });
+      }
+    } finally {
+      setRecalling(null);
+    }
+  };
+
   if (!adminUserId) return null;
 
   const renderMemberRow = (member: Member) => {
