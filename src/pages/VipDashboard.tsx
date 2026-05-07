@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Crown, Star, Tag, Info, IdCard, DoorOpen } from "lucide-react";
+import { Crown, Star, Tag, Info, IdCard, DoorOpen, Mail } from "lucide-react";
 import { calculateVipStatus, trackAppOpen, type VipStatusLevel } from "@/lib/vipStatus";
 import { useProfile } from "@/hooks/useProfile";
 import { useMemberVouchers } from "@/hooks/useMemberVouchers";
+import { useDirectMessages } from "@/hooks/useDirectMessages";
 
 interface VipSession {
   userId: string;
@@ -34,6 +35,8 @@ const VipDashboard = () => {
   // Shared cached fetches — dedupe across pages, no extra round trips
   const { data: profile } = useProfile();
   const { data: vouchers } = useMemberVouchers();
+  const { data: messagesData } = useDirectMessages();
+  const unreadMessages = messagesData?.unread || 0;
 
   const vipStatus: VipStatusLevel = profile
     ? calculateVipStatus(profile.total_stamps_earned || 0)
@@ -79,6 +82,15 @@ const VipDashboard = () => {
       onClick: () => navigate("/vip/backroom"),
       disabled: false,
       isDeal: false,
+      badge: 0,
+    },
+    {
+      label: "MESSAGE CENTER",
+      icon: Mail,
+      onClick: () => navigate("/vip/messages"),
+      disabled: false,
+      isDeal: false,
+      badge: unreadMessages,
     },
   ];
 
