@@ -463,6 +463,8 @@ const AdminDashboard = () => {
     }
   };
 
+  if (!adminUserId) return null;
+
   const renderMemberRow = (member: Member) => {
     const isExpanded = expandedMember === member.id;
     const online = isOnline(member.last_active_at);
