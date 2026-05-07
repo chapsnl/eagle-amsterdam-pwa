@@ -112,17 +112,22 @@ const VipDashboard = () => {
 
         {/* 4-button grid */}
         <div className="grid grid-cols-2 gap-4">
-          {menuItems.map(({ label, icon: Icon, onClick, disabled }) => (
+          {menuItems.map(({ label, icon: Icon, onClick, disabled, badge }) => (
             <button
               key={label}
               onClick={disabled ? undefined : onClick}
               disabled={disabled}
-              className={`py-5 flex flex-col items-center justify-center gap-2 rounded-xl border-0 transition-all duration-200 ${
+              className={`relative py-5 flex flex-col items-center justify-center gap-2 rounded-xl border-0 transition-all duration-200 ${
                 disabled
                   ? "bg-primary/30 text-primary-foreground/40 cursor-not-allowed"
                   : "bg-primary text-primary-foreground active:scale-95 hover:opacity-90"
               }`}
             >
+              {badge && badge > 0 ? (
+                <span className="absolute top-2 right-2 bg-primary-foreground text-primary text-[11px] font-bold rounded-full min-w-[20px] h-5 px-1.5 flex items-center justify-center">
+                  {badge}
+                </span>
+              ) : null}
               <Icon className="w-10 h-10" />
               <span className="text-sm font-bold tracking-wide">{label}</span>
             </button>
