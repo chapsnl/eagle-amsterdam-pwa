@@ -255,6 +255,48 @@ const AdminDashboard = () => {
     }
   };
 
+  const handleRevokeVoucher = async (targetUserId: string, preset: typeof VOUCHER_PRESETS[0]) => {
+    if (!adminUserId) return;
+    const key = `${targetUserId}-${preset.title}`;
+    setSendingVoucher(key);
+    try {
+      const { data, error } = await supabase.functions.invoke("admin-revoke-voucher", {
+        body: { adminUserId, targetUserId, voucherTitle: preset.title },
+      });
+      if (!error && data?.success) {
+        showSuccess(`${preset.title} revoked.`);
+        setMembers((prev) =>
+          prev.map((m) =>
+            m.id === targetUserId
+              ? {
+                  ...m,
+                  active_vouchers: Math.max(0, m.active_vouchers - 1),
+                  active_voucher_titles: m.active_voucher_titles.filter((t) => t !== preset.title),
+                }
+              : m
+          )
+        );
+        if (scannedMember?.id === targetUserId) {
+          setScannedMember((prev) =>
+            prev
+              ? {
+                  ...prev,
+                  active_vouchers: Math.max(0, prev.active_vouchers - 1),
+                  active_voucher_titles: prev.active_voucher_titles.filter((t) => t !== preset.title),
+                }
+              : prev
+          );
+        }
+      } else {
+        setWarning({ open: true, title: "Error", message: data?.error || "Failed to revoke voucher." });
+      }
+    } catch {
+      setWarning({ open: true, title: "Error", message: "Failed to revoke voucher." });
+    } finally {
+      setSendingVoucher(null);
+    }
+  };
+
   const showSuccess = (msg: string) => {
     setSuccessMsg(msg);
     setTimeout(() => setSuccessMsg(null), 3000);
