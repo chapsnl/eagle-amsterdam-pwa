@@ -824,19 +824,6 @@ const AdminDashboard = () => {
           )}
         </section>
 
-        {/* ═══ RECENT ACTIVITY ═══ */}
-        {!loading && recentMembers.length > 0 && (
-          <section className="space-y-4">
-            <h2 className="text-foreground font-bold text-lg flex items-center gap-2">
-              <Users className="w-5 h-5 text-primary" />
-              Recent Activity
-            </h2>
-            <div className="space-y-2">
-              {recentMembers.map(renderMemberRow)}
-            </div>
-          </section>
-        )}
-
         {/* ═══ BROADCAST MESSAGE ═══ */}
         <section className="space-y-0">
           <button
@@ -947,7 +934,7 @@ const AdminDashboard = () => {
               {sentBroadcasts.length > 0 && (
                 <div className="space-y-2 pt-2 border-t border-border">
                   <p className="text-muted-foreground text-[10px] font-bold uppercase">
-                    Sent Messages — Recall removes from recipients · Delete only hides from this list
+                    Sent Messages — Delete also removes the message from the recipient's Message Center
                   </p>
                   {sentBroadcasts.map((b) => (
                     <div key={b.id} className="bg-secondary rounded-lg p-2.5 space-y-2">
@@ -958,24 +945,14 @@ const AdminDashboard = () => {
                           ? `to ${b.recipient_nickname}`
                           : `${b.recipients} recipient${b.recipients !== 1 ? "s" : ""}`}
                       </span>
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => handleRecall(b.id)}
-                          disabled={recalling === b.id}
-                          className="flex-1 flex items-center justify-center gap-1 bg-destructive/20 text-destructive border border-destructive/30 rounded-md px-2 py-1.5 text-[10px] font-bold disabled:opacity-40"
-                        >
-                          {recalling === b.id ? <RefreshCw className="w-3 h-3 animate-spin" /> : <Undo2 className="w-3 h-3" />}
-                          RECALL
-                        </button>
-                        <button
-                          onClick={() => handleHide(b.id)}
-                          disabled={recalling === b.id}
-                          className="flex-1 flex items-center justify-center gap-1 bg-secondary text-muted-foreground border border-border rounded-md px-2 py-1.5 text-[10px] font-bold disabled:opacity-40"
-                        >
-                          <Trash2 className="w-3 h-3" />
-                          DELETE
-                        </button>
-                      </div>
+                      <button
+                        onClick={() => handleRecall(b.id)}
+                        disabled={recalling === b.id}
+                        className="w-full flex items-center justify-center gap-1 bg-destructive/20 text-destructive border border-destructive/30 rounded-md px-2 py-1.5 text-[10px] font-bold disabled:opacity-40"
+                      >
+                        {recalling === b.id ? <RefreshCw className="w-3 h-3 animate-spin" /> : <Trash2 className="w-3 h-3" />}
+                        DELETE & RECALL
+                      </button>
                     </div>
                   ))}
                 </div>
@@ -1058,6 +1035,19 @@ const AdminDashboard = () => {
             </div>
           )}
         </section>
+
+        {/* ═══ RECENT ACTIVITY ═══ */}
+        {!loading && recentMembers.length > 0 && (
+          <section className="space-y-4">
+            <h2 className="text-foreground font-bold text-lg flex items-center gap-2">
+              <Users className="w-5 h-5 text-primary" />
+              Recent Activity
+            </h2>
+            <div className="space-y-2">
+              {recentMembers.map(renderMemberRow)}
+            </div>
+          </section>
+        )}
 
       </div>
 
