@@ -565,22 +565,27 @@ const AdminDashboard = () => {
                 return (
                   <button
                     key={preset.title}
-                    onClick={() => handleDispatchVoucher(member.id, preset)}
-                    disabled={isSending || hasUnredeemed}
+                    onClick={() => hasUnredeemed ? handleRevokeVoucher(member.id, preset) : handleDispatchVoucher(member.id, preset)}
+                    disabled={isSending}
                     className={`flex items-center justify-between rounded-lg px-3 py-2.5 text-sm font-semibold transition-all disabled:opacity-60 ${
                       hasUnredeemed
-                        ? "bg-destructive/20 text-destructive border border-destructive/30 cursor-not-allowed"
+                        ? "bg-destructive/20 text-destructive border border-destructive/30 hover:bg-destructive/30"
                         : "bg-secondary hover:bg-secondary/80 text-foreground"
                     }`}
                   >
                     <span className="flex items-center gap-2">
                       <preset.icon className="w-4 h-4" />
-                      {preset.label}{hasUnredeemed ? " (active)" : ""}
+                      {preset.label}
+                      <span className={`text-[10px] font-bold uppercase px-1.5 py-0.5 rounded ${hasUnredeemed ? "bg-destructive/30" : "bg-primary/20 text-primary"}`}>
+                        {hasUnredeemed ? "ON" : "OFF"}
+                      </span>
                     </span>
                     {isSending ? (
                       <RefreshCw className="w-3.5 h-3.5 animate-spin text-primary" />
+                    ) : hasUnredeemed ? (
+                      <Trash2 className="w-3.5 h-3.5 text-destructive" />
                     ) : (
-                      <Send className={`w-3.5 h-3.5 ${hasUnredeemed ? "text-destructive" : "text-primary"}`} />
+                      <Send className="w-3.5 h-3.5 text-primary" />
                     )}
                   </button>
                 );
