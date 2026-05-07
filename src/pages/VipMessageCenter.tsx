@@ -237,13 +237,16 @@ const VipMessageCenter = () => {
                         {msg.recipient_id === session.userId && (
                           <button
                             onClick={() => {
-                              setComposeTo({ id: msg.sender_id, nickname: msg.sender_nickname });
-                              setExpandedId(null);
-                              setComposing(true);
+                              if (replyTo?.id === msg.sender_id) {
+                                setReplyTo(null);
+                              } else {
+                                setReplyTo({ id: msg.sender_id, nickname: msg.sender_nickname });
+                                setReplyText("");
+                              }
                             }}
                             className="flex-1 py-2 rounded-lg bg-primary text-primary-foreground font-bold text-xs flex items-center justify-center gap-1"
                           >
-                            <SendIcon className="w-3.5 h-3.5" /> REPLY
+                            <SendIcon className="w-3.5 h-3.5" /> {replyTo?.id === msg.sender_id ? "CANCEL" : "REPLY"}
                           </button>
                         )}
                         <button
@@ -253,6 +256,27 @@ const VipMessageCenter = () => {
                           <Trash2 className="w-3.5 h-3.5" /> DELETE
                         </button>
                       </div>
+                      {msg.recipient_id === session.userId && replyTo?.id === msg.sender_id && (
+                        <div className="space-y-2 pt-1">
+                          <textarea
+                            placeholder={`Reply to ${msg.sender_nickname}...`}
+                            value={replyText}
+                            onChange={(e) => setReplyText(e.target.value.slice(0, 1000))}
+                            rows={3}
+                            className="w-full bg-secondary text-foreground rounded-lg px-3 py-2 text-base placeholder:text-muted-foreground outline-none resize-none border border-border"
+                          />
+                          <div className="flex items-center justify-between gap-2">
+                            <p className="text-muted-foreground text-[11px]">{replyText.length}/1000</p>
+                            <button
+                              onClick={() => handleReplySend(msg.sender_id, msg.sender_nickname)}
+                              disabled={replying || !replyText.trim()}
+                              className="px-4 py-2 rounded-lg bg-primary text-primary-foreground font-bold text-xs disabled:opacity-40 active:scale-95 transition-transform flex items-center gap-1"
+                            >
+                              <SendIcon className="w-3.5 h-3.5" /> {replying ? "SENDING..." : "SEND"}
+                            </button>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
