@@ -788,6 +788,68 @@ const AdminDashboard = () => {
           </section>
         )}
 
+        {/* ═══ BROADCAST MESSAGE ═══ */}
+        <section className="space-y-0">
+          <button
+            onClick={() => { setBroadcastOpen(!broadcastOpen); if (!broadcastOpen) loadSentBroadcasts(); }}
+            className="w-full flex items-center justify-between bg-card border border-border rounded-xl px-4 py-3"
+          >
+            <h2 className="text-foreground font-bold text-lg flex items-center gap-2">
+              <Megaphone className="w-5 h-5 text-primary" />
+              Broadcast Message
+            </h2>
+            {broadcastOpen ? <ChevronUp className="w-5 h-5 text-muted-foreground" /> : <ChevronDown className="w-5 h-5 text-muted-foreground" />}
+          </button>
+          {broadcastOpen && (
+            <div className="bg-card rounded-b-xl px-4 pb-4 pt-2 space-y-3 border border-t-0 border-border -mt-2 rounded-t-none">
+              <p className="text-muted-foreground text-xs">Send a direct message to all {members.length} members at once.</p>
+              <textarea
+                value={broadcastText}
+                onChange={(e) => setBroadcastText(e.target.value.slice(0, 1000))}
+                placeholder="Write your broadcast message..."
+                rows={4}
+                className="w-full bg-secondary text-foreground rounded-lg px-3 py-2 text-sm placeholder:text-muted-foreground outline-none resize-none border border-border"
+              />
+              <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+                <span>Members will receive it in their Message Center.</span>
+                <span>{broadcastText.length}/1000</span>
+              </div>
+              <button
+                onClick={handleBroadcast}
+                disabled={broadcasting || !broadcastText.trim() || members.length === 0}
+                className="w-full flex items-center justify-center gap-2 bg-primary text-primary-foreground rounded-lg py-2.5 font-bold text-sm disabled:opacity-40 transition-all"
+              >
+                {broadcasting ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                {broadcasting ? "SENDING..." : `SEND TO ALL (${members.length})`}
+              </button>
+
+              {sentBroadcasts.length > 0 && (
+                <div className="space-y-2 pt-2 border-t border-border">
+                  <p className="text-muted-foreground text-[10px] font-bold uppercase">Recent Broadcasts (recall to delete from all)</p>
+                  {sentBroadcasts.map((b) => (
+                    <div key={b.id} className="bg-secondary rounded-lg p-2.5 space-y-1.5">
+                      <p className="text-foreground text-xs whitespace-pre-wrap line-clamp-3">{b.content}</p>
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-muted-foreground text-[10px]">
+                          {new Date(b.created_at).toLocaleString()} · {b.recipients} recipient{b.recipients !== 1 ? "s" : ""}
+                        </span>
+                        <button
+                          onClick={() => handleRecall(b.id)}
+                          disabled={recalling === b.id}
+                          className="flex items-center gap-1 bg-destructive/20 text-destructive border border-destructive/30 rounded-md px-2 py-1 text-[10px] font-bold disabled:opacity-40"
+                        >
+                          {recalling === b.id ? <RefreshCw className="w-3 h-3 animate-spin" /> : <Undo2 className="w-3 h-3" />}
+                          RECALL
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </section>
+
         {/* ═══ BACKROOM MODERATION ═══ */}
         <section className="space-y-4">
           <button
