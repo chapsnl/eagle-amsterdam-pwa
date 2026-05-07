@@ -276,7 +276,7 @@ const VipMessageCenter = () => {
                   placeholder="Write your message..."
                   value={composeText}
                   onChange={(e) => setComposeText(e.target.value.slice(0, 1000))}
-                  rows={5}
+                  rows={4}
                   className="w-full bg-secondary text-foreground rounded-lg px-3 py-2 text-base placeholder:text-muted-foreground outline-none resize-none"
                 />
                 <p className="text-right text-muted-foreground text-[11px]">{composeText.length}/1000</p>
