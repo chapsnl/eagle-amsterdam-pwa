@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Plus, ChevronDown, ChevronUp, MessageSquare, Send } from "lucide-react";
+import { ArrowLeft, Plus, ChevronDown, ChevronUp, MessageSquare, Send, Mail } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 
@@ -258,6 +258,16 @@ const TheBackroom = () => {
                       {/* Original post */}
                       <div className="bg-secondary rounded-lg p-3">
                         <p className="text-foreground text-sm whitespace-pre-wrap">{post.content}</p>
+                        {post.user_id !== session.userId && (
+                          <button
+                            onClick={() =>
+                              navigate(`/vip/messages?to=${post.user_id}&nickname=${encodeURIComponent(post.nickname)}`)
+                            }
+                            className="mt-2 inline-flex items-center gap-1 text-primary text-xs font-bold active:scale-95 transition-transform"
+                          >
+                            <Mail className="w-3.5 h-3.5" /> DM
+                          </button>
+                        )}
                       </div>
 
                       {/* Replies */}
@@ -266,9 +276,21 @@ const TheBackroom = () => {
                           {replies.map((reply) => (
                             <div key={reply.id} className="bg-secondary/50 rounded-lg p-3">
                               <p className="text-foreground text-sm whitespace-pre-wrap">{reply.content}</p>
-                              <p className="text-muted-foreground text-xs mt-2">
-                                {reply.nickname} · {format(new Date(reply.created_at), "dd MMM yyyy, HH:mm")}
-                              </p>
+                              <div className="flex items-center justify-between mt-2 gap-2">
+                                <p className="text-muted-foreground text-xs">
+                                  {reply.nickname} · {format(new Date(reply.created_at), "dd MMM yyyy, HH:mm")}
+                                </p>
+                                {reply.user_id !== session.userId && (
+                                  <button
+                                    onClick={() =>
+                                      navigate(`/vip/messages?to=${reply.user_id}&nickname=${encodeURIComponent(reply.nickname)}`)
+                                    }
+                                    className="inline-flex items-center gap-1 text-primary text-xs font-bold active:scale-95 transition-transform shrink-0"
+                                  >
+                                    <Mail className="w-3 h-3" /> DM
+                                  </button>
+                                )}
+                              </div>
                             </div>
                           ))}
                         </div>
