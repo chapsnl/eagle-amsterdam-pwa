@@ -16,7 +16,7 @@ const VipMessageCenter = () => {
   const [params, setParams] = useSearchParams();
   const [session, setSession] = useState<VipSession | null>(null);
   const [tab, setTab] = useState<"inbox" | "sent">("inbox");
-  const [openMessage, setOpenMessage] = useState<DirectMessage | null>(null);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
   const [composing, setComposing] = useState(false);
   const [composeTo, setComposeTo] = useState<{ id: string; nickname: string } | null>(null);
   const [composeText, setComposeText] = useState("");
