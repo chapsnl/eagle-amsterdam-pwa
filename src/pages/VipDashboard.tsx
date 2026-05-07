@@ -61,6 +61,7 @@ const VipDashboard = () => {
       onClick: hasActiveVouchers ? () => navigate("/vip/member-deals") : undefined,
       disabled: memberDealsDisabled,
       isDeal: true,
+      badge: (vouchers || []).filter((v) => !v.redeemed).length,
     },
     {
       label: "INFO",

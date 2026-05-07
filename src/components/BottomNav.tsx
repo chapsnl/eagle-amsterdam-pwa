@@ -2,13 +2,17 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { Home, Calendar, Newspaper, Ticket, Crown, Mail } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useDirectMessages } from "@/hooks/useDirectMessages";
+import { useMemberVouchers } from "@/hooks/useMemberVouchers";
 
 const BottomNav = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { data: dm } = useDirectMessages();
+  const { data: vouchers } = useMemberVouchers();
   const unread = dm?.unread || 0;
+  const activeVouchers = (vouchers || []).filter((v) => !v.redeemed).length;
+  const vipBadge = unread + activeVouchers;
 
   // Hide bottom nav on admin subdomain
   if (window.location.hostname === "admin.eagleamsterdam.com") return null;
@@ -16,7 +20,7 @@ const BottomNav = () => {
   const navItems = [
     { path: "/", label: t("nav.home"), icon: Home, badge: 0 },
     { path: "/agenda", label: t("nav.agenda"), icon: Calendar, badge: 0 },
-    { path: "/vip", label: t("nav.vip"), icon: Crown, badge: unread },
+    { path: "/vip", label: t("nav.vip"), icon: Crown, badge: vipBadge },
     { path: "/events", label: t("nav.tickets"), icon: Ticket, badge: 0 },
     { path: "/news", label: t("nav.news"), icon: Newspaper, badge: 0 },
     { path: "/contact", label: t("nav.contact"), icon: Mail, badge: 0 },
