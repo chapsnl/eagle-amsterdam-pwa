@@ -87,6 +87,38 @@ Deno.serve(async (req) => {
       return json({ success: true });
     }
 
+    if (action === "admin_hide") {
+      if (!isAdmin) return json({ error: "Forbidden" }, 403);
+      const { messageId, hideAll } = body;
+      if (!messageId) return json({ error: "messageId required" }, 400);
+      if (hideAll) {
+        const { data: src } = await admin
+          .from("direct_messages")
+          .select("sender_id, content, created_at")
+          .eq("id", messageId)
+          .maybeSingle();
+        if (!src) return json({ error: "Not found" }, 404);
+        const t = new Date(src.created_at).getTime();
+        const from = new Date(t - 60_000).toISOString();
+        const to = new Date(t + 60_000).toISOString();
+        const { error } = await admin
+          .from("direct_messages")
+          .update({ sender_deleted: true })
+          .eq("sender_id", src.sender_id)
+          .eq("content", src.content)
+          .gte("created_at", from)
+          .lte("created_at", to);
+        if (error) return json({ error: error.message }, 500);
+        return json({ success: true });
+      }
+      const { error } = await admin
+        .from("direct_messages")
+        .update({ sender_deleted: true })
+        .eq("id", messageId);
+      if (error) return json({ error: error.message }, 500);
+      return json({ success: true });
+    }
+
     if (action === "list") {
       const { data, error } = await admin
         .from("direct_messages")
