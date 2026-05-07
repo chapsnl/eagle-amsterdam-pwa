@@ -21,6 +21,9 @@ const VipMessageCenter = () => {
   const [composeTo, setComposeTo] = useState<{ id: string; nickname: string } | null>(null);
   const [composeText, setComposeText] = useState("");
   const [sending, setSending] = useState(false);
+  const [replyTo, setReplyTo] = useState<{ id: string; nickname: string } | null>(null);
+  const [replyText, setReplyText] = useState("");
+  const [replying, setReplying] = useState(false);
 
   useEffect(() => {
     const stored = localStorage.getItem("vip_session");
