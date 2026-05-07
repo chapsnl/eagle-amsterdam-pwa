@@ -1,8 +1,10 @@
+import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Home, Calendar, Newspaper, Ticket, Crown, Mail } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useDirectMessages } from "@/hooks/useDirectMessages";
 import { useMemberVouchers } from "@/hooks/useMemberVouchers";
+import { getSeen, subscribeSeen } from "@/lib/badgeSeen";
 
 const BottomNav = () => {
   const location = useLocation();
@@ -12,7 +14,13 @@ const BottomNav = () => {
   const { data: vouchers } = useMemberVouchers();
   const unread = dm?.unread || 0;
   const activeVouchers = (vouchers || []).filter((v) => !v.redeemed).length;
-  const vipBadge = unread + activeVouchers;
+
+  const [, setTick] = useState(0);
+  useEffect(() => subscribeSeen(() => setTick((n) => n + 1)), []);
+
+  const msgBadge = Math.max(0, unread - getSeen("messages"));
+  const voucherBadge = Math.max(0, activeVouchers - getSeen("vouchers"));
+  const vipBadge = msgBadge + voucherBadge;
 
   // Hide bottom nav on admin subdomain
   if (window.location.hostname === "admin.eagleamsterdam.com") return null;
