@@ -20,7 +20,7 @@ const BottomNav = () => {
   const navItems = [
     { path: "/", label: t("nav.home"), icon: Home, badge: 0 },
     { path: "/agenda", label: t("nav.agenda"), icon: Calendar, badge: 0 },
-    { path: "/vip", label: t("nav.vip"), icon: Crown, badge: unread },
+    { path: "/vip", label: t("nav.vip"), icon: Crown, badge: vipBadge },
     { path: "/events", label: t("nav.tickets"), icon: Ticket, badge: 0 },
     { path: "/news", label: t("nav.news"), icon: Newspaper, badge: 0 },
     { path: "/contact", label: t("nav.contact"), icon: Mail, badge: 0 },
