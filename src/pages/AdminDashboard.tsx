@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Crown, Users, QrCode, Gift, RefreshCw, Check, Send, ChevronDown, ChevronUp, LogOut, ScanLine, Search, Shirt, Ticket, Beer, MessageSquare, Trash2, UserCheck, Download, TrendingUp } from "lucide-react";
+import { Crown, Users, QrCode, Gift, RefreshCw, Check, Send, ChevronDown, ChevronUp, LogOut, ScanLine, Search, Shirt, Ticket, Beer, MessageSquare, Trash2, UserCheck, Download, TrendingUp, Megaphone, Undo2 } from "lucide-react";
 import MemberScannerSection from "@/components/admin/MemberScannerSection";
 import InviteUserSection from "@/components/admin/InviteUserSection";
 import { supabase } from "@/integrations/supabase/client";
@@ -57,6 +57,11 @@ const AdminDashboard = () => {
   const [moderationOpen, setModerationOpen] = useState(false);
   const [statsOpen, setStatsOpen] = useState(false);
   const [allMembersOpen, setAllMembersOpen] = useState(false);
+  const [broadcastOpen, setBroadcastOpen] = useState(false);
+  const [broadcastText, setBroadcastText] = useState("");
+  const [broadcasting, setBroadcasting] = useState(false);
+  const [sentBroadcasts, setSentBroadcasts] = useState<{ id: string; content: string; created_at: string; recipients: number }[]>([]);
+  const [recalling, setRecalling] = useState<string | null>(null);
   const activityTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const logout = useCallback(() => {
@@ -345,6 +350,68 @@ const AdminDashboard = () => {
     a.click();
     URL.revokeObjectURL(url);
     showSuccess("Members exported to CSV");
+  };
+
+  const loadSentBroadcasts = useCallback(async () => {
+    if (!adminUserId) return;
+    const { data } = await supabase
+      .from("direct_messages")
+      .select("id, content, created_at, recipient_id")
+      .eq("sender_id", adminUserId)
+      .order("created_at", { ascending: false })
+      .limit(500);
+    // Group by content + minute as a "broadcast batch"
+    const groups = new Map<string, { id: string; content: string; created_at: string; recipients: number }>();
+    (data || []).forEach((m) => {
+      const minute = new Date(m.created_at).toISOString().slice(0, 16);
+      const key = `${minute}::${m.content}`;
+      const existing = groups.get(key);
+      if (existing) {
+        existing.recipients += 1;
+      } else {
+        groups.set(key, { id: m.id, content: m.content, created_at: m.created_at, recipients: 1 });
+      }
+    });
+    setSentBroadcasts(Array.from(groups.values()).filter((g) => g.recipients > 1).slice(0, 20));
+  }, [adminUserId]);
+
+  const handleBroadcast = async () => {
+    if (!adminUserId || !broadcastText.trim()) return;
+    if (!confirm(`Send this message to all ${members.length} members?`)) return;
+    setBroadcasting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("direct-messages", {
+        body: { action: "broadcast", userId: adminUserId, content: broadcastText.trim().slice(0, 1000) },
+      });
+      if (!error && data?.success) {
+        showSuccess(`Broadcast sent to ${data.count} members.`);
+        setBroadcastText("");
+        loadSentBroadcasts();
+      } else {
+        setWarning({ open: true, title: "Error", message: data?.error || "Broadcast failed." });
+      }
+    } finally {
+      setBroadcasting(false);
+    }
+  };
+
+  const handleRecall = async (msgId: string) => {
+    if (!adminUserId) return;
+    if (!confirm("Recall this broadcast? It will be deleted from all recipients.")) return;
+    setRecalling(msgId);
+    try {
+      const { data, error } = await supabase.functions.invoke("direct-messages", {
+        body: { action: "admin_recall", userId: adminUserId, messageId: msgId, recallAll: true },
+      });
+      if (!error && data?.success) {
+        showSuccess("Broadcast recalled.");
+        setSentBroadcasts((prev) => prev.filter((b) => b.id !== msgId));
+      } else {
+        setWarning({ open: true, title: "Error", message: data?.error || "Recall failed." });
+      }
+    } finally {
+      setRecalling(null);
+    }
   };
 
   if (!adminUserId) return null;
@@ -720,6 +787,68 @@ const AdminDashboard = () => {
             </div>
           </section>
         )}
+
+        {/* ═══ BROADCAST MESSAGE ═══ */}
+        <section className="space-y-0">
+          <button
+            onClick={() => { setBroadcastOpen(!broadcastOpen); if (!broadcastOpen) loadSentBroadcasts(); }}
+            className="w-full flex items-center justify-between bg-card border border-border rounded-xl px-4 py-3"
+          >
+            <h2 className="text-foreground font-bold text-lg flex items-center gap-2">
+              <Megaphone className="w-5 h-5 text-primary" />
+              Broadcast Message
+            </h2>
+            {broadcastOpen ? <ChevronUp className="w-5 h-5 text-muted-foreground" /> : <ChevronDown className="w-5 h-5 text-muted-foreground" />}
+          </button>
+          {broadcastOpen && (
+            <div className="bg-card rounded-b-xl px-4 pb-4 pt-2 space-y-3 border border-t-0 border-border -mt-2 rounded-t-none">
+              <p className="text-muted-foreground text-xs">Send a direct message to all {members.length} members at once.</p>
+              <textarea
+                value={broadcastText}
+                onChange={(e) => setBroadcastText(e.target.value.slice(0, 1000))}
+                placeholder="Write your broadcast message..."
+                rows={4}
+                className="w-full bg-secondary text-foreground rounded-lg px-3 py-2 text-sm placeholder:text-muted-foreground outline-none resize-none border border-border"
+              />
+              <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+                <span>Members will receive it in their Message Center.</span>
+                <span>{broadcastText.length}/1000</span>
+              </div>
+              <button
+                onClick={handleBroadcast}
+                disabled={broadcasting || !broadcastText.trim() || members.length === 0}
+                className="w-full flex items-center justify-center gap-2 bg-primary text-primary-foreground rounded-lg py-2.5 font-bold text-sm disabled:opacity-40 transition-all"
+              >
+                {broadcasting ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                {broadcasting ? "SENDING..." : `SEND TO ALL (${members.length})`}
+              </button>
+
+              {sentBroadcasts.length > 0 && (
+                <div className="space-y-2 pt-2 border-t border-border">
+                  <p className="text-muted-foreground text-[10px] font-bold uppercase">Recent Broadcasts (recall to delete from all)</p>
+                  {sentBroadcasts.map((b) => (
+                    <div key={b.id} className="bg-secondary rounded-lg p-2.5 space-y-1.5">
+                      <p className="text-foreground text-xs whitespace-pre-wrap line-clamp-3">{b.content}</p>
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-muted-foreground text-[10px]">
+                          {new Date(b.created_at).toLocaleString()} · {b.recipients} recipient{b.recipients !== 1 ? "s" : ""}
+                        </span>
+                        <button
+                          onClick={() => handleRecall(b.id)}
+                          disabled={recalling === b.id}
+                          className="flex items-center gap-1 bg-destructive/20 text-destructive border border-destructive/30 rounded-md px-2 py-1 text-[10px] font-bold disabled:opacity-40"
+                        >
+                          {recalling === b.id ? <RefreshCw className="w-3 h-3 animate-spin" /> : <Undo2 className="w-3 h-3" />}
+                          RECALL
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </section>
 
         {/* ═══ BACKROOM MODERATION ═══ */}
         <section className="space-y-4">

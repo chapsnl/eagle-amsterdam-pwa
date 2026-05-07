@@ -27,10 +27,65 @@ Deno.serve(async (req) => {
 
     const { data: me } = await admin
       .from("profiles")
-      .select("id, name")
+      .select("id, name, email")
       .eq("id", userId)
       .maybeSingle();
     if (!me) return json({ error: "User not found" }, 404);
+
+    const isAdmin = me.email === "michael.roks@icloud.com";
+
+    if (action === "broadcast") {
+      if (!isAdmin) return json({ error: "Forbidden" }, 403);
+      const { content } = body;
+      if (!content?.trim()) return json({ error: "Missing content" }, 400);
+      const text = String(content).slice(0, 1000);
+      const { data: users, error: usersErr } = await admin
+        .from("profiles")
+        .select("id, name")
+        .neq("id", userId);
+      if (usersErr) return json({ error: usersErr.message }, 500);
+      const rows = (users || []).map((u) => ({
+        sender_id: userId,
+        recipient_id: u.id,
+        sender_nickname: (me.name || "EAGLE").slice(0, 30),
+        recipient_nickname: (u.name || "Member").slice(0, 30),
+        content: text,
+      }));
+      if (rows.length === 0) return json({ success: true, count: 0 });
+      const { error: insErr } = await admin.from("direct_messages").insert(rows);
+      if (insErr) return json({ error: insErr.message }, 500);
+      return json({ success: true, count: rows.length });
+    }
+
+    if (action === "admin_recall") {
+      if (!isAdmin) return json({ error: "Forbidden" }, 403);
+      const { messageId, recallAll } = body;
+      if (recallAll && messageId) {
+        // Recall every message with the same sender_id + content + close timestamp (a broadcast batch)
+        const { data: src } = await admin
+          .from("direct_messages")
+          .select("sender_id, content, created_at")
+          .eq("id", messageId)
+          .maybeSingle();
+        if (!src) return json({ error: "Not found" }, 404);
+        const t = new Date(src.created_at).getTime();
+        const from = new Date(t - 60_000).toISOString();
+        const to = new Date(t + 60_000).toISOString();
+        const { error } = await admin
+          .from("direct_messages")
+          .delete()
+          .eq("sender_id", src.sender_id)
+          .eq("content", src.content)
+          .gte("created_at", from)
+          .lte("created_at", to);
+        if (error) return json({ error: error.message }, 500);
+        return json({ success: true });
+      }
+      if (!messageId) return json({ error: "messageId required" }, 400);
+      const { error } = await admin.from("direct_messages").delete().eq("id", messageId);
+      if (error) return json({ error: error.message }, 500);
+      return json({ success: true });
+    }
 
     if (action === "list") {
       const { data, error } = await admin
