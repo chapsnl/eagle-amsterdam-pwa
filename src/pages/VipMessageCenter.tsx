@@ -104,6 +104,27 @@ const VipMessageCenter = () => {
     }
   };
 
+  const handleReplySend = async (recipientId: string, recipientNickname: string) => {
+    if (!session || !replyText.trim()) return;
+    setReplying(true);
+    try {
+      await supabase.functions.invoke("direct-messages", {
+        body: {
+          action: "send",
+          userId: session.userId,
+          recipientId,
+          recipientNickname,
+          content: replyText.trim().slice(0, 1000),
+        },
+      });
+      setReplyText("");
+      setReplyTo(null);
+      refresh();
+    } finally {
+      setReplying(false);
+    }
+  };
+
   if (!session) return null;
   const list = tab === "inbox" ? inbox : sent;
 
