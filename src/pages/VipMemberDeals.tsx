@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import VoucherCard from "@/components/loyalty/VoucherCard";
 import WarningDialog from "@/components/shared/WarningDialog";
 import { useMemberVouchers, type Voucher } from "@/hooks/useMemberVouchers";
+import { markSeen } from "@/lib/badgeSeen";
 
 const VipMemberDeals = () => {
   const navigate = useNavigate();
