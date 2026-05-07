@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowLeft, RefreshCw, Inbox, Send as SendIcon, Trash2, Plus, X } from "lucide-react";
+import { ArrowLeft, RefreshCw, Inbox, Send as SendIcon, Trash2, X } from "lucide-react";
 import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { useDirectMessages, type DirectMessage } from "@/hooks/useDirectMessages";
