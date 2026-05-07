@@ -4,6 +4,7 @@ import { ArrowLeft, RefreshCw, Inbox, Send as SendIcon, Trash2, X } from "lucide
 import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { useDirectMessages, type DirectMessage } from "@/hooks/useDirectMessages";
+import { markSeen } from "@/lib/badgeSeen";
 
 interface VipSession {
   userId: string;
