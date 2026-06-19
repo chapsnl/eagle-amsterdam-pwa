@@ -54,7 +54,7 @@ Deno.serve(async (req) => {
 
     const pushPayload: Record<string, unknown> = {
       app_id: onesignalAppId,
-      included_segments: ["Subscribed Users"],
+      included_segments: ["Total Subscriptions"],
       target_channel: "push",
       headings: { en: heading },
       contents: { en: body },
