@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Crown, Users, QrCode, Gift, RefreshCw, Check, Send, ChevronDown, ChevronUp, LogOut, ScanLine, Search, Shirt, Ticket, Beer, MessageSquare, Trash2, UserCheck, Download, TrendingUp, Megaphone, Undo2 } from "lucide-react";
+import { Crown, Users, QrCode, Gift, RefreshCw, Check, Send, ChevronDown, ChevronUp, LogOut, ScanLine, Search, Shirt, Ticket, Beer, MessageSquare, Trash2, UserCheck, Download, TrendingUp, Megaphone, Undo2, Bell } from "lucide-react";
 import MemberScannerSection from "@/components/admin/MemberScannerSection";
 import InviteUserSection from "@/components/admin/InviteUserSection";
 import { supabase } from "@/integrations/supabase/client";
@@ -65,6 +65,11 @@ const AdminDashboard = () => {
   const [broadcastSearch, setBroadcastSearch] = useState("");
   const [sentBroadcasts, setSentBroadcasts] = useState<{ id: string; content: string; created_at: string; recipients: number; recipient_id?: string; recipient_nickname?: string }[]>([]);
   const [recalling, setRecalling] = useState<string | null>(null);
+  const [pushOpen, setPushOpen] = useState(false);
+  const [pushTitle, setPushTitle] = useState("");
+  const [pushBody, setPushBody] = useState("");
+  const [pushUrl, setPushUrl] = useState("");
+  const [pushing, setPushing] = useState(false);
   const activityTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const logout = useCallback(() => {
@@ -485,6 +490,35 @@ const AdminDashboard = () => {
       setRecalling(null);
     }
   };
+
+  const handlePushAll = async () => {
+    if (!adminUserId || !pushBody.trim()) return;
+    if (!confirm(`Send a real push notification to ALL subscribed members?`)) return;
+    setPushing(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("admin-push-all", {
+        body: {
+          adminUserId,
+          title: pushTitle.trim() || undefined,
+          message: pushBody.trim().slice(0, 500),
+          url: pushUrl.trim() || undefined,
+        },
+      });
+      if (!error && data?.success) {
+        const r = typeof data.recipients === "number" ? ` (${data.recipients} recipients)` : "";
+        showSuccess(`Push sent${r}.`);
+        setPushTitle("");
+        setPushBody("");
+        setPushUrl("");
+      } else {
+        setWarning({ open: true, title: "Push failed", message: data?.error || error?.message || "Unknown error" });
+      }
+    } finally {
+      setPushing(false);
+    }
+  };
+
+
 
   const handleHide = async (msgId: string) => {
     if (!adminUserId) return;
@@ -1004,6 +1038,59 @@ const AdminDashboard = () => {
                   ))}
                 </div>
               )}
+            </div>
+          )}
+        </section>
+
+        {/* ═══ PUSH NOTIFICATION (REAL) ═══ */}
+        <section className="space-y-0">
+          <button
+            onClick={() => setPushOpen(!pushOpen)}
+            className="w-full flex items-center justify-between bg-card border border-border rounded-xl px-4 py-3"
+          >
+            <h2 className="text-foreground font-bold text-lg flex items-center gap-2">
+              <Bell className="w-5 h-5 text-primary" />
+              Push Notification
+            </h2>
+            {pushOpen ? <ChevronUp className="w-5 h-5 text-muted-foreground" /> : <ChevronDown className="w-5 h-5 text-muted-foreground" />}
+          </button>
+          {pushOpen && (
+            <div className="bg-card rounded-b-xl px-4 pb-4 pt-2 space-y-3 border border-t-0 border-border -mt-2 rounded-t-none">
+              <p className="text-muted-foreground text-xs">
+                Sends a real OneSignal push notification to every subscribed member. This appears on their device, even if the app is closed.
+              </p>
+              <input
+                type="text"
+                value={pushTitle}
+                onChange={(e) => setPushTitle(e.target.value.slice(0, 60))}
+                placeholder="Title (optional, default: Eagle Amsterdam)"
+                className="w-full bg-secondary text-foreground rounded-lg px-3 py-2 text-sm placeholder:text-muted-foreground outline-none border border-border"
+              />
+              <textarea
+                value={pushBody}
+                onChange={(e) => setPushBody(e.target.value.slice(0, 500))}
+                placeholder="Push message..."
+                rows={3}
+                className="w-full bg-secondary text-foreground rounded-lg px-3 py-2 text-sm placeholder:text-muted-foreground outline-none resize-none border border-border"
+              />
+              <input
+                type="text"
+                value={pushUrl}
+                onChange={(e) => setPushUrl(e.target.value)}
+                placeholder="Open URL on tap (optional)"
+                className="w-full bg-secondary text-foreground rounded-lg px-3 py-2 text-sm placeholder:text-muted-foreground outline-none border border-border"
+              />
+              <div className="flex items-center justify-end text-[11px] text-muted-foreground">
+                <span>{pushBody.length}/500</span>
+              </div>
+              <button
+                onClick={handlePushAll}
+                disabled={pushing || !pushBody.trim()}
+                className="w-full flex items-center justify-center gap-2 bg-primary text-primary-foreground rounded-lg py-2.5 font-bold text-sm disabled:opacity-40 transition-all"
+              >
+                {pushing ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Bell className="w-4 h-4" />}
+                {pushing ? "SENDING PUSH..." : "SEND PUSH TO ALL"}
+              </button>
             </div>
           )}
         </section>
