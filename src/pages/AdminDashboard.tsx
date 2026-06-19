@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Crown, Users, QrCode, Gift, RefreshCw, Check, Send, ChevronDown, ChevronUp, LogOut, ScanLine, Search, Shirt, Ticket, Beer, MessageSquare, Trash2, UserCheck, Download, TrendingUp, Megaphone, Undo2 } from "lucide-react";
+import { Crown, Users, QrCode, Gift, RefreshCw, Check, Send, ChevronDown, ChevronUp, LogOut, ScanLine, Search, Shirt, Ticket, Beer, MessageSquare, Trash2, UserCheck, Download, TrendingUp, Megaphone, Undo2, Mail, Bell } from "lucide-react";
 import MemberScannerSection from "@/components/admin/MemberScannerSection";
 import InviteUserSection from "@/components/admin/InviteUserSection";
 import { supabase } from "@/integrations/supabase/client";
@@ -61,6 +61,7 @@ const AdminDashboard = () => {
   const [broadcastText, setBroadcastText] = useState("");
   const [broadcasting, setBroadcasting] = useState(false);
   const [broadcastMode, setBroadcastMode] = useState<"all" | "single">("all");
+  const [allDeliveryMode, setAllDeliveryMode] = useState<"message" | "push">("message");
   const [broadcastTarget, setBroadcastTarget] = useState<Member | null>(null);
   const [broadcastSearch, setBroadcastSearch] = useState("");
   const [sentBroadcasts, setSentBroadcasts] = useState<{ id: string; content: string; created_at: string; recipients: number; recipient_id?: string; recipient_nickname?: string }[]>([]);
@@ -436,29 +437,45 @@ const AdminDashboard = () => {
       setWarning({ open: true, title: "Select a member", message: "Please select a member to send the message to." });
       return;
     }
+    const isPushAll = broadcastMode === "all" && allDeliveryMode === "push";
     const confirmMsg = broadcastMode === "all"
-      ? `Send this message to all ${members.length} members?`
+      ? (isPushAll
+          ? "Send this as a push notification to all subscribed members?"
+          : `Send this message to all ${members.length} members?`)
       : `Send this message to ${broadcastTarget?.name || "this member"}?`;
     if (!confirm(confirmMsg)) return;
     setBroadcasting(true);
     try {
-      const body = broadcastMode === "all"
-        ? { action: "broadcast", userId: adminUserId, content: broadcastText.trim().slice(0, 1000) }
-        : {
-            action: "send",
-            userId: adminUserId,
-            recipientId: broadcastTarget!.id,
-            recipientNickname: broadcastTarget!.name || "Member",
-            content: broadcastText.trim().slice(0, 1000),
-          };
+      let body;
+      if (broadcastMode === "all") {
+        body = isPushAll
+          ? { action: "broadcast_push", userId: adminUserId, content: broadcastText.trim().slice(0, 200) }
+          : { action: "broadcast", userId: adminUserId, content: broadcastText.trim().slice(0, 1000) };
+      } else {
+        body = {
+          action: "send",
+          userId: adminUserId,
+          recipientId: broadcastTarget!.id,
+          recipientNickname: broadcastTarget!.name || "Member",
+          content: broadcastText.trim().slice(0, 1000),
+        };
+      }
       const { data, error } = await supabase.functions.invoke("direct-messages", { body });
       if (!error && (data?.success || data?.message)) {
-        const count = broadcastMode === "all" ? data.count : 1;
-        showSuccess(broadcastMode === "all" ? `Broadcast sent to ${count} members.` : `Message sent to ${broadcastTarget?.name}.`);
+        if (isPushAll) {
+          const reach = typeof data.recipients === "number" && data.recipients > 0
+            ? ` (${data.recipients} device${data.recipients !== 1 ? "s" : ""})`
+            : "";
+          showSuccess(`Push notification sent to all members${reach}.`);
+        } else {
+          const count = broadcastMode === "all" ? data.count : 1;
+          showSuccess(broadcastMode === "all" ? `Broadcast sent to ${count} members.` : `Message sent to ${broadcastTarget?.name}.`);
+        }
         setBroadcastText("");
         setBroadcastTarget(null);
         setBroadcastSearch("");
-        loadSentBroadcasts();
+        // Push notifications aren't stored in the inbox, so the sent list only applies to messages.
+        if (!isPushAll) loadSentBroadcasts();
       } else {
         setWarning({ open: true, title: "Error", message: data?.error || "Send failed." });
       }
@@ -506,6 +523,8 @@ const AdminDashboard = () => {
   };
 
   if (!adminUserId) return null;
+
+  const isPushAll = broadcastMode === "all" && allDeliveryMode === "push";
 
   const renderMemberRow = (member: Member) => {
     const isExpanded = expandedMember === member.id;
@@ -901,6 +920,25 @@ const AdminDashboard = () => {
                 </button>
               </div>
 
+              {broadcastMode === "all" && (
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    onClick={() => setAllDeliveryMode("message")}
+                    className={`flex items-center justify-center gap-1.5 py-2 rounded-lg font-bold text-xs ${allDeliveryMode === "message" ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground"}`}
+                  >
+                    <Mail className="w-3.5 h-3.5" />
+                    MESSAGE TO ALL
+                  </button>
+                  <button
+                    onClick={() => setAllDeliveryMode("push")}
+                    className={`flex items-center justify-center gap-1.5 py-2 rounded-lg font-bold text-xs ${allDeliveryMode === "push" ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground"}`}
+                  >
+                    <Bell className="w-3.5 h-3.5" />
+                    PUSH TO ALL
+                  </button>
+                </div>
+              )}
+
               {broadcastMode === "single" && (
                 <div className="space-y-2">
                   {broadcastTarget ? (
@@ -947,34 +985,36 @@ const AdminDashboard = () => {
 
               <p className="text-muted-foreground text-xs">
                 {broadcastMode === "all"
-                  ? `Send a direct message to all ${members.length} members at once.`
+                  ? (allDeliveryMode === "push"
+                      ? "Send a short push notification to every member's device, just like a voucher alert."
+                      : `Send a direct message to all ${members.length} members at once.`)
                   : "Send a private message to one selected member."}
               </p>
               <textarea
                 value={broadcastText}
-                onChange={(e) => setBroadcastText(e.target.value.slice(0, 1000))}
-                placeholder="Write your message..."
+                onChange={(e) => setBroadcastText(e.target.value.slice(0, isPushAll ? 200 : 1000))}
+                placeholder={isPushAll ? "Write a short push message..." : "Write your message..."}
                 rows={4}
                 className="w-full bg-secondary text-foreground rounded-lg px-3 py-2 text-sm placeholder:text-muted-foreground outline-none resize-none border border-border"
               />
               <div className="flex items-center justify-between text-[11px] text-muted-foreground">
-                <span>Members will receive it in their Message Center.</span>
-                <span>{broadcastText.length}/1000</span>
+                <span>{isPushAll ? "Members get this as a push notification (not in the inbox)." : "Members will receive it in their Message Center."}</span>
+                <span>{broadcastText.length}/{isPushAll ? 200 : 1000}</span>
               </div>
               <button
                 onClick={handleBroadcast}
                 disabled={
                   broadcasting ||
                   !broadcastText.trim() ||
-                  (broadcastMode === "all" ? members.length === 0 : !broadcastTarget)
+                  (broadcastMode === "all" ? (isPushAll ? false : members.length === 0) : !broadcastTarget)
                 }
                 className="w-full flex items-center justify-center gap-2 bg-primary text-primary-foreground rounded-lg py-2.5 font-bold text-sm disabled:opacity-40 transition-all"
               >
-                {broadcasting ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                {broadcasting ? <RefreshCw className="w-4 h-4 animate-spin" /> : isPushAll ? <Bell className="w-4 h-4" /> : <Send className="w-4 h-4" />}
                 {broadcasting
                   ? "SENDING..."
                   : broadcastMode === "all"
-                    ? `SEND TO ALL (${members.length})`
+                    ? (isPushAll ? "PUSH TO ALL MEMBERS" : `SEND TO ALL (${members.length})`)
                     : `SEND TO ${broadcastTarget?.name?.toUpperCase() || "MEMBER"}`}
               </button>
 

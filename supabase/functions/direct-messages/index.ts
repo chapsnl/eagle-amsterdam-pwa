@@ -6,6 +6,8 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+const ONESIGNAL_APP_ID = "e5e608d0-1fad-4e9a-84ca-9812ac96a3a1";
+
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), {
     status,
@@ -55,6 +57,52 @@ Deno.serve(async (req) => {
       const { error: insErr } = await admin.from("direct_messages").insert(rows);
       if (insErr) return json({ error: insErr.message }, 500);
       return json({ success: true, count: rows.length });
+    }
+
+    if (action === "broadcast_push") {
+      if (!isAdmin) return json({ error: "Forbidden" }, 403);
+      const { content } = body;
+      if (!content?.trim()) return json({ error: "Missing content" }, 400);
+      // Keep it short — this is a push notification, not an inbox message.
+      const text = String(content).trim().slice(0, 200);
+
+      const onesignalKey = Deno.env.get("ONESIGNAL_REST_API_KEY");
+      if (!onesignalKey) return json({ error: "Push service not configured" }, 500);
+
+      const pushPayload = {
+        app_id: ONESIGNAL_APP_ID,
+        included_segments: ["Subscribed Users"],
+        target_channel: "push",
+        headings: { en: "EAGLE" },
+        contents: { en: text },
+        web_push_topic: `broadcast-${Date.now()}`,
+      };
+
+      const pushRes = await fetch("https://api.onesignal.com/notifications", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Key ${onesignalKey}`,
+          Accept: "application/json",
+        },
+        body: JSON.stringify(pushPayload),
+      });
+
+      const pushText = await pushRes.text();
+      let parsed: any = null;
+      try {
+        parsed = JSON.parse(pushText);
+      } catch {
+        // non-JSON response
+      }
+
+      if (!pushRes.ok || parsed?.id == null) {
+        const detail =
+          parsed?.errors?.[0] || parsed?.errors || pushText || "Push failed";
+        return json({ error: String(detail) }, 502);
+      }
+
+      return json({ success: true, push: true, recipients: parsed?.recipients ?? 0 });
     }
 
     if (action === "admin_recall") {
