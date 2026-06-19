@@ -65,6 +65,11 @@ const AdminDashboard = () => {
   const [broadcastSearch, setBroadcastSearch] = useState("");
   const [sentBroadcasts, setSentBroadcasts] = useState<{ id: string; content: string; created_at: string; recipients: number; recipient_id?: string; recipient_nickname?: string }[]>([]);
   const [recalling, setRecalling] = useState<string | null>(null);
+  const [pushOpen, setPushOpen] = useState(false);
+  const [pushTitle, setPushTitle] = useState("");
+  const [pushBody, setPushBody] = useState("");
+  const [pushUrl, setPushUrl] = useState("");
+  const [pushing, setPushing] = useState(false);
   const activityTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const logout = useCallback(() => {
