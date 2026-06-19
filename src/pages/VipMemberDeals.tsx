@@ -6,6 +6,7 @@ import VoucherCard from "@/components/loyalty/VoucherCard";
 import WarningDialog from "@/components/shared/WarningDialog";
 import { useMemberVouchers, type Voucher } from "@/hooks/useMemberVouchers";
 import { markSeen } from "@/lib/badgeSeen";
+import { FREE_ENTRY_PROMO, isFreeEntryPromoActive } from "@/lib/freeEntryPromo";
 
 const VipMemberDeals = () => {
   const navigate = useNavigate();
@@ -87,6 +88,7 @@ const VipMemberDeals = () => {
 
   const activeVouchers = vouchers.filter((v) => !v.redeemed);
   const showPushCTA = pushStatus === "default";
+  const promoActive = isFreeEntryPromoActive();
 
   return (
     <div className="flex flex-col min-h-screen pb-24">
@@ -125,7 +127,7 @@ const VipMemberDeals = () => {
           <div className="flex justify-center py-12">
             <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
           </div>
-        ) : vouchers.length === 0 ? (
+        ) : vouchers.length === 0 && !promoActive ? (
           <div className="text-center py-12">
             <Gift className="w-12 h-12 text-muted-foreground/30 mx-auto mb-3" />
             <p className="text-muted-foreground text-sm">
@@ -133,21 +135,25 @@ const VipMemberDeals = () => {
             </p>
           </div>
         ) : (
-          <>
-            {activeVouchers.length > 0 && (
-              <div className="space-y-6">
-                {activeVouchers.map((v) => (
-                  <VoucherCard
-                    key={v.id}
-                    title={v.title}
-                    description={v.description}
-                    expiresAt={v.expires_at}
-                    onRedeem={() => handleRedeem(v)}
-                  />
-                ))}
-              </div>
+          <div className="space-y-6">
+            {/* Time-gated Free Entry promo — visible only during its window */}
+            {promoActive && (
+              <VoucherCard
+                title={FREE_ENTRY_PROMO.title}
+                description={FREE_ENTRY_PROMO.description}
+                expiresAt={FREE_ENTRY_PROMO.endsAt}
+              />
             )}
-          </>
+            {activeVouchers.map((v) => (
+              <VoucherCard
+                key={v.id}
+                title={v.title}
+                description={v.description}
+                expiresAt={v.expires_at}
+                onRedeem={() => handleRedeem(v)}
+              />
+            ))}
+          </div>
         )}
       </div>
 
