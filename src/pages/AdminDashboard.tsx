@@ -516,6 +516,9 @@ const AdminDashboard = () => {
     } finally {
       setPushing(false);
     }
+  };
+
+
 
   const handleHide = async (msgId: string) => {
     if (!adminUserId) return;
