@@ -491,6 +491,32 @@ const AdminDashboard = () => {
     }
   };
 
+  const handlePushAll = async () => {
+    if (!adminUserId || !pushBody.trim()) return;
+    if (!confirm(`Send a real push notification to ALL subscribed members?`)) return;
+    setPushing(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("admin-push-all", {
+        body: {
+          adminUserId,
+          title: pushTitle.trim() || undefined,
+          message: pushBody.trim().slice(0, 500),
+          url: pushUrl.trim() || undefined,
+        },
+      });
+      if (!error && data?.success) {
+        const r = typeof data.recipients === "number" ? ` (${data.recipients} recipients)` : "";
+        showSuccess(`Push sent${r}.`);
+        setPushTitle("");
+        setPushBody("");
+        setPushUrl("");
+      } else {
+        setWarning({ open: true, title: "Push failed", message: data?.error || error?.message || "Unknown error" });
+      }
+    } finally {
+      setPushing(false);
+    }
+
   const handleHide = async (msgId: string) => {
     if (!adminUserId) return;
     if (!confirm("Delete this from your sent list? Recipients will still see the message.")) return;
