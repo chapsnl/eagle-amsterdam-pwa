@@ -70,6 +70,7 @@ const AdminDashboard = () => {
   const [pushBody, setPushBody] = useState("");
   const [pushUrl, setPushUrl] = useState("");
   const [pushing, setPushing] = useState(false);
+  const [redemptionCounts, setRedemptionCounts] = useState<Record<string, number>>({});
   const activityTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const logout = useCallback(() => {
