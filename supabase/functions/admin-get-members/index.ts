@@ -82,12 +82,24 @@ Deno.serve(async (req) => {
       .limit(1)
       .maybeSingle();
 
+    // Voucher redemption counts grouped by title
+    const { data: redemptions } = await supabase
+      .from("voucher_redemptions")
+      .select("title");
+    const redemptionCounts: Record<string, number> = {};
+    if (redemptions) {
+      for (const r of redemptions as { title: string }[]) {
+        redemptionCounts[r.title] = (redemptionCounts[r.title] || 0) + 1;
+      }
+    }
+
     return new Response(
       JSON.stringify({
         success: true,
         members: membersWithVouchers,
         activeCode: codeData?.code || null,
         codeUpdatedAt: codeData?.created_at || null,
+        redemptionCounts,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
