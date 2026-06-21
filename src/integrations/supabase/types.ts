@@ -304,6 +304,30 @@ export type Database = {
         }
         Relationships: []
       }
+      voucher_redemptions: {
+        Row: {
+          description: string | null
+          id: string
+          redeemed_at: string
+          title: string
+          user_id: string
+        }
+        Insert: {
+          description?: string | null
+          id?: string
+          redeemed_at?: string
+          title: string
+          user_id: string
+        }
+        Update: {
+          description?: string | null
+          id?: string
+          redeemed_at?: string
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
