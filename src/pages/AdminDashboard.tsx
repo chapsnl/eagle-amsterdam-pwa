@@ -70,6 +70,7 @@ const AdminDashboard = () => {
   const [pushBody, setPushBody] = useState("");
   const [pushUrl, setPushUrl] = useState("");
   const [pushing, setPushing] = useState(false);
+  const [redemptionCounts, setRedemptionCounts] = useState<Record<string, number>>({});
   const activityTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const logout = useCallback(() => {
@@ -146,6 +147,17 @@ const AdminDashboard = () => {
         setMembers(data.members || []);
         setActiveCode(data.activeCode || null);
         setCodeUpdatedAt(data.codeUpdatedAt || null);
+        // Load voucher redemption counts grouped by title
+        const { data: redemptions } = await supabase
+          .from("voucher_redemptions")
+          .select("title");
+        if (redemptions) {
+          const counts: Record<string, number> = {};
+          for (const r of redemptions as { title: string }[]) {
+            counts[r.title] = (counts[r.title] || 0) + 1;
+          }
+          setRedemptionCounts(counts);
+        }
       } else {
         setWarning({ open: true, title: "Error", message: "Failed to load data." });
       }
@@ -737,6 +749,26 @@ const AdminDashboard = () => {
                     Total Active Vouchers
                   </p>
                   <p className="text-foreground text-2xl font-extrabold">{stats.totalActiveVouchers}</p>
+                </div>
+                <div className="bg-secondary rounded-lg p-3 col-span-2">
+                  <p className="text-muted-foreground text-[10px] font-bold uppercase flex items-center gap-1">
+                    <Gift className="w-3 h-3" />
+                    Ingewisselde Vouchers (totaal)
+                  </p>
+                  {Object.keys(redemptionCounts).length === 0 ? (
+                    <p className="text-foreground text-2xl font-extrabold">0</p>
+                  ) : (
+                    <div className="space-y-0.5 mt-1">
+                      {Object.entries(redemptionCounts)
+                        .sort((a, b) => b[1] - a[1])
+                        .map(([title, count]) => (
+                          <div key={title} className="flex items-center justify-between text-xs">
+                            <span className="font-bold text-foreground">{title}</span>
+                            <span className="text-primary font-extrabold">{count}</span>
+                          </div>
+                        ))}
+                    </div>
+                  )}
                 </div>
               </div>
 
