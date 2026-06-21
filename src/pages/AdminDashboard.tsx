@@ -147,6 +147,17 @@ const AdminDashboard = () => {
         setMembers(data.members || []);
         setActiveCode(data.activeCode || null);
         setCodeUpdatedAt(data.codeUpdatedAt || null);
+        // Load voucher redemption counts grouped by title
+        const { data: redemptions } = await supabase
+          .from("voucher_redemptions")
+          .select("title");
+        if (redemptions) {
+          const counts: Record<string, number> = {};
+          for (const r of redemptions as { title: string }[]) {
+            counts[r.title] = (counts[r.title] || 0) + 1;
+          }
+          setRedemptionCounts(counts);
+        }
       } else {
         setWarning({ open: true, title: "Error", message: "Failed to load data." });
       }
