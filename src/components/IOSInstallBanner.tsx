@@ -25,7 +25,10 @@ function shouldShow(): boolean {
   } catch {
     return true;
   }
+}
+
 type Lang = "nl" | "de" | "fr" | "es" | "it" | "pt" | "en";
+
 
 const TRANSLATIONS: Record<Lang, { title: string; instr1: string; instr2: string; close: string }> = {
   nl: { title: "Voeg Eagle toe aan je beginscherm", instr1: "Tik op delen", instr2: "en kies 'Zet op beginscherm'", close: "Sluiten" },
