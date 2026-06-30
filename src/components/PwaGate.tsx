@@ -106,16 +106,31 @@ const PwaGate = ({ children }: { children: React.ReactNode }) => {
   if (allowed) return <>{children}</>;
 
   if (platform === "desktop") {
+    const showQr = QR_HOSTS.includes(window.location.hostname);
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-background px-6 text-center font-['Manrope',sans-serif]">
         <img src={eagleLogo} alt="Eagle Amsterdam" className="w-48 mb-8" />
-        <Monitor className="w-20 h-20 text-primary mb-5" />
+        {!showQr && <Monitor className="w-20 h-20 text-primary mb-5" />}
         <h1 className="text-2xl font-extrabold text-foreground mb-3" style={{ letterSpacing: '-0.05em', lineHeight: 1.1 }}>
           {t("pwa.mobileOnly")}
         </h1>
-        <p className="text-muted-foreground text-sm max-w-sm leading-relaxed" style={{ letterSpacing: '-0.02em' }}>
+        <p className="text-muted-foreground text-sm max-w-sm leading-relaxed mb-6" style={{ letterSpacing: '-0.02em' }}>
           {t("pwa.mobileOnlyDesc")}
         </p>
+        {showQr && (
+          <div className="flex flex-col items-center gap-3 mt-2">
+            <div className="bg-white p-4 rounded-xl">
+              <img
+                src={eagleConnectQr}
+                alt="Scan to open Eagle Amsterdam on your phone"
+                className="w-56 h-56 object-contain"
+              />
+            </div>
+            <p className="text-foreground text-sm font-bold" style={{ letterSpacing: '-0.02em' }}>
+              Scan met je telefoon
+            </p>
+          </div>
+        )}
       </div>
     );
   }
