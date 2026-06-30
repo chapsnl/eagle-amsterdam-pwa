@@ -1,6 +1,7 @@
 import { Calendar, MapPin, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import InstallPrompt from "@/components/InstallPrompt";
+import IOSInstallBanner from "@/components/IOSInstallBanner";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 const heroImage = "https://www.eagleamsterdam.com/wp-content/uploads/2025/12/Header-3b-copy.webp";
