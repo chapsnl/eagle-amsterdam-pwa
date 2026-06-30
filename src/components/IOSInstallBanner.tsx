@@ -25,16 +25,39 @@ function shouldShow(): boolean {
   } catch {
     return true;
   }
+type Lang = "nl" | "de" | "fr" | "es" | "it" | "pt" | "en";
+
+const TRANSLATIONS: Record<Lang, { title: string; instr1: string; instr2: string; close: string }> = {
+  nl: { title: "Voeg Eagle toe aan je beginscherm", instr1: "Tik op delen", instr2: "en kies 'Zet op beginscherm'", close: "Sluiten" },
+  de: { title: "Eagle zum Startbildschirm hinzufügen", instr1: "Tippe auf Teilen", instr2: "und wähle 'Zum Home-Bildschirm'", close: "Schließen" },
+  fr: { title: "Ajouter Eagle à l'écran d'accueil", instr1: "Appuyez sur partager", instr2: "et choisissez 'Sur l'écran d'accueil'", close: "Fermer" },
+  es: { title: "Añade Eagle a la pantalla de inicio", instr1: "Toca compartir", instr2: "y elige 'Añadir a pantalla de inicio'", close: "Cerrar" },
+  it: { title: "Aggiungi Eagle alla schermata Home", instr1: "Tocca condividi", instr2: "e scegli 'Aggiungi a Home'", close: "Chiudi" },
+  pt: { title: "Adicionar Eagle ao ecrã principal", instr1: "Toque em partilhar", instr2: "e escolha 'Adicionar ao Ecrã Principal'", close: "Fechar" },
+  en: { title: "Add Eagle to your home screen", instr1: "Tap share", instr2: "and choose 'Add to Home Screen'", close: "Close" },
+};
+
+function detectLang(): Lang {
+  const langs = [
+    ...(navigator.languages || []),
+    navigator.language || "",
+  ].map((l) => l.toLowerCase().split("-")[0]);
+  for (const l of langs) {
+    if (l in TRANSLATIONS) return l as Lang;
+  }
+  return "en";
 }
 
 const IOSInstallBanner = () => {
   const [open, setOpen] = useState(false);
+  const [t, setT] = useState(TRANSLATIONS.en);
 
   useEffect(() => {
     if (!isIOSSafari() || isStandalone()) return;
     if (!shouldShow()) return;
-    const t = setTimeout(() => setOpen(true), 50);
-    return () => clearTimeout(t);
+    setT(TRANSLATIONS[detectLang()]);
+    const timer = setTimeout(() => setOpen(true), 50);
+    return () => clearTimeout(timer);
   }, []);
 
   const dismiss = () => {
@@ -60,20 +83,19 @@ const IOSInstallBanner = () => {
               className="text-foreground font-bold text-sm"
               style={{ letterSpacing: "-0.03em" }}
             >
-              Voeg Eagle toe aan je beginscherm
+              {t.title}
             </p>
             <p
               className="text-muted-foreground text-xs mt-0.5 flex items-center gap-1 flex-wrap"
               style={{ letterSpacing: "-0.02em" }}
             >
-              Tik op delen{" "}
-              <Share className="inline w-3.5 h-3.5 text-primary" /> en kies
-              &apos;Zet op beginscherm&apos;
+              {t.instr1}{" "}
+              <Share className="inline w-3.5 h-3.5 text-primary" /> {t.instr2}
             </p>
           </div>
           <button
             onClick={dismiss}
-            aria-label="Sluiten"
+            aria-label={t.close}
             className="shrink-0 text-muted-foreground hover:text-foreground transition-colors p-1"
           >
             <X className="w-5 h-5" />
@@ -83,5 +105,6 @@ const IOSInstallBanner = () => {
     </div>
   );
 };
+
 
 export default IOSInstallBanner;
