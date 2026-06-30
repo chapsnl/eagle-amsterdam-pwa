@@ -52,6 +52,7 @@ const Index = () => {
         </Button>
       </div>
       <InstallPrompt />
+      <IOSInstallBanner />
     </div>
   );
 };
