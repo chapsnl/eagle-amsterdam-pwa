@@ -3,6 +3,9 @@ import { useLocation } from "react-router-dom";
 import { Share, MoreVertical, Monitor } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import eagleLogo from "@/assets/eagle-logo-white.webp";
+import eagleConnectQr from "@/assets/eagle-connect-qr.jpeg";
+
+const QR_HOSTS = ["app.eagleamsterdam.com"];
 
 function isStandalone(): boolean {
   return (
