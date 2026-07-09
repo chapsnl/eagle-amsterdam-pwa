@@ -854,3 +854,72 @@ en kan zo aan `/opt/caddy/sites/eagle-amsterdam.caddy` toegevoegd worden
 met dezelfde `reverse_proxy eagle-frontend:80`-regel). `admin1` kan dan als
 tijdelijk testdomein verwijderd worden uit zowel Caddy als de
 hostname-allowlist in de broncode (niet blokkerend, puur opruimen).
+
+---
+
+## 17. Definitieve domeinen: cutover van app1/api1/admin1 naar app/api/admin (2026-07-09)
+
+Gebruiker gaf de opdracht om over te schakelen naar de definitieve
+domeinnamen (zonder "1"-suffix) en zou daarna zelf de DNS omzetten.
+
+### Voorbereidend werk (vóór DNS-wijziging)
+
+1. `supabase/.env`: `SUPABASE_PUBLIC_URL`, `API_EXTERNAL_URL`, `SITE_URL`,
+   `ADDITIONAL_REDIRECT_URLS` bijgewerkt naar `app.`/`api.eagleamsterdam.com`
+   (zonder "1"), gevolgd door `docker compose up -d auth kong` om GoTrue de
+   nieuwe waardes te laten oppikken.
+2. `/opt/apps/eagle-amsterdam/.env`: `VITE_SUPABASE_URL` bijgewerkt naar
+   `https://api.eagleamsterdam.com`, frontend opnieuw gebouwd (`docker
+   compose up -d --build`) — nodig omdat `VITE_*`-vars ten tijde van de
+   build ingebakken worden, niet at runtime leesbaar zijn.
+3. `/opt/caddy/sites/eagle-amsterdam.caddy`: drie nieuwe site-blocks
+   (`app`/`api`/`admin`, zonder "1") toegevoegd **naast** de bestaande
+   `app1`/`api1`/`admin1`-blocks (niet vervangen) — bewuste keuze om een
+   werkend failover-domein te behouden tijdens de DNS-overgang.
+4. `kong.yml` gecontroleerd op hardcoded hostname-verwijzingen — geen
+   gevonden (Kong routeert uitsluitend op pad, niet op Host-header, dus
+   domeinwissels hier hebben geen impact op de Kong-configuratie).
+
+### Timing-bevinding: Let's Encrypt-validatie kan sneller zijn dan lokale DNS-cache
+
+Bij het herladen van Caddy (nog vóórdat de gebruiker `app.eagleamsterdam.com`
+had omgezet) bleek `api.` en `admin.` al naar dit IP te wijzen, maar `app.`
+volgens onze eigen `dig`/`curl` nog naar de oude Netlify-deployment.
+**Toch** kreeg Caddy meteen voor alle drie domeinen, inclusief `app.`,
+succesvol een certificaat ("authz_status: valid" / "certificate obtained
+successfully"). Verklaring: Let's Encrypt's eigen validatie-resolvers
+zagen kennelijk al de nieuwe DNS-waarde, terwijl onze server se eigen
+`dig`/`curl`-aanroepen (via een mogelijk trager bijwerkende resolver/cache)
+nog het oude antwoord teruggaven. Bevestigd met
+`curl -sI https://app.eagleamsterdam.com/` (toonde `server: Netlify`) vs.
+`curl -sI --resolve app.eagleamsterdam.com:443:188.245.237.210 https://app.eagleamsterdam.com/`
+(toonde `server: nginx` / `via: 1.1 Caddy` — onze eigen stack, cert al
+klaarliggend). **Les:** DNS-propagatie is niet uniform over resolvers;
+"mijn eigen dig zegt nog oud" betekent niet dat een ACME-aanvraag
+daardoor per se faalt — en omgekeerd, als de aanvraag al eerder is gedaan
+(met een oudere DNS-staat) hoeft dat geen probleem te zijn zodra de
+publieke resolvers wél bijgewerkt zijn.
+
+### Resultaat na daadwerkelijke DNS-wijziging door de gebruiker
+
+Binnen enkele seconden na "ik heb de dns aangepast" resolvede
+`app.eagleamsterdam.com` naar dit IP en serveerde Caddy de site direct
+correct (certificaat lag al klaar, geen nieuwe ACME-aanvraag nodig). Alle
+drie definitieve domeinen geverifieerd:
+- `app.eagleamsterdam.com` → `eagle-frontend:80`, HTTP 200, TLS geldig
+- `api.eagleamsterdam.com` → `eagle-kong:8000`, TLS geldig, live
+  `send-otp`-aanroep bevestigd werkend
+- `admin.eagleamsterdam.com` → `eagle-frontend:80`, HTTP 200, TLS geldig
+
+### Openstaand
+
+`app1`/`api1`/`admin1.eagleamsterdam.com` staan nog actief in zowel Caddy
+als de hostname-allowlist in `PwaGate.tsx`/`App.tsx` (zie sectie 16) — met
+opzet niet verwijderd, als failover tijdens de overgangsperiode. Kunnen
+opgeruimd worden zodra de gebruiker dat wil: DNS-records verwijderen bij de
+registrar, de drie `*1`-blocks uit
+`/opt/caddy/sites/eagle-amsterdam.caddy` verwijderen + `caddy reload`, en
+optioneel `admin1.eagleamsterdam.com` uit de `BYPASS_HOSTS`/route-check in
+de broncode verwijderen (niet urgent, geen kwetsbaarheid — een extra
+toegestaan hostname is geen beveiligingsrisico zolang de DNS ervoor niet
+meer bestaat).
