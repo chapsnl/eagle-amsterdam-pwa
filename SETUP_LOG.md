@@ -773,3 +773,84 @@ zien zij automatisch het "systeemupgrade"-scherm en moeten ze een nieuw
 wachtwoord instellen voor ze verder kunnen — geen actie van de gebruiker
 nodig, dit gebeurt vanzelf per account bij de eerstvolgende keer dat
 iemand inlogt.
+
+---
+
+## 16. Admin-panel op admin1.eagleamsterdam.com (2026-07-09)
+
+Gebruiker had tijdelijk `admin1.eagleamsterdam.com` in DNS aangemaakt
+(wijst naar dit IP) als stand-in voor de uiteindelijke
+`admin.eagleamsterdam.com`, om het admin-panel te kunnen testen vóór de
+definitieve cutover.
+
+### Caddy
+
+Derde domein toegevoegd aan `/opt/caddy/sites/eagle-amsterdam.caddy`,
+zelfde frontend-container als `app1` (het admin-panel is **geen aparte
+app/container** — het is dezelfde React-SPA, die op basis van
+`window.location.hostname` clientside beslist of ze de normale site of
+`<AdminLogin />` toont, zie App.tsx):
+```caddyfile
+admin1.eagleamsterdam.com {
+	reverse_proxy eagle-frontend:80
+}
+```
+Certificaat werd bij de eerste `caddy reload` meteen correct uitgegeven
+(DNS klopte al op het moment van de aanvraag, in tegenstelling tot het
+eerdere `api1`-incident in sectie 14).
+
+### Bevinding: hostname-check was hardcoded op het exacte domein
+
+`PwaGate.tsx` (`BYPASS_HOSTS`) en `App.tsx` (root-route) checkten allebei
+letterlijk `window.location.hostname === "admin.eagleamsterdam.com"` — dus
+`admin1.eagleamsterdam.com` viel hier niet onder en toonde gewoon de
+normale publieke site / mobile-gate, niet het admin-panel. Dit is
+**visueel bevestigd** vóór en na de fix (Playwright-screenshot toonde eerst
+het "Mobile Only"-scherm, na de fix het admin-loginscherm).
+
+**Fix:** `admin1.eagleamsterdam.com` toegevoegd náást (niet i.p.v.)
+`admin.eagleamsterdam.com` op beide plekken, zodat straks ook de definitieve
+domeinnaam gewoon blijft werken zonder verdere wijziging. Frontend opnieuw
+gebouwd en gedeployed.
+
+### Admin-wachtwoord ingesteld
+
+Het admin-login-systeem is **volledig los van Supabase Auth** — een eigen
+tabel `admin_credentials` met een simpele SHA-256-hash (zie
+`supabase/functions/admin-auth/index.ts`), plus een verplichte 2e factor
+(OTP per e-mail, zelfde `otp_codes`-tabel/SMTP-pad als de VIP-login). De
+`set-password`-actie in die functie weigert als er al een hash bestaat
+(en die was er al, gemigreerd uit Lovable Cloud) — dus het wachtwoord is
+**rechtstreeks in de database gezet**, niet via de API:
+```bash
+python3 -c "import hashlib; print(hashlib.sha256('<wachtwoord>'.encode()).hexdigest())"
+# UPDATE admin_credentials SET password_hash = '<hash>', failed_attempts = 0,
+#   locked_until = NULL WHERE user_id = (SELECT id FROM profiles WHERE email = 'michael.roks@icloud.com');
+```
+**Belangrijk om te onthouden:** de admin-wachtwoord-hash is **puur SHA-256**
+zonder salt — dit is geen bcrypt/scrypt/argon2 en dus zwakker dan een
+"echt" wachtwoordsysteem (kwetsbaar voor rainbow tables als de
+database-inhoud ooit zou lekken). Buiten scope om dit nu te herbouwen,
+maar het is een legitiem punt om ooit te verbeteren (bv. overstappen naar
+bcrypt via een Deno-bcrypt-library in `admin-auth`).
+
+### Volledige flow end-to-end getest (Playwright)
+
+Wachtwoord → OTP-mail → code invullen → `/eagle-admin-dashboard`, met
+zichtbare echte data ("Member Stats: 88", ledenlijst met namen/e-mails/
+tokens/vouchers). **Verschil met de VIP-flow:** hier is **geen**
+auto-submit bij de 4e cijfer-invoer — er moet expliciet op de
+"VERIFY CODE"-knop geklikt worden. Er is ook **geen** Supabase Auth
+GoTrue-sessie betrokken (dus Bug #1/#2 uit sectie 15.4 zijn hier niet van
+toepassing) — het admin-paneel gebruikt uitsluitend zijn eigen
+`admin_session`-object in localStorage, volledig onafhankelijk van de
+VIP-sessie (`vip_session`) of een echte Supabase-sessie.
+
+### Openstaand voor de gebruiker
+
+Zodra de DNS van het **definitieve** `admin.eagleamsterdam.com` naar dit
+IP wijst, werkt dat domein direct mee (staat al in de hostname-allowlist
+en kan zo aan `/opt/caddy/sites/eagle-amsterdam.caddy` toegevoegd worden
+met dezelfde `reverse_proxy eagle-frontend:80`-regel). `admin1` kan dan als
+tijdelijk testdomein verwijderd worden uit zowel Caddy als de
+hostname-allowlist in de broncode (niet blokkerend, puur opruimen).
