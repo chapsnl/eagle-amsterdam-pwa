@@ -94,7 +94,7 @@ const App = () => {
               <Suspense fallback={<PageLoader />}>
                 <Routes>
                   <Route path="/" element={
-                    window.location.hostname === "admin.eagleamsterdam.com"
+                    ["admin.eagleamsterdam.com", "admin1.eagleamsterdam.com"].includes(window.location.hostname)
                       ? <AdminLogin />
                       : <Index />
                   } />

@@ -44,7 +44,7 @@ function isMobileOrTablet(): boolean {
 type Platform = "ios" | "android" | "desktop";
 
 const BYPASS_PATHS = ["/eagle-admin-dashboard"];
-const BYPASS_HOSTS = ["admin.eagleamsterdam.com"];
+const BYPASS_HOSTS = ["admin.eagleamsterdam.com", "admin1.eagleamsterdam.com"];
 
 function isLovablePreview(): boolean {
   const host = window.location.hostname;
