@@ -544,3 +544,232 @@ losse `reload` triggert dan geen nieuwe poging (config wordt als
 "unchanged" gezien). Los op met een volledige
 `docker compose restart caddy` in `/opt/caddy/` nadat je hebt geverifieerd
 dat de DNS wél klopt (`dig +short <domein> A`).
+
+
+---
+
+## 15. Data-migratie uitgevoerd: Lovable Cloud → self-hosted (2026-07-09)
+
+Vervolg op sectie 13/14 van `MIGRATION.md`: navraag bij Lovable bevestigde
+**Lovable Cloud** (geen eigen Supabase-account, geen DB-connectiestring/
+service-role key beschikbaar, geen MCP/SQL-toegang, wachtwoord-hashes
+principieel niet exporteerbaar). Aanpak: CSV-export per tabel door Lovable,
+handmatig via `scp` naar `/opt/apps/eagle-amsterdam/migration-data/`
+(chmod 700, root-only — bevat PII en een bcrypt-hash, nooit in git; staat
+nu ook expliciet in `.gitignore`).
+
+### 15.1 Ontbrekend basisschema alsnog gereconstrueerd
+
+Lovable leverde de volledige `CREATE TABLE profiles`-DDL + `is_admin()` +
+bijbehorende triggers (dit vulde exact de gap uit sectie 5/13: `profiles`
+en `is_admin()` stonden nergens in `supabase/migrations/`). Toegepast,
+gevolgd door het **opnieuw draaien van alle 20 migratiebestanden** — nu
+slaagden alle 20 (de eerdere 7 waren al toegepast in de vorige sessie, de
+overige 13 gaven verwachte "already exists"-meldingen voor wat al bestond,
+en pasten de nog ontbrekende delta's alsnog toe).
+
+**Extra gevonden tijdens het opnieuw draaien:**
+- Een **duplicate trigger** op `profiles` (`assign_member_number_trigger` uit
+  Lovable's antwoord + `trigger_assign_member_number` uit de originele
+  git-migratie, functioneel identiek). De git-migratie-versie is leidend
+  gehouden, de andere verwijderd.
+- Migratie `20260630070046` (meest recente, 30 juni) bevatte een
+  **verscherpte** `profiles`-UPDATE-policy (pint `vip_status`/
+  `total_stamps_earned`/`member_number` vast tegen zelf-aanpassen door de
+  gebruiker) die eerder nooit toegepast was omdat het bestand stopte bij een
+  FK-fout op een hardcoded admin-seed-rij. Los toegepast.
+- `admin_credentials` miste de kolommen `failed_attempts`/`locked_until`
+  (wel aanwezig in het live Lovable-schema volgens `types.ts`, nooit in een
+  git-migratie terechtgekomen). `ALTER TABLE ... ADD COLUMN` toegepast.
+- Drie tabellen (`active_loyalty_code`, `loyalty_stamps`, `tickets`) stonden
+  **helemaal niet** in `supabase/migrations/` — gereconstrueerd uit
+  `src/integrations/supabase/types.ts` (het auto-gegenereerde Supabase
+  TypeScript-types-bestand, bevat de complete kolomdefinities van alle
+  tabellen — bruikbaar als schema-bron wanneer migraties incompleet zijn).
+  RLS voor deze drie is **niet** door Lovable aangeleverd, maar afgeleid uit
+  daadwerkelijk query-gedrag in de broncode (`grep` naar `supabase.from(...)`
+  per tabelnaam):
+  - `active_loyalty_code`: alleen via service-role edge functions
+    aangeraakt → RLS aan, geen policies (default-deny voor anon/authenticated).
+  - `loyalty_stamps`: frontend leest/schrijft eigen rijen met de
+    ingelogde-gebruiker-JWT → policies op `auth.uid() = user_id`.
+  - `tickets`: **nergens** in actieve code bevraagd (frontend gebruikt een
+    hardcoded lokale array in `Events.tsx`) → publieke read-only policy
+    toegepast als **aanname**, niet bevestigd gebruik. Overweeg dit bij
+    Lovable te verifiëren als er ooit een CMS-achtige tickets-feature
+    gebouwd wordt.
+
+### 15.2 UUID-remapping voor 88 gebruikers
+
+Cloud-UUID's van gebruikers konden niet hergebruikt worden (geen
+`auth.users`-export mogelijk). Aanpak:
+1. Alle 88 rijen uit `profiles.csv` via de GoTrue **admin-API**
+   (`POST /auth/v1/admin/users` met alleen `email` + `email_confirm:true`,
+   geen wachtwoord) omgezet in nieuwe self-hosted auth-accounts — via een
+   tijdelijke `python:3.12-alpine`-container op het `edge`-netwerk
+   (`migrate_users.py`, stdlib-only, geen dependencies nodig).
+   1 van de 88 (`leatherpridebv@gmail.com`) bestond al lokaal (test-account
+   uit een eerdere SMTP-test in dezelfde sessie) — handmatig gemapt i.p.v.
+   opnieuw aangemaakt.
+2. Mapping (`old_id,new_id,email`) weggeschreven naar `id_map.csv`.
+3. Elke tabel-CSV geladen in een staging-schema (`mig`), gevolgd door
+   `INSERT INTO public.<tabel> SELECT ... FROM mig.<tabel> JOIN mig.id_map
+   ON <kolom> = old_id` — dus user-kolommen (`user_id`, `sender_id`,
+   `recipient_id`, `created_by`) herschreven naar de nieuwe UUID's, terwijl
+   niet-user-gerelateerde primary/foreign keys (bv. `community_posts.id`/
+   `parent_id`, onderling zelfverwijzend) ongewijzigd overgenomen zijn.
+   `profiles`-insert gebruikte `ON CONFLICT (id) DO UPDATE` omdat de
+   `on_auth_user_created`-trigger (sectie 15.4 hieronder) al automatisch een
+   lege profielrij aanmaakt zodra een auth-user wordt aangemaakt in stap 1.
+4. Resultaat (rijen geïmporteerd, 100% van de brondata):
+   `profiles` 88, `direct_messages` 140, `member_vouchers` 78,
+   `loyalty_stamps` 86, `tickets` 11, `community_posts` 4,
+   `voucher_redemptions` 3, `user_roles` 1, `active_loyalty_code` 1,
+   `admin_credentials` 1.
+5. Staging-schema (`mig`) achteraf gedropt, `.service_role_key`-bestand en
+   in-container `/tmp/migration-data` verwijderd. De CSV's zelf staan nog
+   op de host (chmod 700 root-only) als audit-trail.
+
+**Storage:** geen enkel profiel had een `profile_image_url` ingevuld (0 van
+88) — storage-bestanden-migratie bleek voor deze dataset niet nodig.
+
+**`admin_credentials` bijzonderheid:** dit is een eigen app-tabel (custom
+SHA-256-achtige hash, zie `admin-auth`-functie), **niet** Supabase Auth —
+dus het bestaande admin-wachtwoord van Michael is gewoon **behouden**,
+geen reset nodig voor de admin-login op `admin.eagleamsterdam.com`.
+
+### 15.3 SMTP ontbrak op de functions-container (aparte bug, blokkeerde alle OTP-mails)
+
+`send-otp` (en `send-contact-email`/`send-invite-email`) lezen hun eigen
+`SMTP_HOST`/`SMTP_PORT`/`SMTP_USER`/`SMTP_PASS` rechtstreeks via
+`Deno.env.get(...)` — **onafhankelijk** van de `auth`-service (GoTrue), die
+haar eigen, apart doorgegeven SMTP-config heeft (zie sectie 13). De
+`functions`-service in `supabase/docker-compose.yml` gaf deze vars nooit
+door, dus elke `send-otp`-aanroep faalde stil met `SMTP not configured`
+(zichtbaar in de UI als "Kon code niet versturen. Probeer opnieuw.").
+
+**Fix:** `SMTP_HOST`/`SMTP_PORT`/`SMTP_USER`/`SMTP_PASS`/`SMTP_SENDER_NAME`/
+`SMTP_ADMIN_EMAIL` toegevoegd aan de `functions`-service in
+`supabase/docker-compose.yml`, gevolgd door `docker compose up -d functions`.
+
+**Overige env-vars die edge functions verwachten maar niet zijn doorgegeven**
+(gecontroleerd, niet blokkerend, met fallback of optioneel):
+`LOYALTY_QR_CODE` (heeft een hardcoded fallback `"EAGLE2027"` in
+`scan-loyalty-stamp`), `ONESIGNAL_APP_ID`/`ONESIGNAL_REST_API_KEY` (push
+notificaties, optioneel), `SENDER_API_TOKEN`/`SENDER_GROUP_ID`
+(nieuwsbrief-inschrijving, optioneel, al defensief gecodeerd met een
+`if (token && group)`-guard). Zet deze pas op de server als de gebruiker
+die features daadwerkelijk wil activeren.
+
+### 15.4 Wachtwoord-loze login, en twee bugs gevonden tijdens het bouwen van de "systeemupgrade"-feature
+
+Op verzoek van de gebruiker: **geen** bulk-e-mail-wachtwoordreset. In plaats
+daarvan aangehaakt op het **bestaande** OTP-inlogsysteem
+(`send-otp`/`verify-otp`, gebruikt door `VipLogin.tsx`/`VipVerify.tsx`) —
+dit systeem is sowieso al wachtwoordloos: een geldige OTP-code resulteert
+in een door GoTrue gegenereerde **magic link**-sessie, geen wachtwoord
+nodig om in te loggen.
+
+**Aanpak:**
+1. Alle 88 gemigreerde gebruikers gemarkeerd met
+   `raw_user_meta_data->>'needs_password_reset' = true` (eenmalige
+   `UPDATE auth.users`, geen versiebeheerde migratie — is data, geen schema).
+2. `verify-otp`-functie uitgebreid: geeft nu `needs_password_reset` terug in
+   de response (uitgelezen uit `existingUserData.user.user_metadata`).
+3. Nieuwe pagina `/vip/set-password` (`src/pages/VipSetPassword.tsx`):
+   toont een vriendelijke uitleg ("systeemupgrade, wachtwoord kon om
+   veiligheidsredenen niet worden meegenomen") + wachtwoord/bevestig-velden,
+   roept `supabase.auth.updateUser({ password, data: {
+   needs_password_reset: false } })` aan bij versturen. Vertaald in alle 5
+   ondersteunde talen (`src/i18n/locales/{en,nl,de,fr,es}.json`, key
+   `vipSetPassword`).
+4. `VipVerify.tsx`: na succesvolle OTP-verificatie, als
+   `needs_password_reset` true is, doorsturen naar `/vip/set-password`
+   (i.p.v. direct naar dashboard/profile-setup); na het instellen van het
+   wachtwoord gaat de gebruiker alsnog naar dezelfde bestemming als normaal.
+5. Route toegevoegd in `src/App.tsx` (`/vip/set-password` → lazy-loaded
+   `VipSetPassword`).
+
+**Bug #1 — GoTrue verwerpt `email` + `token_hash` samen.** Tijdens het
+end-to-end testen (zie 15.5) bleek `supabase.auth.verifyOtp({ email,
+token_hash, type: "magiclink" })` in `VipVerify.tsx` te falen met
+`400 validation_failed: "Only the token_hash and type should be provided"`
+op deze GoTrue-versie (v2.189.0) — het gemixte email+token_hash-payload dat
+in oudere/andere GoTrue-versies werd geaccepteerd, wordt hier geweigerd.
+**Fix:** `email` weggehaald uit die specifieke call, alleen `token_hash` +
+`type` blijven staan. Dit is een pre-existing bug in de broncode (niet iets
+dat door zelf-hosten geïntroduceerd is), die op de self-hosted GoTrue-versie
+zichtbaar werd.
+
+**Bug #2 — `vip_session` (localStorage) werd nooit gezet bij een succesvolle
+auth-sessie.** Grote ontdekking: **de hele rest van de app**
+(`VipDashboard.tsx`, `useProfile.ts`, `useMemberVouchers.ts`,
+`useDirectMessages.ts`, `useActivityHeartbeat.ts`, `VipMemberPass.tsx`,
+`VipInfo.tsx`, `VipMessageCenter.tsx`, `Settings.tsx`, `Vip.tsx`, `App.tsx`,
+etc. — met `grep -rn "vip_session"` op te sporen) leest **uitsluitend** een
+eigen `vip_session`-object uit `localStorage` om te bepalen of iemand is
+ingelogd — **niet** de echte Supabase Auth-sessie. In de originele code
+werd `vip_session` echter **alleen** gezet in de `if (authError)`-tak van
+de `verifyOtp`-aanroep in `VipVerify.tsx` (dus alleen wanneer die aanroep
+**faalde**). Zodra Bug #1 gefixed was en `verifyOtp` dus ging **slagen**,
+werd `vip_session` nooit meer gezet, en stuurde `VipDashboard.tsx`'s eigen
+check de gebruiker linea recta terug naar `/vip/login` — een nieuwe,
+stille breuk veroorzaakt door het fixen van Bug #1.
+
+**Fix:** `vip_session` wordt nu **altijd** gezet na een succesvolle
+OTP-verificatie, ongeacht of de Supabase Auth-sessie-aanroep zelf slaagt of
+faalt — consistent met hoe de rest van de app daadwerkelijk werkt.
+
+**Vermoeden over de originele (Lovable Cloud) omgeving:** gegeven dat de
+hele app op deze `vip_session`-cache leunt in plaats van op een echte auth-
+sessie, is aannemelijk dat Bug #1 (of iets vergelijkbaars) ook al op
+Supabase Cloud aanwezig was/is, en dat de app daar in de praktijk feitelijk
+altijd via de `authError`-fallback liep — dit verklaart waarom het ooit zo
+gebouwd is. Niet geverifieerd (geen toegang tot de cloud-omgeving meer
+nodig), puur ter context voor toekomstig onderhoud.
+
+### 15.5 Verificatiemethode: headless browser via Playwright in Docker
+
+Er is geen `chromium-cli` of node/npx op deze server. Gebruikte aanpak voor
+visuele/functionele verificatie van de live site:
+```bash
+docker run --rm -v <workdir>:/work -v <outdir>:/out -w /work \
+  mcr.microsoft.com/playwright:v1.48.0-jammy node <script>.js
+```
+Twee app-specifieke obstakels tegengekomen (nuttig om te weten bij
+toekomstig testen van deze app):
+- **`PwaGate`-component** blokkeert alle niet-mobiele/niet-standalone
+  bezoekers met een "installeer de app"-scherm. Omzeild door
+  `context.addInitScript()` te gebruiken om `window.matchMedia("(display-
+  mode: standalone)")` te laten `true` teruggeven (simuleert een
+  geïnstalleerde PWA), gecombineerd met `devices['iPhone 13']`-emulatie
+  (desktop-viewports krijgen een ander "Mobile Only"-scherm).
+- **Sessie tussen twee scriptaanroepen delen**: `context.storageState({
+  path })` opslaan na stap 1 (OTP aanvragen), inladen in stap 2 (code
+  invullen) — nodig omdat de OTP-code niet synchroon binnen één
+  scriptrun beschikbaar is (moet apart uit de database gehaald worden
+  tussen de twee Playwright-aanroepen in).
+
+Volledige flow (inloggen → OTP → wachtwoord instellen → dashboard) is
+op deze manier end-to-end bevestigd te werken, inclusief een zichtbare
+screenshot van het dashboard met de juiste naam/VIP-status/data.
+
+### 15.6 Git-commit
+
+Alle broncode-wijzigingen (VipVerify.tsx, VipSetPassword.tsx, App.tsx,
+verify-otp/index.ts, i18n-bestanden) + infra-bestanden (Dockerfile,
+docker-compose.yml, nginx.conf, deploy.sh, backup.sh, MIGRATION.md,
+SETUP_LOG.md) zijn **lokaal gecommit** op de server (commit `d4e0468`).
+**Niet gepusht** naar de GitHub-remote — dat is aan de gebruiker, of moet
+apart gevraagd worden. `migration-data/` staat in `.gitignore` en is nooit
+meegenomen in git.
+
+### 15.7 Openstaande statussen voor de 88 gemigreerde gebruikers
+
+Alle 88 accounts hebben op dit moment `needs_password_reset: true` in hun
+`user_metadata` (het testaccount `michael.roks@icloud.com` is na testen
+weer teruggezet naar `true`). Bij hun **eerste** OTP-login na de migratie
+zien zij automatisch het "systeemupgrade"-scherm en moeten ze een nieuw
+wachtwoord instellen voor ze verder kunnen — geen actie van de gebruiker
+nodig, dit gebeurt vanzelf per account bij de eerstvolgende keer dat
+iemand inlogt.
