@@ -75,6 +75,7 @@ Deno.serve(async (req) => {
 
     // Find or create user
     let userId: string;
+    let needsPasswordReset = false;
 
     const { data: existingProfile, error: profileLookupError } = await supabase
       .from("profiles")
@@ -92,7 +93,8 @@ Deno.serve(async (req) => {
 
       if (!userLookupError && existingUserData?.user) {
         userId = existingUserData.user.id;
-        console.log(`[verify-otp] Existing user: ${userId}`);
+        needsPasswordReset = existingUserData.user.user_metadata?.needs_password_reset === true;
+        console.log(`[verify-otp] Existing user: ${userId} needs_password_reset=${needsPasswordReset}`);
 
         if ((!existingProfile.name || existingProfile.name.trim() === "") && otpRecord.name) {
           await supabase.from("profiles").update({ name: otpRecord.name }).eq("id", userId);
@@ -184,6 +186,7 @@ Deno.serve(async (req) => {
       created_at: profile?.created_at || "",
       hashed_token: signInResult.data?.properties?.hashed_token || "",
       verification_url: signInResult.data?.properties?.action_link || "",
+      needs_password_reset: needsPasswordReset,
     };
 
     console.log("[verify-otp] Success:", JSON.stringify({ ...result, hashed_token: "[redacted]" }));

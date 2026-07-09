@@ -145,5 +145,15 @@
     "step2DescAndroid": "Toca la opción en el menú",
     "step3Title": "Abre la app desde tu teléfono",
     "step3Desc": "Toca el icono Eagle en tu pantalla de inicio"
+  },
+  "vipSetPassword": {
+    "title": "ACTUALIZACIÓN DEL SISTEMA",
+    "message": "¡Hemos actualizado nuestro sistema para una experiencia más rápida y segura! Por motivos de seguridad, tu contraseña no pudo conservarse — establece una nueva a continuación para continuar.",
+    "passwordLabel": "Nueva contraseña",
+    "confirmPasswordLabel": "Confirmar contraseña",
+    "submit": "ESTABLECER CONTRASEÑA Y CONTINUAR",
+    "errorMismatch": "Las contraseñas no coinciden.",
+    "errorTooShort": "La contraseña debe tener al menos 8 caracteres.",
+    "errorGeneric": "Algo salió mal. Inténtalo de nuevo."
   }
 }

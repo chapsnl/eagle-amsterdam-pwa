@@ -145,5 +145,15 @@
     "step2DescAndroid": "Appuyez sur l'option dans le menu",
     "step3Title": "Ouvrez l'app depuis votre téléphone",
     "step3Desc": "Appuyez sur l'icône Eagle sur votre écran d'accueil"
+  },
+  "vipSetPassword": {
+    "title": "MISE À NIVEAU DU SYSTÈME",
+    "message": "Nous avons mis à niveau notre système pour une expérience plus rapide et plus sûre ! Pour des raisons de sécurité, votre mot de passe n'a pas pu être conservé — veuillez en définir un nouveau ci-dessous pour continuer.",
+    "passwordLabel": "Nouveau mot de passe",
+    "confirmPasswordLabel": "Confirmer le mot de passe",
+    "submit": "DÉFINIR LE MOT DE PASSE & CONTINUER",
+    "errorMismatch": "Les mots de passe ne correspondent pas.",
+    "errorTooShort": "Le mot de passe doit contenir au moins 8 caractères.",
+    "errorGeneric": "Une erreur est survenue. Réessayez."
   }
 }

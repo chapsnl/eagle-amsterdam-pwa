@@ -145,5 +145,15 @@
     "step2DescAndroid": "Tap the option in the menu",
     "step3Title": "Open the app from your phone",
     "step3Desc": "Tap the Eagle icon on your home screen to launch the app"
+  },
+  "vipSetPassword": {
+    "title": "SYSTEM UPGRADE",
+    "message": "We've upgraded to a faster, more secure system! For your safety, passwords couldn't be carried over — please set a new one to continue.",
+    "passwordLabel": "New password",
+    "confirmPasswordLabel": "Confirm password",
+    "submit": "SET PASSWORD & CONTINUE",
+    "errorMismatch": "Passwords don't match.",
+    "errorTooShort": "Password must be at least 8 characters.",
+    "errorGeneric": "Something went wrong. Please try again."
   }
 }

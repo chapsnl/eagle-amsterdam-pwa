@@ -1,0 +1,18 @@
+name: eagle-amsterdam-app
+
+services:
+  frontend:
+    container_name: eagle-frontend
+    build:
+      context: .
+      args:
+        VITE_SUPABASE_URL: ${VITE_SUPABASE_URL}
+        VITE_SUPABASE_PUBLISHABLE_KEY: ${VITE_SUPABASE_PUBLISHABLE_KEY}
+        VITE_SUPABASE_PROJECT_ID: ${VITE_SUPABASE_PROJECT_ID}
+    restart: unless-stopped
+    networks:
+      - edge
+
+networks:
+  edge:
+    external: true

@@ -89,42 +89,35 @@ const VipVerify = () => {
 
         if (DEV) console.log("[VipVerify] SUCCESS:", data);
 
-        // Authenticate with Supabase Auth
+        // Authenticate with Supabase Auth (establishes a real session, needed
+        // e.g. for supabase.auth.updateUser() on the password-set step).
+        // NOTE: token_hash-based verification must NOT also include `email` —
+        // GoTrue rejects the request ("Only the token_hash and type should be
+        // provided") when both are present together.
         if (data.verification_url && data.hashed_token) {
           const { error: authError } = await supabase.auth.verifyOtp({
-            email,
             token_hash: data.hashed_token,
             type: "magiclink",
           });
           if (DEV) console.log("[VipVerify] Auth result:", { authError });
-          if (authError) {
-            localStorage.setItem(
-              "vip_session",
-              JSON.stringify({
-                userId: data.userId,
-                email: data.email,
-                name: data.name || "",
-                member_number: data.member_number || "",
-                created_at: data.created_at || "",
-                verified: true,
-                timestamp: Date.now(),
-              })
-            );
-          }
-        } else {
-          localStorage.setItem(
-            "vip_session",
-            JSON.stringify({
-              userId: data.userId,
-              email: data.email,
-              name: data.name || "",
-              member_number: data.member_number || "",
-              created_at: data.created_at || "",
-              verified: true,
-              timestamp: Date.now(),
-            })
-          );
         }
+
+        // The rest of the app reads its own session cache from localStorage
+        // (see useProfile/useMemberVouchers/VipDashboard/etc.) independently
+        // of the Supabase Auth session above — always set it, regardless of
+        // whether the Supabase Auth call above succeeded.
+        localStorage.setItem(
+          "vip_session",
+          JSON.stringify({
+            userId: data.userId,
+            email: data.email,
+            name: data.name || "",
+            member_number: data.member_number || "",
+            created_at: data.created_at || "",
+            verified: true,
+            timestamp: Date.now(),
+          })
+        );
 
         // Post-login
         await migrateLoyaltyStamps(data.userId, data.email);
@@ -135,6 +128,14 @@ const VipVerify = () => {
         try {
           await setOneSignalExternalId(data.email);
         } catch {}
+
+        // Migrated accounts without a password: set one before continuing
+        if (data.needs_password_reset) {
+          sessionStorage.setItem("vip_post_password_redirect", redirect);
+          sessionStorage.setItem("vip_post_password_name", data.name || "");
+          navigate("/vip/set-password");
+          return;
+        }
 
         // Navigate
         if (!data.name || data.name.trim() === "") {

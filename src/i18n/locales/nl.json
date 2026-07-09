@@ -145,5 +145,15 @@
     "step2DescAndroid": "Tik op de optie in het menu",
     "step3Title": "Open de app vanaf je telefoon",
     "step3Desc": "Tik op het Eagle-icoon op je startscherm om de app te openen"
+  },
+  "vipSetPassword": {
+    "title": "SYSTEEMUPGRADE",
+    "message": "We hebben een systeemupgrade gedaan voor een sneller en veiliger platform! Uit veiligheidsoverwegingen kon je wachtwoord niet worden meegenomen — stel hieronder een nieuw wachtwoord in om verder te gaan.",
+    "passwordLabel": "Nieuw wachtwoord",
+    "confirmPasswordLabel": "Bevestig wachtwoord",
+    "submit": "WACHTWOORD INSTELLEN & DOORGAAN",
+    "errorMismatch": "Wachtwoorden komen niet overeen.",
+    "errorTooShort": "Wachtwoord moet minstens 8 tekens bevatten.",
+    "errorGeneric": "Er ging iets mis. Probeer opnieuw."
   }
 }
