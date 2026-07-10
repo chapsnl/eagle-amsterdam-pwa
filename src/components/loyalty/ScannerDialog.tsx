@@ -1,8 +1,9 @@
-import { memo } from "react";
+import { lazy, memo, Suspense } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { QrCode, X, Camera } from "lucide-react";
-import QRScanner from "@/components/loyalty/QRScanner";
+
+const QRScanner = lazy(() => import("@/components/loyalty/QRScanner"));
 
 interface ScannerDialogProps {
   open: boolean;
@@ -38,11 +39,13 @@ const ScannerDialog = memo(({ open, scannerKey, cameraBlocked, onClose, onScanRe
           </p>
         </div>
       ) : (
-        <QRScanner
-          key={scannerKey}
-          onScanResult={onScanResult}
-          onPermissionDenied={onPermissionDenied}
-        />
+        <Suspense fallback={<div className="w-full rounded-lg bg-background" style={{ minHeight: 280 }} />}>
+          <QRScanner
+            key={scannerKey}
+            onScanResult={onScanResult}
+            onPermissionDenied={onPermissionDenied}
+          />
+        </Suspense>
       )}
 
       <Button variant="eagle-outline" onClick={onClose} className="w-full mt-2 tracking-[-0.02em]">

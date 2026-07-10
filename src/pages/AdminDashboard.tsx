@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Crown, Users, QrCode, Gift, RefreshCw, Check, Send, ChevronDown, ChevronUp, LogOut, ScanLine, Search, Shirt, Ticket, Beer, MessageSquare, Trash2, UserCheck, Download, TrendingUp, Megaphone, Undo2, Bell } from "lucide-react";
 import MemberScannerSection from "@/components/admin/MemberScannerSection";
@@ -329,17 +329,17 @@ const AdminDashboard = () => {
     return false;
   }, [members]);
 
-  const filteredMembers = members.filter((m) => {
+  const filteredMembers = useMemo(() => {
     const q = searchQuery.toLowerCase();
-    return (
+    return members.filter((m) =>
       m.name.toLowerCase().includes(q) ||
       m.email.toLowerCase().includes(q) ||
       (m.member_number && m.member_number.includes(q))
     );
-  });
+  }, [members, searchQuery]);
 
   // Top 5: online users first (most recent activity), then most recent logins
-  const recentMembers = (() => {
+  const recentMembers = useMemo(() => {
     const online = members.filter((m) => isOnline(m.last_active_at))
       .sort((a, b) => new Date(b.last_active_at!).getTime() - new Date(a.last_active_at!).getTime());
     const offline = members.filter((m) => !isOnline(m.last_active_at))
@@ -349,10 +349,10 @@ const AdminDashboard = () => {
         return bTime - aTime;
       });
     return [...online, ...offline].slice(0, 5);
-  })();
+  }, [members]);
 
   // Member stats
-  const stats = (() => {
+  const stats = useMemo(() => {
     const now = Date.now();
     const dayMs = 24 * 60 * 60 * 1000;
     const onlineCount = members.filter((m) => isOnline(m.last_active_at)).length;
@@ -377,7 +377,7 @@ const AdminDashboard = () => {
       totalActiveVouchers,
       tiers,
     };
-  })();
+  }, [members]);
 
   const handleExportCSV = () => {
     const headers = ["Member #", "Name", "Email", "VIP Status", "Tokens", "Active Vouchers", "Created", "Last Active"];

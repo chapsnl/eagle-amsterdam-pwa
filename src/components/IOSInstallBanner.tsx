@@ -80,6 +80,10 @@ const IOSInstallBanner = () => {
             src={eagleLogo}
             alt="Eagle Amsterdam"
             className="w-10 h-10 object-contain shrink-0"
+            loading="lazy"
+            decoding="async"
+            width={40}
+            height={40}
           />
           <div className="flex-1 min-w-0">
             <p

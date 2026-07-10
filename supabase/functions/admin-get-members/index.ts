@@ -38,11 +38,12 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Get all members
+    // Get members (capped as a safety guardrail against unbounded growth)
     const { data: members, error } = await supabase
       .from("profiles")
       .select("id, name, email, vip_status, total_stamps_earned, member_number, created_at, last_active_at")
-      .order("created_at", { ascending: false });
+      .order("created_at", { ascending: false })
+      .limit(5000);
 
     if (error) {
       console.error("[admin-get-members] Query error:", error);

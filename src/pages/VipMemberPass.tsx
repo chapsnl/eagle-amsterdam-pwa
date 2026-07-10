@@ -98,7 +98,7 @@ const VipMemberPass = () => {
       {profileImage && (
         <div className="absolute left-5 top-[4.5rem]">
           <div className="w-16 h-16 bg-primary-foreground/10 border border-primary-foreground/20 rounded-lg overflow-hidden flex items-center justify-center">
-            <img src={profileImage} alt="Profile" className="w-full h-full object-cover" />
+            <img src={profileImage} alt="Profile" className="w-full h-full object-cover" loading="lazy" decoding="async" width={64} height={64} />
           </div>
         </div>
       )}

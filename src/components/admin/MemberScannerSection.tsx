@@ -1,8 +1,9 @@
-import { useState, useCallback } from "react";
+import { lazy, Suspense, useState, useCallback } from "react";
 import { ScanLine, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import QRScanner from "@/components/loyalty/QRScanner";
+
+const QRScanner = lazy(() => import("@/components/loyalty/QRScanner"));
 
 interface MemberScannerSectionProps {
   onMemberFound: (memberNumber: string) => boolean;
@@ -80,11 +81,13 @@ const MemberScannerSection = ({ onMemberFound }: MemberScannerSectionProps) => {
               </div>
             ) : (
               <>
-                <QRScanner
-                  key={scannerKey}
-                  onScanResult={handleScanResult}
-                  onPermissionDenied={handlePermissionDenied}
-                />
+                <Suspense fallback={<div className="w-full rounded-lg bg-background" style={{ minHeight: 280 }} />}>
+                  <QRScanner
+                    key={scannerKey}
+                    onScanResult={handleScanResult}
+                    onPermissionDenied={handlePermissionDenied}
+                  />
+                </Suspense>
                 {notFound && (
                   <div className="rounded-xl bg-destructive/20 border border-destructive/30 p-3 text-center animate-fade-in">
                     <p className="text-destructive text-sm font-bold">No user found</p>
