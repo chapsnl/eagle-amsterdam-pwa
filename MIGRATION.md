@@ -1,8 +1,10 @@
 # Data-migratie: Lovable Cloud → self-hosted (deze server)
 
-Status: **niet blokkerend, nog niet uitgevoerd — aanpak herzien op 2026-07-09.**
-Deze self-hosted stack draait met een vers, grotendeels leeg schema. Dit
-document beschrijft precies wat er nog moet gebeuren.
+Status: **uitgevoerd op 2026-07-09** — zie `SETUP_LOG.md` sectie 15 voor het
+daadwerkelijke verloop (CSV-export/Pad B, 88 accounts gemigreerd). Dit
+document is de oorspronkelijke planning van vóór de uitvoering; hieronder
+alleen nog bijgewerkt waar de werkelijke uitkomst afweek van het plan
+(storage/profielfoto's, zie de aantekeningen bij sectie 5 en de checklist).
 
 ## Belangrijke correctie t.o.v. eerdere versie van dit document
 
@@ -105,9 +107,14 @@ staat.
 3. ⏳ Is Lovable MCP / directe SQL-toegang tot de Cloud-database beschikbaar
    op dit plan? (bepaalt of Pad A of Pad B gevolgd wordt, en of
    wachtwoord-hashes mee kunnen)
-4. ⏳ Is er een manier om storage-bestanden (profielfoto's) in bulk te
+4. ~~Is er een manier om storage-bestanden (profielfoto's) in bulk te
    exporteren, of moeten we dit zelf via de anon key + Storage REST API
-   proberen op te halen?
+   proberen op te halen?~~ **Moot.** Bij de uitvoering (Pad B/CSV) is
+   storage sowieso niet meegekomen, en er bleek geen enkele foto ooit
+   geüpload te zijn (de upload-UI was nooit gebouwd). De hele
+   `profile-images`-bucket + bijbehorende edge function zijn op 2026-07-10
+   verwijderd als ongebruikte functionaliteit — zie `SETUP_LOG.md` sectie
+   18.2. Geen migratie meer nodig.
 
 ## Restore-mechaniek (blijft geldig, ongeacht welk pad)
 
@@ -163,17 +170,13 @@ cat cloud_dump.dump | docker exec -i eagle-db pg_restore -U postgres -d postgres
   (bv. bulk-invite via GoTrue's admin-API met `email_confirm: true` en dan
   een reset-link, of gebruikers laten het gewoon zelf opnieuw doen).
 
-### 5. Storage-bestanden
+### 5. Storage-bestanden — **niet meer van toepassing (2026-07-10)**
 
-Zie "Pad B" hierboven voor het idee om publieke buckets via de anon key op
-te halen. Voor niet-publieke buckets is een service role key (dus Pad A/MCP)
-nodig. Upload naar self-hosted:
-```bash
-curl -X POST -H "Authorization: Bearer <SELF_HOSTED_SERVICE_ROLE_KEY>" \
-  -H "apikey: <SELF_HOSTED_SERVICE_ROLE_KEY>" \
-  --data-binary @localfile \
-  "https://api1.eagleamsterdam.com/storage/v1/object/<bucket-name>/<path>"
-```
+Zie "Pad B" hierboven voor het oorspronkelijke idee om publieke buckets via
+de anon key op te halen — dit is nooit uitgevoerd, en hoeft ook niet meer:
+de enige bucket (`profile-images`) bevatte 0 objecten en de bijbehorende
+upload-functionaliteit is volledig verwijderd. `eagle-storage` staat
+uitgeschakeld. Zie `SETUP_LOG.md` sectie 18.2.
 
 ### 6. Edge Functions
 
@@ -185,7 +188,8 @@ Lovable Cloud-versie afwijkt van wat in git staat.
 
 - [ ] Login met een bestaand account werkt op `https://app1.eagleamsterdam.com`
       (met nieuw wachtwoord bij Pad B, met bestaand wachtwoord bij Pad A)
-- [ ] Profielfoto's en andere storage-bestanden laden correct
+- [x] ~~Profielfoto's en andere storage-bestanden laden correct~~ n.v.t. —
+      feature verwijderd, zie sectie 5 hierboven
 - [ ] Voucher/loyalty-data komt overeen met de cloud-omgeving
 - [ ] Edge functions die de database aanspreken werken (bv. `get-profile`)
 - [ ] `admin_credentials` / admin-login werkt nog

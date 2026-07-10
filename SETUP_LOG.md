@@ -493,6 +493,10 @@ bevat (`supabase/volumes/db/data/`). Chown specifieke submappen los, en houd
 `volumes/db/data` op UID:GID `100:101` (de `postgres`-user/group binnen de
 `supabase/postgres`-image).
 
+> **Update 2026-07-10:** deze exacte fout is hierna nog een keer gemaakt,
+> door een andere sessie die dit document niet had geraadpleegd — zie
+> sectie 18.6 voor het vervolg.
+
 ### Verificatie
 
 Testmail getriggerd via `POST /auth/v1/otp` naar `leatherpridebv@gmail.com`
@@ -923,3 +927,173 @@ optioneel `admin1.eagleamsterdam.com` uit de `BYPASS_HOSTS`/route-check in
 de broncode verwijderen (niet urgent, geen kwetsbaarheid — een extra
 toegestaan hostname is geen beveiligingsrisico zolang de DNS ervoor niet
 meer bestaat).
+
+---
+
+## 18. Performance-audit, storage-opruiming en deploy-fixes (2026-07-10)
+
+Vervolgsessie (nieuwe agent-instantie, geen geheugen van sectie 1-17 anders
+dan wat in dit document en de repo staat). Opdracht: performance-audit van
+de frontend, gevolgd door concrete fixes, en later op verzoek verder
+opgeruimd (ongebruikte storage-feature, Docker-cruft).
+
+### 18.1 Performance-fixes (frontend)
+
+Commit `b4c6e7d`:
+- **Dubbele service worker opgelost.** `index.html` registreerde handmatig
+  `/sw.js` (een hand-geschreven SW in `public/sw.js`), terwijl
+  `vite-plugin-pwa` óók een SW genereerde (`workbox`-config in
+  `vite.config.ts`) die nooit expliciet geregistreerd werd maar bij build
+  wél auto-inject kreeg (`injectRegister: "auto"`, default) — risico op een
+  race tussen twee registraties op dezelfde scope. Hand-geschreven
+  `public/sw.js` + registratiescript verwijderd, workbox is nu de enige bron
+  (`filename: "sw.js"`), met `runtimeCaching`-regels toegevoegd voor Google
+  Fonts (de Supabase/OneSignal-uitsluitingen van de oude hand-rolled SW
+  werken nu impliciet: geen `runtimeCaching`-match = geen SW-interceptie).
+- **PWA-icons bleken 1024×1024 volresolutie-PNG's**, terwijl bestandsnaam +
+  manifest 192×192/512×512 beloofden — nooit daadwerkelijk verkleind.
+  `apple-touch-icon.png`/`eagle-logo-192.png`: 849KB → 5KB.
+  `eagle-logo-512.png`: 798KB → 45KB. Verkleind met Pillow (juiste
+  pixelafmeting) + `pngquant`/`optipng` (extra compressie).
+- **`html5-qrcode`** (~335KB ongecomprimeerd) werd eager gebundeld in de
+  Loyalty-pagina-chunk, ook voor bezoekers die nooit scannen.
+  `React.lazy()` toegepast in `ScannerDialog.tsx` en
+  `MemberScannerSection.tsx` — zit nu in een eigen chunk, alleen geladen na
+  klik op "Scan".
+- `vite.config.ts`: `build.rollupOptions.output.manualChunks` toegevoegd
+  (vendor-react/-radix/-supabase/-query gesplitst).
+- `AdminDashboard.tsx`: `filteredMembers`/`recentMembers`/`stats` liepen bij
+  elke render opnieuw door de volledige ledenlijst — nu in `useMemo`.
+  `admin-get-members` edge function kreeg een `.limit(5000)`-guardrail
+  (geen paginatie — zou search/stats-aggregatie server-side moeten
+  herschrijven, bewust buiten scope gehouden).
+- Losse `loading="lazy"` + expliciete afmetingen op de resterende
+  `<img>`-tags zonder lazy-loading; default `staleTime: 60_000` op de
+  globale React Query `QueryClient` (vangnet, alle bestaande hooks zetten al
+  hun eigen staleTime).
+- **Bewust overgeslagen:** i18next lazy-loading per taal — `BottomNav.tsx`
+  en `PwaGate.tsx` gebruiken `useTranslation()` buiten de enige
+  `<Suspense>`-boundary in `App.tsx`; een async vertaal-backend kan daar
+  zonder boundary crashen. Winst (~20KB) woog niet op tegen het risico,
+  zonder werkende build/testomgeving in de eerste sessie om het te
+  verifiëren.
+- Build geverifieerd via `docker run node:20-alpine ... npm run build`
+  (geen node/npm op de VPS-host zelf) — bundle-analyse bevestigde de
+  chunk-splitsing werkt zoals bedoeld.
+
+Commit `918b214`: "Backroom Moderation" in het adminpaneel visueel gelijk
+getrokken met "Broadcast Message"/"Push Notification" (`bg-card border
+border-border rounded-xl`-kaartstijl toegepast op de toggle-knop).
+
+### 18.2 Ongebruikte storage-feature verwijderd
+
+Gebruiker vroeg wat `eagle-storage` deed; bleek dat er nergens in de
+frontend een `<input type="file">` bestond — de enige schrijver
+(`upload-profile-image` edge function, geüpload naar bucket
+`profile-images`) werd door niets aangeroepen. Bucket bevatte 0 objecten
+(geverifieerd vóór verwijdering).
+
+Migratie `20260710083344_drop_unused_profile_images_storage.sql` dropt de
+RLS-policies (directe SQL op `storage.buckets`/`storage.objects` wordt
+geblokkeerd door Supabase's `protect_delete()`-trigger — de bucket zelf is
+daarom via de Storage API verwijderd, niet via SQL):
+```bash
+docker run --rm --network eagle-amsterdam_default curlimages/curl -s \
+  -X DELETE "http://storage:5000/bucket/profile-images" \
+  -H "apikey: $SERVICE_ROLE_KEY" -H "Authorization: Bearer $SERVICE_ROLE_KEY"
+```
+`upload-profile-image` verwijderd uit zowel de repo
+(`supabase/functions/`) als de gedeployde kopie
+(`supabase/volumes/functions/`), gevolgd door `docker restart
+eagle-functions`. De `storage`-service in `supabase/docker-compose.yml` is
+**uitgecommentarieerd** (niet verwijderd) met een dagtekening + reden in een
+comment, zodat een toekomstige upload-feature 'm zo kan terugzetten.
+Container gestopt + verwijderd. RAM-gebruik: 2.1GB → 1.8GB.
+
+### 18.3 `deploy.sh` bug: host-side `npm install` faalde altijd
+
+`deploy.sh` deed `npm install` rechtstreeks op de VPS-host, vóór `docker
+compose up -d --build` — maar er staat geen node/npm op de host (bevestigd:
+noch root, noch de `deploy`-user hebben het). De Dockerfile draait zijn
+eigen `npm install` al binnenin de `node:20-alpine`-buildstage, dus deze
+regel was zowel overbodig als kapot. Verwijderd uit `deploy.sh` (commit
+`99a0093`).
+
+**Nog niet eerder opgemerkt omdat de GitHub Actions-workflow uit sectie 9.4
+nooit daadwerkelijk is aangemaakt** (zie 18.4) — `deploy.sh` was tot nu toe
+alleen handmatig gedraaid, en blijkbaar altijd mét een aanwezige node/npm op
+de machine van de uitvoerende sessie in plaats van op de VPS zelf. Bij de
+eerste écht geautomatiseerde run (of een handmatige run als de `deploy`-user
+zelf) was dit direct fataal geweest.
+
+### 18.4 GitHub Actions workflow: aangemaakt, niet geactiveerd
+
+`.github/workflows/deploy.yml` (de YAML uit sectie 9.4 van dit document)
+alsnog aangemaakt — maar **kon niet gepusht worden met een gewoon
+Personal Access Token** ("refusing to allow a Personal Access Token to
+create or update workflow `.github/workflows/deploy.yml` without `workflow`
+scope", een GitHub-beperking los van repo-rechten). Gebruiker vond de
+UI-route (zelf het bestand aanmaken via GitHub's "Create new file") en het
+secret-beheer (`DEPLOY_SSH_KEY` toevoegen) te omslachtig, en koos expliciet
+voor **doorgaan met handmatige deploys** (`sudo -u deploy bash
+/opt/apps/eagle-amsterdam/deploy.sh`, uitgevoerd door de agent op verzoek).
+
+De workflow-commit (`12894a7`) staat lokaal klaar in
+`/root/eagle-amsterdam-pwa` maar is **niet gepusht** — punt 1 uit sectie 11
+("edge functions/migraties niet automatisch bij deploy") blijft dus
+onveranderd van toepassing, plus: er is ook geen automatische
+*frontend*-deploy. Alle deploys tot nader order zijn handmatig, op verzoek
+("push en deploy").
+
+### 18.5 Docker-opruiming
+
+Op verzoek: ongebruikte image `eagle-amsterdam-frontend:latest` (oude
+naamgeving, niet meer gerefereerd door een draaiende container) +
+`docker image prune -a -f` + `docker builder prune -f`. Reclaimed: 3.2GB
+(losse `node`/`python`/`playwright`/`curl`/`hadolint`-images uit eerdere,
+ongerelateerde sessies) + 1.6GB build-cache. Geen van de 13 draaiende
+containers geraakt.
+
+### 18.6 Herhaling van de sectie-13-bug: `chown -R deploy:deploy` opnieuw de Postgres-datadirectory gebroken
+
+**Dit is exact dezelfde fout als sectie 13**, deze keer gemaakt door de
+agent zelf (niet uit de deploy.sh/CI-setup, maar tijdens het onderzoeken
+van een permissieprobleem met `git pull` op `/opt/apps/eagle-amsterdam` —
+eerdere `git fetch`/`merge`/`stash`-commando's als root hadden
+root-eigenaar-bestanden in `.git/` achtergelaten). Fix daarvoor was een
+brede `chown -R deploy:deploy /opt/apps/eagle-amsterdam` — die wederom
+`supabase/volumes/db/data/` meepakte (UID 100 → 1000), zonder dat sectie 13
+van dit document geraadpleegd was vóór het uitvoeren van dat commando.
+
+Symptoom ditmaal: gebruiker meldde "Failed to load data" op de
+adminpagina. `eagle-db` bleef "healthy" in `docker ps` (bestaande
+verbindingen/cache bleven werken — zelfde patroon als sectie 13), maar
+`eagle-rest` en `realtime-dev.eagle` faalden op nieuwe verbindingen:
+```
+FATAL: could not open file "global/pg_filenode.map": Permission denied
+```
+Ook `supabase/.env` en `supabase/.env.old` (horen `root:root` te zijn, zie
+sectie 12/README-secrettabel) waren per ongeluk meegenomen in de
+`chown -R deploy:deploy` — apart teruggezet naar `root:root` chmod 600,
+vóórdat de Postgres-permissiefout uberhaupt opgemerkt werd.
+
+**Fix (identiek aan sectie 13):**
+```bash
+chown -R 100:101 /opt/apps/eagle-amsterdam/supabase/volumes/db/data
+docker restart eagle-db
+```
+`eagle-rest`/`realtime` herstelden zelf via hun eigen retry-logica zodra
+`eagle-db` weer gezond was. Alle 12 containers geverifieerd, `admin-get-members`
+end-to-end opnieuw getest via Kong (`success:true`).
+
+**Les, ditmaal dubbel onderstreept:** dit document waarschuwt al sinds
+sectie 13 expliciet tegen `chown -R deploy:deploy` op een map die
+`supabase/volumes/db/data/` bevat — en het gebeurde alsnog, omdat de
+uitvoerende sessie dit document niet had geraadpleegd vóór het commando.
+**Concreet advies voor een volgende sessie:** nooit `chown -R` los toepassen
+op `/opt/apps/<app>/`; scope het altijd expliciet tot de submap die het
+probleem heeft (bv. `.git/`), en behandel `supabase/volumes/db/data/` en
+`supabase/.env*` als een vaste uitzondering die nooit meeloopt in een
+bulk-chown.
+
+---
