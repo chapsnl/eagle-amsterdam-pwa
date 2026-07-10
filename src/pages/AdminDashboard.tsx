@@ -1118,10 +1118,10 @@ const AdminDashboard = () => {
         </section>
 
         {/* ═══ BACKROOM MODERATION ═══ */}
-        <section className="space-y-4">
+        <section className="space-y-0">
           <button
             onClick={() => { setModerationOpen(!moderationOpen); if (!moderationOpen) loadCommunityPosts(); }}
-            className="w-full flex items-center justify-between"
+            className="w-full flex items-center justify-between bg-card border border-border rounded-xl px-4 py-3"
           >
             <h2 className="text-foreground font-bold text-lg flex items-center gap-2">
               <MessageSquare className="w-5 h-5 text-primary" />
@@ -1135,7 +1135,7 @@ const AdminDashboard = () => {
           </button>
 
           {moderationOpen && (
-            <div className="space-y-2">
+            <div className="bg-card rounded-b-xl px-4 pb-4 pt-2 space-y-2 border border-t-0 border-border -mt-2 rounded-t-none">
               {loadingPosts ? (
                 <div className="flex justify-center py-4">
                   <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
