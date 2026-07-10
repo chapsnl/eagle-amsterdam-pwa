@@ -1,0 +1,30 @@
+# Frontend Docker build context should only ever need the app source.
+# Without this file, `docker compose build` (context: .) tries to tar up
+# the entire /opt/apps/eagle-amsterdam tree, including the self-hosted
+# Supabase data/secrets directories — which the `deploy` user correctly
+# cannot read (Postgres data dir is 0700, owned by the postgres container's
+# uid). See SETUP_LOG.md section 18 for the incident this caused.
+
+.git
+node_modules
+dist
+dist-ssr
+*.local
+
+# Self-hosted Supabase infra (server-only, not part of the frontend build)
+supabase/
+
+# One-time Lovable Cloud migration data (PII, password hashes)
+migration-data/
+
+# Docs, ops scripts, logs — not needed inside the image
+*.md
+*.log
+logs
+backup.sh
+deploy.sh
+
+# Editor directories and files
+.vscode
+.idea
+.DS_Store
