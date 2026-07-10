@@ -9,9 +9,6 @@ cd "$APP_DIR"
 echo "==> git pull"
 git pull --ff-only origin main
 
-echo "==> npm install"
-npm install
-
 echo "==> docker compose build + up"
 set -a
 source .env
